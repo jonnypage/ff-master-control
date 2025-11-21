@@ -79,7 +79,7 @@ type Mutation {
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
   login(input: LoginInput!): AuthPayload!
-  overrideMissionCompletion(missionId: ID!, teamId: ID!): MissionCompletion!
+  overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
   removeCredits(amount: Int!, nfcCardId: String!): Team!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!

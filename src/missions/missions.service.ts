@@ -69,13 +69,14 @@ export class MissionsService {
     await completion.save();
 
     // Add to team's completed missions and award credits
-    await this.teamsService.addCompletedMission(
+    await this.teamsService.addCompletedMission(team._id.toString(), missionId);
+    await this.teamsService.addCredits(
       team._id.toString(),
-      missionId,
+      mission.creditsAwarded,
     );
-    await this.teamsService.addCredits(team._id.toString(), mission.creditsAwarded);
 
-    return completion.populate(['teamId', 'missionId', 'completedBy']) as Promise<MissionCompletionDocument>;
+    // Return without populate since GraphQL expects IDs, not full objects
+    return completion as MissionCompletionDocument;
   }
 
   async overrideMissionCompletion(
@@ -100,16 +101,12 @@ export class MissionsService {
     });
 
     if (existingCompletion) {
-      return existingCompletion.populate(['teamId', 'missionId', 'completedBy']) as Promise<MissionCompletionDocument>;
+      // Return without populate since GraphQL expects IDs, not full objects
+      return existingCompletion as MissionCompletionDocument;
     }
 
     // Create override completion
-    return this.completeMission(
-      team.nfcCardId,
-      missionId,
-      completedBy,
-      true,
-    );
+    return this.completeMission(team.nfcCardId, missionId, completedBy, true);
   }
 
   async findCompletions(teamId?: string): Promise<MissionCompletionDocument[]> {
@@ -197,4 +194,3 @@ export class MissionsService {
     return mission.save();
   }
 }
-
