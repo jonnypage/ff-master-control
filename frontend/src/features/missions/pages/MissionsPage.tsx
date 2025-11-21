@@ -11,11 +11,16 @@ export function MissionsPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Missions</h1>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Missions</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            View and manage all missions
+          </p>
+        </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)}>
+          <Button onClick={() => setShowCreateDialog(true)} size="lg">
             <Plus className="w-4 h-4 mr-2" />
             Create Mission
           </Button>
@@ -36,4 +41,3 @@ export function MissionsPage() {
     </div>
   );
 }
-

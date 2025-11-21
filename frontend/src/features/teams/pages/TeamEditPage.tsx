@@ -14,6 +14,7 @@ import {
   Minus,
   CheckCircle2,
   Radio,
+  Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
@@ -284,20 +285,32 @@ export function TeamEditPage() {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center py-8 text-gray-500">Loading team...</div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Loading team...</p>
+        </div>
       </div>
     );
   }
 
   if (!data?.teamById) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center py-8 text-gray-500">Team not found</div>
-        <Button onClick={() => navigate('/teams')} variant="outline">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Teams
-        </Button>
+      <div className="space-y-4">
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-foreground font-medium">Team not found</p>
+            <Button
+              onClick={() => navigate('/teams')}
+              variant="outline"
+              className="mt-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Teams
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -307,38 +320,54 @@ export function TeamEditPage() {
   // Ensure we have valid data
   if (!team) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center py-8 text-gray-500">Loading team...</div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Loading team...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button onClick={() => navigate('/teams')} variant="outline">
+          <Button
+            onClick={() => navigate('/teams')}
+            variant="outline"
+            size="lg"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {isEditMode ? 'Edit Team' : 'Team Details'}
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {isEditMode ? 'Edit Team' : 'Team Details'}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isEditMode ? 'Update team information' : 'View team information'}
+            </p>
+          </div>
         </div>
         {!isEditMode && canEditTeams && (
-          <Button onClick={() => navigate(`/teams/${id}/edit`)}>
+          <Button
+            onClick={() => navigate(`/teams/${id}/edit`)}
+            size="lg"
+            className="shadow-md"
+          >
             <Edit className="w-4 h-4 mr-2" />
             Edit
           </Button>
         )}
       </div>
 
-      <div className="max-w-2xl space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Team Information</CardTitle>
+      <div className="max-w-3xl space-y-6">
+        <Card className="shadow-sm">
+          <CardHeader className="bg-muted/50 border-b">
+            <CardTitle className="text-xl">Team Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
                 <div>
@@ -376,13 +405,13 @@ export function TeamEditPage() {
               <>
                 <div>
                   <Label>Team Name</Label>
-                  <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
                     {team.name}
                   </div>
                 </div>
                 <div>
                   <Label>NFC Card ID</Label>
-                  <div className="px-3 py-2 bg-gray-50 rounded-md text-sm font-mono">
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
                     {team.nfcCardId}
                   </div>
                 </div>
@@ -397,13 +426,15 @@ export function TeamEditPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Credits:</span>
+              <span className="text-sm text-muted-foreground">Credits:</span>
               <Badge variant="secondary" className="text-lg font-semibold">
                 {typeof team.credits === 'number' ? team.credits : 0}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Missions Completed:</span>
+              <span className="text-sm text-muted-foreground">
+                Missions Completed:
+              </span>
               <Badge>
                 {team.completedMissionIds ? team.completedMissionIds.length : 0}
                 /{missionsData?.missions?.length ?? 0}
@@ -440,7 +471,7 @@ export function TeamEditPage() {
               <CardTitle>Missions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Check off missions as complete for this team
               </p>
               <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -451,7 +482,7 @@ export function TeamEditPage() {
                   return (
                     <div
                       key={mission._id}
-                      className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-gray-50"
+                      className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50"
                     >
                       <div className="flex items-center h-5 mt-0.5">
                         <input
@@ -465,7 +496,7 @@ export function TeamEditPage() {
                             overrideMissionCompletion.isPending ||
                             removeMissionCompletion.isPending
                           }
-                          className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          className="w-4 h-4 rounded border-input text-primary focus:ring-ring"
                         />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -481,11 +512,11 @@ export function TeamEditPage() {
                           )}
                         </Label>
                         {mission.description && (
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {mission.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                           <span>Credits: {mission.creditsAwarded}</span>
                           {isCompleted && (
                             <span className="flex items-center gap-1 text-green-600">

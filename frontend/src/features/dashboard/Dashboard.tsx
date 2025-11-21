@@ -22,39 +22,53 @@ export function Dashboard() {
   })
 
   if (isLoading) {
-    return <div className="text-center py-8 text-gray-500">Loading...</div>
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Dashboard</h1>
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Overview of your Freedom Fighters event
+        </p>
+      </div>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Teams</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold">Total Teams</CardTitle>
+            <Users className="h-5 w-5 text-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.teams.length || 0}</div>
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold">{data?.teams.length || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Active teams</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Missions</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold">Total Missions</CardTitle>
+            <Target className="h-5 w-5 text-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{data?.missions.length || 0}</div>
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold">{data?.missions.length || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Available missions</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quick Actions</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+            <DollarSign className="h-5 w-5 text-primary" />
           </CardHeader>
-          <CardContent>
-            <div className="text-sm text-muted-foreground">
-              Use the navigation to access features
+          <CardContent className="pt-6">
+            <div className="text-sm text-muted-foreground leading-relaxed">
+              Use the navigation menu to access teams, missions, and store features
             </div>
           </CardContent>
         </Card>

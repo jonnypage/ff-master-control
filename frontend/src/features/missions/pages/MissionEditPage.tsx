@@ -154,20 +154,28 @@ export function MissionEditPage() {
 
   if (isLoading) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center py-8 text-gray-500">Loading mission...</div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-4"></div>
+          <p className="text-muted-foreground">Loading mission...</p>
+        </div>
       </div>
     );
   }
 
   if (!data?.mission) {
     return (
-      <div className="px-4 py-6 sm:px-0">
-        <div className="text-center py-8 text-gray-500">Mission not found</div>
-        <Button onClick={() => navigate('/missions')} variant="outline">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Missions
-        </Button>
+      <div className="space-y-4">
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-foreground font-medium">Mission not found</p>
+            <Button onClick={() => navigate('/missions')} variant="outline" className="mt-4">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Missions
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -175,34 +183,43 @@ export function MissionEditPage() {
   const mission = data.mission;
 
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button onClick={() => navigate('/missions')} variant="outline">
+          <Button onClick={() => navigate('/missions')} variant="outline" size="lg">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {isEditMode ? 'Edit Mission' : 'Mission Details'}
-          </h1>
-          {mission.isFinalChallenge && (
-            <Badge variant="default">Final Challenge</Badge>
-          )}
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-foreground">
+                {isEditMode ? 'Edit Mission' : 'Mission Details'}
+              </h1>
+              {mission.isFinalChallenge && (
+                <Badge variant="default">
+                  Final Challenge
+                </Badge>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {isEditMode ? 'Update mission information' : 'View mission information'}
+            </p>
+          </div>
         </div>
         {!isEditMode && canEditMissions && (
-          <Button onClick={() => navigate(`/missions/${id}/edit`)}>
+          <Button onClick={() => navigate(`/missions/${id}/edit`)} size="lg" className="shadow-md">
             <Edit className="w-4 h-4 mr-2" />
             Edit
           </Button>
         )}
       </div>
 
-      <div className="max-w-2xl space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Mission Information</CardTitle>
+      <div className="max-w-3xl space-y-6">
+        <Card className="shadow-sm">
+          <CardHeader className="bg-muted/50 border-b">
+            <CardTitle className="text-xl">Mission Information</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
                 <div>
@@ -241,7 +258,7 @@ export function MissionEditPage() {
                     id="is-final-challenge"
                     checked={isFinalChallenge}
                     onChange={(e) => setIsFinalChallenge(e.target.checked)}
-                    className="rounded border-gray-300"
+                    className="rounded border-input"
                   />
                   <Label htmlFor="is-final-challenge" className="cursor-pointer">
                     Final Challenge
@@ -252,19 +269,19 @@ export function MissionEditPage() {
               <>
                 <div>
                   <Label>Mission Name</Label>
-                  <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
                     {mission.name}
                   </div>
                 </div>
                 <div>
                   <Label>Description</Label>
-                  <div className="px-3 py-2 bg-gray-50 rounded-md text-sm min-h-[80px]">
-                    {mission.description || <span className="text-gray-400">No description</span>}
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm min-h-[80px]">
+                    {mission.description || <span className="text-muted-foreground">No description</span>}
                   </div>
                 </div>
                 <div>
                   <Label>Credits Awarded</Label>
-                  <div className="px-3 py-2 bg-gray-50 rounded-md text-sm">
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
                     {mission.creditsAwarded}
                   </div>
                 </div>
@@ -273,7 +290,7 @@ export function MissionEditPage() {
                     type="checkbox"
                     checked={mission.isFinalChallenge}
                     disabled
-                    className="rounded border-gray-300"
+                    className="rounded border-input"
                   />
                   <Label className="cursor-default">
                     Final Challenge
@@ -284,26 +301,26 @@ export function MissionEditPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Mission Details</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="bg-muted/50 border-b">
+            <CardTitle className="text-xl">Mission Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3 pt-6">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Completed:</span>
+              <span className="text-muted-foreground">Completed:</span>
               <Badge variant="outline">
                 {completionCount.completed}/{completionCount.total}
               </Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Created:</span>
-              <span className="text-gray-900">
+              <span className="text-muted-foreground">Created:</span>
+              <span className="text-foreground">
                 {new Date(mission.createdAt).toLocaleDateString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Last Updated:</span>
-              <span className="text-gray-900">
+              <span className="text-muted-foreground">Last Updated:</span>
+              <span className="text-foreground">
                 {new Date(mission.updatedAt).toLocaleDateString()}
               </span>
             </div>
@@ -311,19 +328,23 @@ export function MissionEditPage() {
         </Card>
 
         {canEdit && (
-          <div className="flex justify-end gap-2 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-6 border-t bg-card p-4 rounded-lg shadow-sm -mx-4 -mb-4">
             <Button
               onClick={() => navigate(`/missions/${id}`)}
               variant="outline"
+              size="lg"
+              className="min-w-[120px]"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={updateMission.isPending}
+              size="lg"
+              className="min-w-[120px] shadow-md"
             >
               <Save className="w-4 h-4 mr-2" />
-              Save Changes
+              {updateMission.isPending ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         )}

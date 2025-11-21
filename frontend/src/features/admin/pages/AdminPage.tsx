@@ -1,10 +1,24 @@
+import { Settings } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+
 export function AdminPage() {
   return (
-    <div className="px-4 py-6 sm:px-0">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Admin</h1>
-      <div className="text-center py-8 text-gray-500">
-        Admin interface coming soon...
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Admin</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Administrative controls and settings
+        </p>
       </div>
+      <Card className="border-dashed">
+        <CardContent className="py-16 text-center">
+          <Settings className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <p className="text-foreground font-medium text-lg">Admin interface coming soon</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Additional administrative features will be available here
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

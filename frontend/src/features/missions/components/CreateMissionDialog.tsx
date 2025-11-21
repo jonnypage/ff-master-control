@@ -133,7 +133,7 @@ export function CreateMissionDialog({
                 id="is-final-challenge"
                 checked={isFinalChallenge}
                 onChange={(e) => setIsFinalChallenge(e.target.checked)}
-                className="rounded border-gray-300"
+                className="rounded border-input"
               />
               <Label htmlFor="is-final-challenge" className="cursor-pointer">
                 Final Challenge
