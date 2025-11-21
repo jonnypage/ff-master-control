@@ -1,0 +1,77 @@
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Team, TeamDocument } from './schemas/team.schema';
+import { CreateTeamDto } from './dto/create-team.dto';
+
+@Injectable()
+export class TeamsService {
+  constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
+
+  async create(createTeamDto: CreateTeamDto): Promise<TeamDocument> {
+    const existingTeam = await this.teamModel.findOne({
+      nfcCardId: createTeamDto.nfcCardId,
+    });
+
+    if (existingTeam) {
+      throw new ConflictException('Team with this NFC card ID already exists');
+    }
+
+    const createdTeam = new this.teamModel(createTeamDto);
+    return createdTeam.save();
+  }
+
+  async findByNfcCardId(nfcCardId: string): Promise<TeamDocument | null> {
+    return this.teamModel.findOne({ nfcCardId }).exec();
+  }
+
+  async findOne(id: string): Promise<TeamDocument | null> {
+    return this.teamModel.findById(id).exec();
+  }
+
+  async findAll(): Promise<TeamDocument[]> {
+    return this.teamModel.find().exec();
+  }
+
+  async addCredits(teamId: string, amount: number): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    team.credits = Math.max(0, team.credits + amount);
+    return team.save();
+  }
+
+  async addCompletedMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    if (!team.completedMissionIds.includes(missionId as any)) {
+      team.completedMissionIds.push(missionId as any);
+      return team.save();
+    }
+
+    return team;
+  }
+
+  async hasCompletedMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<boolean> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      return false;
+    }
+
+    return team.completedMissionIds.some(
+      (id) => id.toString() === missionId.toString(),
+    );
+  }
+}
+
