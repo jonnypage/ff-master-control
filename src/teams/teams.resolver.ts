@@ -18,6 +18,14 @@ export class TeamsResolver {
     return this.teamsService.findByNfcCardId(nfcCardId);
   }
 
+  @Query(() => Team, { nullable: true })
+  @UseGuards(JwtAuthGuard)
+  async searchTeam(
+    @Args('searchTerm') searchTerm: string,
+  ): Promise<Team | null> {
+    return this.teamsService.findByNameOrNfcCardId(searchTerm);
+  }
+
   @Query(() => [Team])
   @UseGuards(JwtAuthGuard)
   async teams(): Promise<Team[]> {
@@ -31,4 +39,3 @@ export class TeamsResolver {
     return this.teamsService.create(createTeamDto);
   }
 }
-

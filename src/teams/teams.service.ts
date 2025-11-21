@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Team, TeamDocument } from './schemas/team.schema';
@@ -73,5 +77,26 @@ export class TeamsService {
       (id) => id.toString() === missionId.toString(),
     );
   }
-}
 
+  async findByNameOrNfcCardId(
+    searchTerm: string,
+  ): Promise<TeamDocument | null> {
+    // Try NFC card ID first (exact match)
+    const byNfcCardId = await this.teamModel
+      .findOne({ nfcCardId: searchTerm })
+      .exec();
+    if (byNfcCardId) {
+      return byNfcCardId;
+    }
+
+    // Then try team name (partial match, case-insensitive)
+    // This will match if the search term appears anywhere in the team name
+    const byName = await this.teamModel
+      .findOne({
+        name: { $regex: new RegExp(searchTerm, 'i') },
+      })
+      .exec();
+
+    return byName || null;
+  }
+}

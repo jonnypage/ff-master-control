@@ -69,6 +69,7 @@ type Query {
   me: User
   missionCompletions(teamId: ID): [MissionCompletion!]!
   missions: [Mission!]!
+  searchTeam(searchTerm: String!): Team
   team(nfcCardId: String!): Team
   teams: [Team!]!
   users: [User!]!

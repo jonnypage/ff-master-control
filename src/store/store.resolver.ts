@@ -13,7 +13,7 @@ export class StoreResolver {
 
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STORE)
+  @Roles(UserRole.STORE, UserRole.ADMIN)
   async adjustCredits(
     @Args('nfcCardId') nfcCardId: string,
     @Args('amount', { type: () => Int }) amount: number,
@@ -23,7 +23,7 @@ export class StoreResolver {
 
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STORE)
+  @Roles(UserRole.STORE, UserRole.ADMIN)
   async addCredits(
     @Args('nfcCardId') nfcCardId: string,
     @Args('amount', { type: () => Int }) amount: number,
@@ -33,7 +33,7 @@ export class StoreResolver {
 
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.STORE)
+  @Roles(UserRole.STORE, UserRole.ADMIN)
   async removeCredits(
     @Args('nfcCardId') nfcCardId: string,
     @Args('amount', { type: () => Int }) amount: number,
@@ -41,4 +41,3 @@ export class StoreResolver {
     return this.storeService.removeCredits(nfcCardId, amount);
   }
 }
-

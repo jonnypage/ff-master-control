@@ -1,19 +1,25 @@
-import { useState, useEffect } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { graphqlClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
-import { useNFCReader } from '@/hooks/useNFCReader'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Search, Radio } from 'lucide-react'
-import { toast } from 'sonner'
-import { TeamDetails } from './TeamDetails'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { graphqlClient } from '@/lib/graphql/client';
+import { graphql } from '@/lib/graphql/generated';
+import { useNFCReader } from '@/hooks/useNFCReader';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Search, Radio } from 'lucide-react';
+import { toast } from 'sonner';
+import { TeamDetails } from './TeamDetails';
 
-const GET_TEAM_QUERY = graphql(`
-  query GetTeam($nfcCardId: String!) {
-    team(nfcCardId: $nfcCardId) {
+const SEARCH_TEAM_QUERY = graphql(`
+  query SearchTeam($searchTerm: String!) {
+    searchTeam(searchTerm: $searchTerm) {
       _id
       name
       nfcCardId
@@ -22,103 +28,85 @@ const GET_TEAM_QUERY = graphql(`
       createdAt
     }
   }
-`)
+`);
 
 interface TeamLookupProps {
-  onTeamFound?: () => void
+  onTeamFound?: () => void;
 }
 
 export function TeamLookup({ onTeamFound }: TeamLookupProps) {
-  const [nfcCardId, setNfcCardId] = useState('')
-  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader()
-
-  // Check NFC support on mount
-  useEffect(() => {
-    checkSupport()
-  }, [checkSupport])
+  const [searchTerm, setSearchTerm] = useState('');
+  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['team', nfcCardId],
-    queryFn: () => graphqlClient.request(GET_TEAM_QUERY, { nfcCardId }),
+    queryKey: ['team', searchTerm],
+    queryFn: () => graphqlClient.request(SEARCH_TEAM_QUERY, { searchTerm }),
     enabled: false, // Only run when manually triggered
-  })
-
-  // Show toast when team is found or not found after refetch
-  useEffect(() => {
-    if (nfcCardId && data !== undefined && !isLoading) {
-      if (data?.team) {
-        toast.success('Team found!')
-        onTeamFound?.()
-      } else if (nfcCardId.trim()) {
-        // Only show error if we actually searched (not initial load)
-        toast.error('Team not found for this NFC card')
-      }
-    }
-  }, [data, nfcCardId, isLoading, onTeamFound])
+  });
 
   const handleNFCRead = async () => {
     if (!isSupported) {
-      checkSupport()
+      checkSupport();
       if (!isSupported) {
-        toast.error('NFC is not supported on this device')
-        return
+        toast.error('NFC is not supported on this device');
+        return;
       }
     }
 
-    const result = await readNFC()
+    const result = await readNFC();
     if (result.success && result.nfcId) {
-      // Set the NFC ID in the input field
-      setNfcCardId(result.nfcId)
-      toast.success(`NFC card scanned: ${result.nfcId}`)
-      
-      // Automatically search for the team
-      refetch().then(() => {
-        // Check if team was found (need to wait for query to complete)
-        setTimeout(() => {
-          // The query result will be in data after refetch completes
-          // We'll check it in the effect or show appropriate message
-        }, 100)
-      })
-    } else {
-      const errorMsg = result.error || 'Failed to read NFC card'
-      console.error('NFC read error:', errorMsg, result)
-      toast.error(errorMsg)
-    }
-  }
-
-  const handleManualSearch = () => {
-    if (!nfcCardId.trim()) {
-      toast.error('Please enter an NFC card ID')
-      return
-    }
-    refetch().then(() => {
-      if (data?.team) {
-        toast.success('Team found!')
-        onTeamFound?.()
+      setSearchTerm(result.nfcId);
+      // Use the queryFn directly with the new NFC ID
+      const response = await graphqlClient.request(SEARCH_TEAM_QUERY, {
+        searchTerm: result.nfcId,
+      });
+      if (response?.searchTeam) {
+        toast.success('Team found!');
+        onTeamFound?.();
+        // Trigger refetch to update the query cache
+        refetch();
       } else {
-        toast.error('Team not found')
+        toast.error('Team not found');
       }
-    })
-  }
+    } else {
+      toast.error(result.error || 'Failed to read NFC card');
+    }
+  };
+
+  const handleManualSearch = async () => {
+    if (!searchTerm.trim()) {
+      toast.error('Please enter a team name or NFC card ID');
+      return;
+    }
+    const response = await refetch();
+    if (response.data?.searchTeam) {
+      toast.success('Team found!');
+      onTeamFound?.();
+    } else {
+      toast.error('Team not found');
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Lookup Team</CardTitle>
-        <CardDescription>Search for a team by NFC card ID</CardDescription>
+        <CardDescription>
+          Search for a team by name or NFC card ID
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
           <div className="flex-1">
-            <Label htmlFor="nfc-card-id">NFC Card ID</Label>
+            <Label htmlFor="team-search">Team Name or NFC Card ID</Label>
             <Input
-              id="nfc-card-id"
-              placeholder="Enter NFC card ID or scan"
-              value={nfcCardId}
-              onChange={(e) => setNfcCardId(e.target.value)}
+              id="team-search"
+              placeholder="Enter team name or NFC card ID"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  handleManualSearch()
+                  handleManualSearch();
                 }
               }}
             />
@@ -143,9 +131,10 @@ export function TeamLookup({ onTeamFound }: TeamLookupProps) {
           </div>
         </div>
 
-        {data?.team && <TeamDetails team={data.team} />}
+        {data?.searchTeam && (
+          <TeamDetails team={data.searchTeam} onUpdate={() => refetch()} />
+        )}
       </CardContent>
     </Card>
-  )
+  );
 }
-
