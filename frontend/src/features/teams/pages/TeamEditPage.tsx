@@ -9,8 +9,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Plus, Minus } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/lib/auth-context';
+import type { GetTeamByIdQuery } from '@/lib/graphql/generated';
 
 const GET_TEAM_BY_ID_QUERY = graphql(`
   query GetTeamById($id: ID!) {
@@ -71,17 +72,18 @@ export function TeamEditPage() {
   const [name, setName] = useState('');
   const [nfcCardId, setNfcCardId] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<GetTeamByIdQuery>({
     queryKey: ['team', id],
     queryFn: () => graphqlClient.request(GET_TEAM_BY_ID_QUERY, { id: id! }),
     enabled: !!id,
-    onSuccess: (data) => {
-      if (data?.teamById) {
-        setName(data.teamById.name);
-        setNfcCardId(data.teamById.nfcCardId);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (data?.teamById) {
+      setName(data.teamById.name);
+      setNfcCardId(data.teamById.nfcCardId);
+    }
+  }, [data]);
 
   const updateTeam = useMutation({
     mutationFn: (input: { name?: string; nfcCardId?: string }) =>
