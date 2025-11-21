@@ -7,11 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, Plus, Minus, CheckCircle2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Plus,
+  Minus,
+  CheckCircle2,
+  Radio,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
+import { useNFCReader } from '@/hooks/useNFCReader';
 import type { GetTeamByIdQuery } from '@/lib/graphql/generated';
 
 const GET_TEAM_BY_ID_QUERY = graphql(`
@@ -85,12 +93,19 @@ const OVERRIDE_MISSION_COMPLETION_MUTATION = graphql(`
   }
 `);
 
+const REMOVE_MISSION_COMPLETION_MUTATION = graphql(`
+  mutation RemoveMissionCompletion($teamId: ID!, $missionId: ID!) {
+    removeMissionCompletion(teamId: $teamId, missionId: $missionId)
+  }
+`);
+
 export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const { canEditTeams, canAdjustCredits } = usePermissions();
   const queryClient = useQueryClient();
+  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
   // Check if we're in edit mode based on URL path
   const isEditMode = location.pathname.endsWith('/edit');
@@ -201,6 +216,24 @@ export function TeamEditPage() {
     removeCredits.mutate(100);
   };
 
+  const handleNFCScan = async () => {
+    if (!isSupported) {
+      checkSupport();
+      if (!isSupported) {
+        toast.error('NFC is not supported on this device');
+        return;
+      }
+    }
+
+    const result = await readNFC();
+    if (result.success && result.nfcId) {
+      setNfcCardId(result.nfcId);
+      toast.success('NFC card scanned successfully!');
+    } else {
+      toast.error(result.error || 'Failed to read NFC card');
+    }
+  };
+
   const overrideMissionCompletion = useMutation({
     mutationFn: (missionId: string) =>
       graphqlClient.request(OVERRIDE_MISSION_COMPLETION_MUTATION, {
@@ -220,14 +253,32 @@ export function TeamEditPage() {
     },
   });
 
+  const removeMissionCompletion = useMutation({
+    mutationFn: (missionId: string) =>
+      graphqlClient.request(REMOVE_MISSION_COMPLETION_MUTATION as any, {
+        teamId: id!,
+        missionId,
+      }),
+    onSuccess: () => {
+      toast.success('Mission completion removed');
+      queryClient.invalidateQueries({ queryKey: ['team', id] });
+      queryClient.invalidateQueries({ queryKey: ['teams'] });
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.errors?.[0]?.message ||
+          'Failed to remove mission completion',
+      );
+    },
+  });
+
   const handleMissionToggle = (missionId: string, isCompleted: boolean) => {
     if (!isCompleted) {
       // Complete the mission
       overrideMissionCompletion.mutate(missionId);
     } else {
-      // Note: Unchecking would require a remove completion mutation
-      // For now, we'll just show a message
-      toast.info('To uncomplete a mission, please use the admin panel');
+      // Remove the mission completion
+      removeMissionCompletion.mutate(missionId);
     }
   };
 
@@ -300,11 +351,25 @@ export function TeamEditPage() {
                 </div>
                 <div>
                   <Label htmlFor="nfc-card-id">NFC Card ID</Label>
-                  <Input
-                    id="nfc-card-id"
-                    value={nfcCardId}
-                    onChange={(e) => setNfcCardId(e.target.value)}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="nfc-card-id"
+                      value={nfcCardId}
+                      onChange={(e) => setNfcCardId(e.target.value)}
+                      className="flex-1"
+                    />
+                    {isSupported && (
+                      <Button
+                        type="button"
+                        onClick={handleNFCScan}
+                        disabled={isReading}
+                        variant="outline"
+                      >
+                        <Radio className="w-4 h-4 mr-2" />
+                        {isReading ? 'Scanning...' : 'Scan'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
@@ -396,7 +461,10 @@ export function TeamEditPage() {
                           onChange={() =>
                             handleMissionToggle(mission._id, isCompleted)
                           }
-                          disabled={overrideMissionCompletion.isPending}
+                          disabled={
+                            overrideMissionCompletion.isPending ||
+                            removeMissionCompletion.isPending
+                          }
                           className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </div>

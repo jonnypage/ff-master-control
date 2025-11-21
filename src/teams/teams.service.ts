@@ -93,6 +93,21 @@ export class TeamsService {
     return team;
   }
 
+  async removeCompletedMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    team.completedMissionIds = team.completedMissionIds.filter(
+      (id) => id.toString() !== missionId.toString(),
+    );
+    return team.save();
+  }
+
   async hasCompletedMission(
     teamId: string,
     missionId: string,

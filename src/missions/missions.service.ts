@@ -120,6 +120,43 @@ export class MissionsService {
       .exec();
   }
 
+  async removeMissionCompletion(
+    teamId: string,
+    missionId: string,
+  ): Promise<void> {
+    const team = await this.teamsService.findOne(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const mission = await this.missionModel.findById(missionId);
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+
+    // Find and delete the completion record
+    const completion = await this.missionCompletionModel.findOneAndDelete({
+      teamId: team._id,
+      missionId: mission._id,
+    });
+
+    if (!completion) {
+      throw new NotFoundException('Mission completion not found');
+    }
+
+    // Remove from team's completed missions
+    await this.teamsService.removeCompletedMission(
+      team._id.toString(),
+      missionId,
+    );
+
+    // Remove credits that were awarded for this mission
+    await this.teamsService.addCredits(
+      team._id.toString(),
+      -mission.creditsAwarded,
+    );
+  }
+
   async create(createMissionDto: {
     name: string;
     description?: string;

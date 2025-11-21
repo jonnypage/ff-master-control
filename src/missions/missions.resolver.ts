@@ -87,5 +87,16 @@ export class MissionsResolver {
   ): Promise<Mission> {
     return this.missionsService.update(id, updateMissionDto);
   }
+
+  @Mutation(() => Boolean)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async removeMissionCompletion(
+    @Args('teamId', { type: () => ID }) teamId: string,
+    @Args('missionId', { type: () => ID }) missionId: string,
+  ): Promise<boolean> {
+    await this.missionsService.removeMissionCompletion(teamId, missionId);
+    return true;
+  }
 }
 
