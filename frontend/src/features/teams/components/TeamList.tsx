@@ -33,7 +33,6 @@ export function TeamList({ teams, isLoading, onUpdate }: TeamListProps) {
 
   const { data: missionsData } = useQuery({
     queryKey: ['missions'],
-    // @ts-expect-error - GET_MISSIONS_FOR_TEAMS_QUERY types will be generated after running codegen
     queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_TEAMS_QUERY),
   });
 

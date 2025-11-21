@@ -5,7 +5,6 @@ import {
   canAdjustCredits,
   hasPermission,
 } from '@/lib/permissions';
-import type { UserRole } from '@/lib/graphql/generated';
 
 /**
  * Hook to check user permissions

@@ -18,17 +18,23 @@ export const PERMISSIONS = {
   },
 } as const;
 
+type PermissionResource = keyof typeof PERMISSIONS;
+type PermissionAction = 'edit' | 'adjust';
+
 /**
  * Check if a user has permission to perform an action on a resource
  */
 export function hasPermission(
   userRole: UserRole | null | undefined,
-  resource: keyof typeof PERMISSIONS,
-  action: 'edit' | 'adjust',
+  resource: PermissionResource,
+  action: PermissionAction,
 ): boolean {
   if (!userRole) return false;
   
-  const allowedRoles = PERMISSIONS[resource]?.[action];
+  const resourcePermissions = PERMISSIONS[resource];
+  if (!resourcePermissions) return false;
+  
+  const allowedRoles = (resourcePermissions as Record<PermissionAction, UserRole[]>)[action];
   if (!allowedRoles) return false;
   
   return allowedRoles.includes(userRole);

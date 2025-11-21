@@ -107,7 +107,6 @@ export function TeamEditPage() {
 
   const { data: missionsData } = useQuery({
     queryKey: ['missions'],
-    // @ts-expect-error - GET_MISSIONS_FOR_TEAM_EDIT_QUERY types will be generated after running codegen
     queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_TEAM_EDIT_QUERY),
   });
 
@@ -204,7 +203,6 @@ export function TeamEditPage() {
 
   const overrideMissionCompletion = useMutation({
     mutationFn: (missionId: string) =>
-      // @ts-expect-error - OVERRIDE_MISSION_COMPLETION_MUTATION types will be generated after running codegen
       graphqlClient.request(OVERRIDE_MISSION_COMPLETION_MUTATION, {
         teamId: id!,
         missionId,

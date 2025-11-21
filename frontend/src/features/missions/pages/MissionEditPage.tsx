@@ -74,7 +74,6 @@ export function MissionEditPage() {
 
   const { data: teamsData } = useQuery({
     queryKey: ['teams'],
-    // @ts-expect-error - GET_TEAMS_FOR_MISSION_QUERY types will be generated after running codegen
     queryFn: () => graphqlClient.request(GET_TEAMS_FOR_MISSION_QUERY),
   });
 
