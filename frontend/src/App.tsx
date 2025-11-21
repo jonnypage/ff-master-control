@@ -3,6 +3,7 @@ import { useAuth } from './features/auth/lib/auth-context';
 import { LoginPage } from './features/auth/components/LoginPage';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { TeamsPage } from './features/teams/pages/TeamsPage';
+import { TeamEditPage } from './features/teams/pages/TeamEditPage';
 import { MissionsPage } from './features/missions/pages/MissionsPage';
 import { StorePage } from './features/store/pages/StorePage';
 import { AdminPage } from './features/admin/pages/AdminPage';
@@ -35,6 +36,7 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="teams" element={<TeamsPage />} />
+          <Route path="teams/:id" element={<TeamEditPage />} />
           <Route path="missions" element={<MissionsPage />} />
           <Route path="store" element={<StorePage />} />
           <Route path="admin" element={<AdminPage />} />

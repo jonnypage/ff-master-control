@@ -1,15 +1,18 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import type { GetTeamsQuery } from '@/lib/graphql/generated'
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import type { GetTeamsQuery } from '@/lib/graphql/generated';
 
 interface TeamListProps {
-  teams: GetTeamsQuery['teams']
-  isLoading: boolean
+  teams: GetTeamsQuery['teams'];
+  isLoading: boolean;
 }
 
 export function TeamList({ teams, isLoading }: TeamListProps) {
+  const navigate = useNavigate();
+
   if (isLoading) {
-    return <div className="text-center py-8 text-gray-500">Loading teams...</div>
+    return <div className="text-center py-8 text-gray-500">Loading teams...</div>;
   }
 
   if (teams.length === 0) {
@@ -19,7 +22,7 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
           No teams found. Create a team to get started.
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -27,7 +30,11 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
       <h2 className="text-xl font-semibold mb-4">All Teams</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {teams.map((team: GetTeamsQuery['teams'][number]) => (
-          <Card key={team._id}>
+          <Card
+            key={team._id}
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate(`/teams/${team._id}`)}
+          >
             <CardHeader>
               <CardTitle className="text-lg">{team.name}</CardTitle>
             </CardHeader>
@@ -48,6 +55,6 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 

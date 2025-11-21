@@ -37,6 +37,35 @@ export class TeamsService {
     return this.teamModel.find().exec();
   }
 
+  async update(
+    id: string,
+    updateData: { name?: string; nfcCardId?: string },
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(id);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    // Check if NFC card ID is being changed and if it's already taken
+    if (updateData.nfcCardId && updateData.nfcCardId !== team.nfcCardId) {
+      const existingTeam = await this.teamModel.findOne({
+        nfcCardId: updateData.nfcCardId,
+      });
+      if (existingTeam) {
+        throw new ConflictException(
+          'Team with this NFC card ID already exists',
+        );
+      }
+      team.nfcCardId = updateData.nfcCardId;
+    }
+
+    if (updateData.name !== undefined) {
+      team.name = updateData.name;
+    }
+
+    return team.save();
+  }
+
   async addCredits(teamId: string, amount: number): Promise<TeamDocument> {
     const team = await this.teamModel.findById(teamId);
     if (!team) {

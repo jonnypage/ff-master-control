@@ -1,8 +1,9 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { Team } from './schemas/team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
+import { UpdateTeamDto } from './dto/update-team.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -32,10 +33,28 @@ export class TeamsResolver {
     return this.teamsService.findAll();
   }
 
+  @Query(() => Team, { nullable: true })
+  @UseGuards(JwtAuthGuard)
+  async teamById(
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<Team | null> {
+    return this.teamsService.findOne(id);
+  }
+
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   async createTeam(@Args('input') createTeamDto: CreateTeamDto): Promise<Team> {
     return this.teamsService.create(createTeamDto);
+  }
+
+  @Mutation(() => Team)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async updateTeam(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') updateTeamDto: UpdateTeamDto,
+  ): Promise<Team> {
+    return this.teamsService.update(id, updateTeamDto);
   }
 }

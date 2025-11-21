@@ -17,6 +17,11 @@ input CreateTeamDto {
   nfcCardId: String!
 }
 
+input UpdateTeamDto {
+  name: String
+  nfcCardId: String
+}
+
 input CreateUserDto {
   password: String!
   role: UserRole!
@@ -62,6 +67,7 @@ type Mutation {
   overrideMissionCompletion(missionId: ID!, teamId: ID!): MissionCompletion!
   removeCredits(amount: Int!, nfcCardId: String!): Team!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!
+  updateTeam(id: ID!, input: UpdateTeamDto!): Team!
 }
 
 type Query {
@@ -71,6 +77,7 @@ type Query {
   missions: [Mission!]!
   searchTeam(searchTerm: String!): Team
   team(nfcCardId: String!): Team
+  teamById(id: ID!): Team
   teams: [Team!]!
   users: [User!]!
 }
