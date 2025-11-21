@@ -189,6 +189,15 @@ export function TeamEditPage() {
 
   const team = data.teamById;
 
+  // Ensure we have valid data
+  if (!team) {
+    return (
+      <div className="px-4 py-6 sm:px-0">
+        <div className="text-center py-8 text-gray-500">Loading team...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 py-6 sm:px-0">
       <div className="flex items-center gap-4 mb-6">
@@ -244,12 +253,14 @@ export function TeamEditPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Credits:</span>
               <Badge variant="secondary" className="text-lg font-semibold">
-                {team.credits}
+                {typeof team.credits === 'number' ? team.credits : 0}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-600">Missions Completed:</span>
-              <Badge>{team.completedMissionIds.length}</Badge>
+              <Badge>
+                {team.completedMissionIds ? team.completedMissionIds.length : 0}
+              </Badge>
             </div>
             {isAdmin && (
               <div className="flex gap-2 pt-2 border-t">
