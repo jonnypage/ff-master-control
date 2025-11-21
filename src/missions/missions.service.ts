@@ -119,5 +119,45 @@ export class MissionsService {
       .populate(['teamId', 'missionId', 'completedBy'])
       .exec();
   }
+
+  async create(createMissionDto: {
+    name: string;
+    description?: string;
+    creditsAwarded: number;
+    isFinalChallenge: boolean;
+  }): Promise<MissionDocument> {
+    const createdMission = new this.missionModel(createMissionDto);
+    return createdMission.save();
+  }
+
+  async update(
+    id: string,
+    updateData: {
+      name?: string;
+      description?: string;
+      creditsAwarded?: number;
+      isFinalChallenge?: boolean;
+    },
+  ): Promise<MissionDocument> {
+    const mission = await this.missionModel.findById(id);
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+
+    if (updateData.name !== undefined) {
+      mission.name = updateData.name;
+    }
+    if (updateData.description !== undefined) {
+      mission.description = updateData.description;
+    }
+    if (updateData.creditsAwarded !== undefined) {
+      mission.creditsAwarded = updateData.creditsAwarded;
+    }
+    if (updateData.isFinalChallenge !== undefined) {
+      mission.isFinalChallenge = updateData.isFinalChallenge;
+    }
+
+    return mission.save();
+  }
 }
 

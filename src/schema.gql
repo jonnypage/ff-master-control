@@ -12,20 +12,34 @@ type AuthPayload {
   user: User!
 }
 
+input CreateMissionDto {
+  creditsAwarded: Int!
+  description: String
+  isFinalChallenge: Boolean!
+  name: String!
+}
+
 input CreateTeamDto {
   name: String!
   nfcCardId: String!
-}
-
-input UpdateTeamDto {
-  name: String
-  nfcCardId: String
 }
 
 input CreateUserDto {
   password: String!
   role: UserRole!
   username: String!
+}
+
+input UpdateMissionDto {
+  creditsAwarded: Int
+  description: String
+  isFinalChallenge: Boolean
+  name: String
+}
+
+input UpdateTeamDto {
+  name: String
+  nfcCardId: String
 }
 
 """
@@ -61,18 +75,21 @@ type Mutation {
   addCredits(amount: Int!, nfcCardId: String!): Team!
   adjustCredits(amount: Int!, nfcCardId: String!): Team!
   completeMission(missionId: ID!, nfcCardId: String!): MissionCompletion!
+  createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
   login(input: LoginInput!): AuthPayload!
   overrideMissionCompletion(missionId: ID!, teamId: ID!): MissionCompletion!
   removeCredits(amount: Int!, nfcCardId: String!): Team!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!
+  updateMission(id: ID!, input: UpdateMissionDto!): Mission!
   updateTeam(id: ID!, input: UpdateTeamDto!): Team!
 }
 
 type Query {
   config: AppConfig!
   me: User
+  mission(id: ID!): Mission
   missionCompletions(teamId: ID): [MissionCompletion!]!
   missions: [Mission!]!
   searchTeam(searchTerm: String!): Team

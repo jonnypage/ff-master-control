@@ -3,6 +3,8 @@ import { UseGuards } from '@nestjs/common';
 import { MissionsService } from './missions.service';
 import { Mission } from './schemas/mission.schema';
 import { MissionCompletion } from './schemas/mission-completion.schema';
+import { CreateMissionDto } from './dto/create-mission.dto';
+import { UpdateMissionDto } from './dto/update-mission.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -18,6 +20,14 @@ export class MissionsResolver {
   @UseGuards(JwtAuthGuard)
   async missions(): Promise<Mission[]> {
     return this.missionsService.findAll();
+  }
+
+  @Query(() => Mission, { nullable: true })
+  @UseGuards(JwtAuthGuard)
+  async mission(
+    @Args('id', { type: () => ID }) id: string,
+  ): Promise<Mission | null> {
+    return this.missionsService.findOne(id);
   }
 
   @Query(() => [MissionCompletion])
@@ -57,6 +67,25 @@ export class MissionsResolver {
       missionId,
       user._id.toString(),
     );
+  }
+
+  @Mutation(() => Mission)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async createMission(
+    @Args('input') createMissionDto: CreateMissionDto,
+  ): Promise<Mission> {
+    return this.missionsService.create(createMissionDto);
+  }
+
+  @Mutation(() => Mission)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async updateMission(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') updateMissionDto: UpdateMissionDto,
+  ): Promise<Mission> {
+    return this.missionsService.update(id, updateMissionDto);
   }
 }
 
