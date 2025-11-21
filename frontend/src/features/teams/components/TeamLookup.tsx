@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { graphqlClient } from '@/lib/graphql/client'
 import { graphql } from '@/lib/graphql/generated'
@@ -32,11 +32,29 @@ export function TeamLookup({ onTeamFound }: TeamLookupProps) {
   const [nfcCardId, setNfcCardId] = useState('')
   const { isSupported, isReading, readNFC, checkSupport } = useNFCReader()
 
+  // Check NFC support on mount
+  useEffect(() => {
+    checkSupport()
+  }, [checkSupport])
+
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['team', nfcCardId],
     queryFn: () => graphqlClient.request(GET_TEAM_QUERY, { nfcCardId }),
     enabled: false, // Only run when manually triggered
   })
+
+  // Show toast when team is found or not found after refetch
+  useEffect(() => {
+    if (nfcCardId && data !== undefined && !isLoading) {
+      if (data?.team) {
+        toast.success('Team found!')
+        onTeamFound?.()
+      } else if (nfcCardId.trim()) {
+        // Only show error if we actually searched (not initial load)
+        toast.error('Team not found for this NFC card')
+      }
+    }
+  }, [data, nfcCardId, isLoading, onTeamFound])
 
   const handleNFCRead = async () => {
     if (!isSupported) {
@@ -49,13 +67,22 @@ export function TeamLookup({ onTeamFound }: TeamLookupProps) {
 
     const result = await readNFC()
     if (result.success && result.nfcId) {
+      // Set the NFC ID in the input field
       setNfcCardId(result.nfcId)
+      toast.success(`NFC card scanned: ${result.nfcId}`)
+      
+      // Automatically search for the team
       refetch().then(() => {
-        toast.success('Team found!')
-        onTeamFound?.()
+        // Check if team was found (need to wait for query to complete)
+        setTimeout(() => {
+          // The query result will be in data after refetch completes
+          // We'll check it in the effect or show appropriate message
+        }, 100)
       })
     } else {
-      toast.error(result.error || 'Failed to read NFC card')
+      const errorMsg = result.error || 'Failed to read NFC card'
+      console.error('NFC read error:', errorMsg, result)
+      toast.error(errorMsg)
     }
   }
 
