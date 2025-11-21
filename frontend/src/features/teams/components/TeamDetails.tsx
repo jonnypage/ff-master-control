@@ -7,7 +7,7 @@ import { graphql } from '@/lib/graphql/generated';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { Plus, Minus } from 'lucide-react';
 import { toast } from 'sonner';
-import type { GetTeamQuery } from '@/lib/graphql/generated';
+import type { SearchTeamQuery } from '@/lib/graphql/generated';
 
 const ADD_CREDITS_MUTATION = graphql(`
   mutation AddCredits($nfcCardId: String!, $amount: Int!) {
@@ -34,7 +34,7 @@ const REMOVE_CREDITS_MUTATION = graphql(`
 `);
 
 interface TeamDetailsProps {
-  team: GetTeamQuery['team'];
+  team: SearchTeamQuery['searchTeam'];
   onUpdate?: () => void;
 }
 
