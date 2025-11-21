@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useAuth } from '@/features/auth/lib/auth-context'
 import type { UserRole } from '@/lib/graphql/generated'
 import { LogOut, Users, Target, ShoppingCart, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'

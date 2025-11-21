@@ -26,7 +26,7 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
     <div>
       <h2 className="text-xl font-semibold mb-4">All Teams</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {teams.map((team) => (
+        {teams.map((team: GetTeamsQuery['teams'][number]) => (
           <Card key={team._id}>
             <CardHeader>
               <CardTitle className="text-lg">{team.name}</CardTitle>

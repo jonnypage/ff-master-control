@@ -8,4 +8,5 @@ generates:
       useTypeImports: true
       skipTypename: true
       dedupeFragments: true
+      enumsAsTypes: true
 
