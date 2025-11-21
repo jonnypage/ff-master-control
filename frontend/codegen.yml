@@ -1,0 +1,11 @@
+schema: '../src/schema.gql'
+documents: 'src/**/*.{ts,tsx}'
+generates:
+  src/lib/graphql/generated/:
+    preset: client
+    plugins: []
+    config:
+      useTypeImports: true
+      skipTypename: true
+      dedupeFragments: true
+

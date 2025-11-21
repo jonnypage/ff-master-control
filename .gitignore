@@ -24,3 +24,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# frontend
+frontend/dist
+frontend/node_modules
+frontend/.vite
+frontend/coverage
+frontend/src/lib/graphql/generated

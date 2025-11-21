@@ -1,0 +1,99 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AppConfig {
+  _id: ID!
+  requiredMissionsForFinal: Float!
+}
+
+type AuthPayload {
+  access_token: String!
+  user: User!
+}
+
+input CreateTeamDto {
+  name: String!
+  nfcCardId: String!
+}
+
+input CreateUserDto {
+  password: String!
+  role: UserRole!
+  username: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  password: String!
+  username: String!
+}
+
+type Mission {
+  _id: ID!
+  createdAt: DateTime!
+  creditsAwarded: Float!
+  description: String
+  isFinalChallenge: Boolean!
+  name: String!
+  updatedAt: DateTime!
+}
+
+type MissionCompletion {
+  _id: ID!
+  completedAt: DateTime!
+  completedBy: ID!
+  isManualOverride: Boolean!
+  missionId: ID!
+  teamId: ID!
+}
+
+type Mutation {
+  addCredits(amount: Int!, nfcCardId: String!): Team!
+  adjustCredits(amount: Int!, nfcCardId: String!): Team!
+  completeMission(missionId: ID!, nfcCardId: String!): MissionCompletion!
+  createTeam(input: CreateTeamDto!): Team!
+  createUser(input: CreateUserDto!): User!
+  login(input: LoginInput!): AuthPayload!
+  overrideMissionCompletion(missionId: ID!, teamId: ID!): MissionCompletion!
+  removeCredits(amount: Int!, nfcCardId: String!): Team!
+  updateConfig(requiredMissionsForFinal: Int!): AppConfig!
+}
+
+type Query {
+  config: AppConfig!
+  me: User
+  missionCompletions(teamId: ID): [MissionCompletion!]!
+  missions: [Mission!]!
+  team(nfcCardId: String!): Team
+  teams: [Team!]!
+  users: [User!]!
+}
+
+type Team {
+  _id: ID!
+  completedMissionIds: [ID!]!
+  createdAt: DateTime!
+  credits: Float!
+  name: String!
+  nfcCardId: String!
+  updatedAt: DateTime!
+}
+
+type User {
+  _id: ID!
+  createdAt: DateTime!
+  role: UserRole!
+  updatedAt: DateTime!
+  username: String!
+}
+
+enum UserRole {
+  ADMIN
+  MISSION_LEADER
+  STORE
+}
