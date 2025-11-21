@@ -7,12 +7,13 @@
     "dev": "vite",
     "prebuild": "npm run codegen",
     "build": "tsc -b && vite build",
+    "codegen:check": "test -f ../src/schema.gql || (echo 'Error: schema.gql not found' && exit 1)",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "codegen": "graphql-codegen --config codegen.yml",
+    "codegen": "npm run codegen:check && graphql-codegen --config codegen.yml --debug",
     "codegen:watch": "graphql-codegen --config codegen.yml --watch"
   },
   "dependencies": {
