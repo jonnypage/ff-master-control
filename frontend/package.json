@@ -13,7 +13,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "codegen": "npm run codegen:check && graphql-codegen --config codegen.yml --debug",
+    "codegen": "npm run codegen:check && graphql-codegen --config codegen.yml --debug && npm run codegen:fix-exports",
+    "codegen:fix-exports": "node scripts/fix-codegen-exports.mjs",
     "codegen:watch": "graphql-codegen --config codegen.yml --watch"
   },
   "dependencies": {
