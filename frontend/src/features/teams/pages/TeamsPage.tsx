@@ -1,13 +1,12 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { graphqlClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
-import { TeamLookup } from '../components/TeamLookup'
-import { TeamList } from '../components/TeamList'
-import { CreateTeamDialog } from '../components/CreateTeamDialog'
-import { useAuth } from '@/features/auth/lib/auth-context'
-import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { graphqlClient } from '@/lib/graphql/client';
+import { graphql } from '@/lib/graphql/generated';
+import { TeamList } from '../components/TeamList';
+import { CreateTeamDialog } from '../components/CreateTeamDialog';
+import { useAuth } from '@/features/auth/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 const GET_TEAMS_QUERY = graphql(`
   query GetTeams {
@@ -20,17 +19,21 @@ const GET_TEAMS_QUERY = graphql(`
       createdAt
     }
   }
-`)
+`);
 
 export function TeamsPage() {
-  const { user } = useAuth()
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const isAdmin = user?.role === 'ADMIN'
+  const { user } = useAuth();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const isAdmin = user?.role === 'ADMIN';
 
-  const { data: teams, isLoading, refetch } = useQuery({
+  const {
+    data: teams,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['teams'],
     queryFn: () => graphqlClient.request(GET_TEAMS_QUERY),
-  })
+  });
 
   return (
     <div className="px-4 py-6 sm:px-0">
@@ -44,22 +47,22 @@ export function TeamsPage() {
         )}
       </div>
 
-      <div className="space-y-6">
-        <TeamLookup onTeamFound={() => refetch()} />
-        <TeamList teams={teams?.teams || []} isLoading={isLoading} />
-      </div>
+      <TeamList
+        teams={teams?.teams || []}
+        isLoading={isLoading}
+        onUpdate={() => refetch()}
+      />
 
       {isAdmin && (
         <CreateTeamDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
           onSuccess={() => {
-            setShowCreateDialog(false)
-            refetch()
+            setShowCreateDialog(false);
+            refetch();
           }}
         />
       )}
     </div>
-  )
+  );
 }
-

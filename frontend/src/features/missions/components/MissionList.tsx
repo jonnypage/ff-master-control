@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search } from 'lucide-react';
-import type { GetMissionsQuery } from '@/lib/graphql/generated';
 
 const GET_MISSIONS_QUERY = graphql(`
   query GetMissions {
@@ -23,6 +22,15 @@ const GET_MISSIONS_QUERY = graphql(`
   }
 `);
 
+const GET_TEAMS_FOR_MISSIONS_QUERY = graphql(`
+  query GetTeamsForMissions {
+    teams {
+      _id
+      completedMissionIds
+    }
+  }
+`);
+
 export function MissionList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,19 +40,49 @@ export function MissionList() {
     queryFn: () => graphqlClient.request(GET_MISSIONS_QUERY),
   });
 
+  const { data: teamsData } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => graphqlClient.request(GET_TEAMS_FOR_MISSIONS_QUERY),
+  });
+
+  const completionCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const teams =
+      (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })
+        ?.teams ?? [];
+    const totalTeams = teams.length;
+
+    if (totalTeams === 0) {
+      return { counts: {}, totalTeams: 0 };
+    }
+
+    data?.missions?.forEach((mission) => {
+      const completedCount = teams.filter(
+        (team: { completedMissionIds: string[] }) =>
+          team.completedMissionIds.includes(mission._id),
+      ).length;
+      counts[mission._id] = completedCount;
+    });
+
+    return { counts, totalTeams };
+  }, [data?.missions, teamsData]);
+
   const filteredMissions = useMemo(() => {
-    if (!data?.missions) return [];
-    if (!searchTerm.trim()) return data.missions;
+    const missions = data?.missions ?? [];
+    if (!searchTerm.trim()) return missions;
 
     const searchLower = searchTerm.toLowerCase();
-    return data.missions.filter((mission) =>
-      mission.name.toLowerCase().includes(searchLower) ||
-      mission.description?.toLowerCase().includes(searchLower)
+    return missions.filter(
+      (mission) =>
+        mission.name.toLowerCase().includes(searchLower) ||
+        mission.description?.toLowerCase().includes(searchLower),
     );
   }, [data?.missions, searchTerm]);
 
   if (isLoading) {
-    return <div className="text-center py-8 text-gray-500">Loading missions...</div>;
+    return (
+      <div className="text-center py-8 text-gray-500">Loading missions...</div>
+    );
   }
 
   if (!data?.missions || data.missions.length === 0) {
@@ -93,6 +131,13 @@ export function MissionList() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Credits Awarded:</span>
                 <Badge variant="secondary">{mission.creditsAwarded}</Badge>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Completed:</span>
+                <Badge variant="outline">
+                  {completionCounts.counts?.[mission._id] ?? 0}/
+                  {completionCounts.totalTeams ?? 0}
+                </Badge>
               </div>
             </CardContent>
           </Card>

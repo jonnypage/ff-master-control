@@ -37,8 +37,10 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="teams" element={<TeamsPage />} />
+          <Route path="teams/:id/edit" element={<TeamEditPage />} />
           <Route path="teams/:id" element={<TeamEditPage />} />
           <Route path="missions" element={<MissionsPage />} />
+          <Route path="missions/:id/edit" element={<MissionEditPage />} />
           <Route path="missions/:id" element={<MissionEditPage />} />
           <Route path="store" element={<StorePage />} />
           <Route path="admin" element={<AdminPage />} />
