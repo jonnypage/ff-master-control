@@ -24,6 +24,8 @@ import { ConfigModule as AppConfigModule } from './config/config.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       sortSchema: true,
       context: ({ req }) => ({ req }),
+      csrfPrevention: false,
+      introspection: true,
     }),
     AuthModule,
     UsersModule,
@@ -34,4 +36,3 @@ import { ConfigModule as AppConfigModule } from './config/config.module';
   ],
 })
 export class AppModule {}
-
