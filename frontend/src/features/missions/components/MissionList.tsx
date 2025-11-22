@@ -48,7 +48,7 @@ export function MissionList() {
   const completionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     const teams =
-      (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })
+      (teamsData as { teams?: Array<{ completedMissionIds?: string[] }> })
         ?.teams ?? [];
     const totalTeams = teams.length;
 
@@ -58,8 +58,8 @@ export function MissionList() {
 
     data?.missions?.forEach((mission) => {
       const completedCount = teams.filter(
-        (team: { completedMissionIds: string[] }) =>
-          team.completedMissionIds.includes(mission._id),
+        (team: { completedMissionIds?: string[] }) =>
+          team.completedMissionIds?.includes(mission._id) ?? false,
       ).length;
       counts[mission._id] = completedCount;
     });

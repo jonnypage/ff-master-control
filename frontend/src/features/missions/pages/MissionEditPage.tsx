@@ -9,8 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Edit, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useAuth } from '@/features/auth/lib/auth-context';
+import { TeamSelectionForMission } from '../components/TeamSelectionForMission';
 import type { GetMissionQuery } from '@/lib/graphql/generated';
 
 const GET_MISSION_QUERY = graphql(`
@@ -55,11 +57,16 @@ export function MissionEditPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { canEditMissions } = usePermissions();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   // Check if we're in edit mode based on URL path
   const isEditMode = location.pathname.endsWith('/edit');
   const canEdit = canEditMissions && isEditMode;
+  const canCompleteMissions =
+    user?.role === 'MISSION_LEADER' ||
+    user?.role === 'ADMIN' ||
+    user?.role === 'QUEST_GIVER';
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -79,21 +86,29 @@ export function MissionEditPage() {
 
   const completionCount = useMemo(() => {
     if (!teamsData?.teams || !id) return { completed: 0, total: 0 };
-    const teams = (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })?.teams ?? [];
+    const teams =
+      (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })
+        ?.teams ?? [];
     const completed = teams.filter((team) =>
       team.completedMissionIds.includes(id),
     ).length;
     return { completed, total: teams.length };
   }, [teamsData, id]);
 
-  useEffect(() => {
-    if (data?.mission) {
-      setName(data.mission.name);
-      setDescription(data.mission.description || '');
-      setCreditsAwarded(data.mission.creditsAwarded);
-      setIsFinalChallenge(data.mission.isFinalChallenge);
-    }
-  }, [data]);
+  // Initialize state from data - component resets when id changes
+  const missionData = data?.mission;
+  if (
+    missionData &&
+    (name !== missionData.name ||
+      description !== (missionData.description || '') ||
+      creditsAwarded !== missionData.creditsAwarded ||
+      isFinalChallenge !== missionData.isFinalChallenge)
+  ) {
+    setName(missionData.name);
+    setDescription(missionData.description || '');
+    setCreditsAwarded(missionData.creditsAwarded);
+    setIsFinalChallenge(missionData.isFinalChallenge);
+  }
 
   const updateMission = useMutation({
     mutationFn: (input: {
@@ -111,10 +126,11 @@ export function MissionEditPage() {
       queryClient.invalidateQueries({ queryKey: ['mission', id] });
       queryClient.invalidateQueries({ queryKey: ['missions'] });
     },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to update mission'
-      );
+    onError: (error: unknown) => {
+      const errorMessage =
+        (error as { response?: { errors?: Array<{ message?: string }> } })
+          ?.response?.errors?.[0]?.message || 'Failed to update mission';
+      toast.error(errorMessage);
     },
   });
 
@@ -170,7 +186,11 @@ export function MissionEditPage() {
           <CardContent className="py-12 text-center">
             <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
             <p className="text-foreground font-medium">Mission not found</p>
-            <Button onClick={() => navigate('/missions')} variant="outline" className="mt-4">
+            <Button
+              onClick={() => navigate('/missions')}
+              variant="outline"
+              className="mt-4"
+            >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Missions
             </Button>
@@ -186,7 +206,11 @@ export function MissionEditPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button onClick={() => navigate('/missions')} variant="outline" size="lg">
+          <Button
+            onClick={() => navigate('/missions')}
+            variant="outline"
+            size="lg"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
@@ -196,34 +220,53 @@ export function MissionEditPage() {
                 {isEditMode ? 'Edit Mission' : 'Mission Details'}
               </h1>
               {mission.isFinalChallenge && (
-                <Badge variant="default">
-                  Final Challenge
-                </Badge>
+                <Badge variant="default">Final Challenge</Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {isEditMode ? 'Update mission information' : 'View mission information'}
+              {isEditMode
+                ? 'Update mission information'
+                : 'View mission information'}
             </p>
           </div>
         </div>
         {!isEditMode && canEditMissions && (
-          <Button onClick={() => navigate(`/missions/${id}/edit`)} size="lg" className="shadow-md">
+          <Button
+            onClick={() => navigate(`/missions/${id}/edit`)}
+            size="lg"
+            className="shadow-md"
+          >
             <Edit className="w-4 h-4 mr-2" />
             Edit
           </Button>
         )}
       </div>
 
-      <div className="max-w-3xl space-y-6">
+      <div className="space-y-6">
         <Card className="shadow-sm">
           <CardHeader className="bg-muted/50 border-b">
-            <CardTitle className="text-xl">Mission Information</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-xl">Mission Information</CardTitle>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  Completed:
+                </span>
+                <Badge variant="outline">
+                  {completionCount.completed}/{completionCount.total}
+                </Badge>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
                 <div>
-                  <Label htmlFor="mission-name">Mission Name</Label>
+                  <Label
+                    htmlFor="mission-name"
+                    className="text-base font-semibold"
+                  >
+                    Mission Name
+                  </Label>
                   <Input
                     id="mission-name"
                     value={name}
@@ -232,98 +275,102 @@ export function MissionEditPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="mission-description">Description</Label>
-                  <textarea
+                  <Label
+                    htmlFor="mission-description"
+                    className="text-base font-semibold"
+                  >
+                    Description
+                  </Label>
+                  <Input
                     id="mission-description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Enter mission description (optional)"
-                    rows={3}
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="credits-awarded">Credits Awarded</Label>
+                  <Label
+                    htmlFor="credits-awarded"
+                    className="text-base font-semibold"
+                  >
+                    Credits Awarded
+                  </Label>
                   <Input
                     id="credits-awarded"
                     type="number"
                     value={creditsAwarded}
-                    onChange={(e) => setCreditsAwarded(parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      setCreditsAwarded(parseInt(e.target.value) || 0)
+                    }
                     min="0"
                   />
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="is-final-challenge"
-                    checked={isFinalChallenge}
-                    onChange={(e) => setIsFinalChallenge(e.target.checked)}
-                    className="rounded border-input"
-                  />
-                  <Label htmlFor="is-final-challenge" className="cursor-pointer">
-                    Final Challenge
-                  </Label>
-                </div>
+                {isFinalChallenge && (
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-base px-3 py-1">
+                        Final Challenge
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+                {!isFinalChallenge && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="is-final-challenge"
+                      checked={isFinalChallenge}
+                      onChange={(e) => setIsFinalChallenge(e.target.checked)}
+                      className="rounded border-input"
+                    />
+                    <Label
+                      htmlFor="is-final-challenge"
+                      className="cursor-pointer"
+                    >
+                      Final Challenge
+                    </Label>
+                  </div>
+                )}
               </>
             ) : (
               <>
                 <div>
-                  <Label>Mission Name</Label>
+                  <Label className="text-base font-semibold">
+                    Mission Name
+                  </Label>
                   <div className="px-3 py-2 bg-muted rounded-md text-sm">
                     {mission.name}
                   </div>
                 </div>
                 <div>
-                  <Label>Description</Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm min-h-[80px]">
-                    {mission.description || <span className="text-muted-foreground">No description</span>}
+                  <Label className="text-base font-semibold">Description</Label>
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                    {mission.description || (
+                      <span className="text-muted-foreground">
+                        No description
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div>
-                  <Label>Credits Awarded</Label>
+                  <Label className="text-base font-semibold">
+                    Credits Awarded
+                  </Label>
                   <div className="px-3 py-2 bg-muted rounded-md text-sm">
                     {mission.creditsAwarded}
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={mission.isFinalChallenge}
-                    disabled
-                    className="rounded border-input"
-                  />
-                  <Label className="cursor-default">
-                    Final Challenge
-                  </Label>
-                </div>
+                {mission.isFinalChallenge && (
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-base px-3 py-1">
+                        Final Challenge
+                      </Badge>
+                    </div>
+                  </div>
+                )}
               </>
             )}
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-sm">
-          <CardHeader className="bg-muted/50 border-b">
-            <CardTitle className="text-xl">Mission Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-6">
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Completed:</span>
-              <Badge variant="outline">
-                {completionCount.completed}/{completionCount.total}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Created:</span>
-              <span className="text-foreground">
-                {new Date(mission.createdAt).toLocaleDateString()}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Last Updated:</span>
-              <span className="text-foreground">
-                {new Date(mission.updatedAt).toLocaleDateString()}
-              </span>
-            </div>
           </CardContent>
         </Card>
 
@@ -349,7 +396,24 @@ export function MissionEditPage() {
           </div>
         )}
       </div>
+
+      {/* Team Selection and Completion Interface (only when not in edit mode and user can complete missions) */}
+      {!isEditMode && canCompleteMissions && mission && (
+        <div className="space-y-6 mt-8">
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">
+              Mark Mission Complete
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Select a team to mark this mission as complete
+            </p>
+          </div>
+          <TeamSelectionForMission
+            missionId={mission._id}
+            onTeamSelect={() => {}} // No-op since we're not navigating to detail view
+          />
+        </div>
+      )}
     </div>
   );
 }
-
