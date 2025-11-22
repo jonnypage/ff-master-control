@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
 import { TeamSelection } from '../components/TeamSelection';
 import { CreditAdjustment } from '../components/CreditAdjustment';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
 
 export function StorePage() {
-  const [selectedTeam, setSelectedTeam] =
-    useState<GetTeamsForStoreQuery['teams'][number] | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<
+    GetTeamsForStoreQuery['teams'][number] | null
+  >(null);
 
   const handleTeamSelect = (team: GetTeamsForStoreQuery['teams'][number]) => {
     setSelectedTeam(team);
@@ -41,4 +41,3 @@ export function StorePage() {
     </div>
   );
 }
-
