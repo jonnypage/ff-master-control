@@ -146,7 +146,7 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
                   variant="secondary"
                   className="text-base font-semibold px-3 py-1"
                 >
-                  {team.credits.toLocaleString()}
+                  {(team.credits ?? 0).toLocaleString()}
                 </Badge>
               </div>
               <div className="pt-2 border-t">

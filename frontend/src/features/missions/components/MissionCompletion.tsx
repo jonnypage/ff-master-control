@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import type {
   GetMissionsQuery,
   GetMissionQuery,
+  GetTeamsForMissionCompletionQuery,
 } from '@/lib/graphql/generated';
 
 const COMPLETE_MISSION_MUTATION = graphql(`
@@ -24,19 +25,11 @@ const COMPLETE_MISSION_MUTATION = graphql(`
   }
 `);
 
-interface Team {
-  _id: string;
-  name: string;
-  nfcCardId: string;
-  credits: number;
-  completedMissionIds: string[];
-}
-
 interface MissionCompletionProps {
   mission:
     | GetMissionsQuery['missions'][number]
     | NonNullable<GetMissionQuery['mission']>;
-  team: Team;
+  team: GetTeamsForMissionCompletionQuery['teams'][number];
   onBack: () => void;
   onSuccess: () => void;
 }
