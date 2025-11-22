@@ -89,6 +89,7 @@ type Mutation {
   createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
+  deleteAllTeams: Boolean!
   deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
   updateUser(id: ID!, input: UpdateUserDto!): User!
