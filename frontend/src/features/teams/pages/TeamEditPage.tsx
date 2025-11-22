@@ -17,7 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
 import { useNFCReader } from '@/hooks/useNFCReader';
@@ -112,9 +112,6 @@ export function TeamEditPage() {
   const isEditMode = location.pathname.endsWith('/edit');
   const canEdit = canEditTeams && isEditMode;
 
-  const [name, setName] = useState('');
-  const [nfcCardId, setNfcCardId] = useState('');
-
   const { data, isLoading } = useQuery<GetTeamByIdQuery>({
     queryKey: ['team', id],
     queryFn: () => graphqlClient.request(GET_TEAM_BY_ID_QUERY, { id: id! }),
@@ -126,12 +123,20 @@ export function TeamEditPage() {
     queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_TEAM_EDIT_QUERY),
   });
 
-  useEffect(() => {
-    if (data?.teamById) {
-      setName(data.teamById.name);
-      setNfcCardId(data.teamById.nfcCardId);
-    }
-  }, [data]);
+  // Initialize state from data - component resets when id changes (via key in App.tsx)
+  const teamData = data?.teamById;
+  const [name, setName] = useState(() => teamData?.name ?? '');
+  const [nfcCardId, setNfcCardId] = useState(() => teamData?.nfcCardId ?? '');
+
+  // Update state when data loads for the current team
+  // Component resets when id changes, so we only need to sync when data becomes available
+  if (
+    teamData &&
+    (name !== teamData.name || nfcCardId !== teamData.nfcCardId)
+  ) {
+    setName(teamData.name);
+    setNfcCardId(teamData.nfcCardId);
+  }
 
   const updateTeam = useMutation({
     mutationFn: (input: { name?: string; nfcCardId?: string }) =>
