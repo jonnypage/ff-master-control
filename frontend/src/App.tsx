@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useParams,
+} from 'react-router-dom';
 import { useAuth } from './features/auth/lib/auth-context';
 import { LoginPage } from './features/auth/components/LoginPage';
 import { Dashboard } from './features/dashboard/Dashboard';
@@ -9,6 +15,11 @@ import { MissionEditPage } from './features/missions/pages/MissionEditPage';
 import { StorePage } from './features/store/pages/StorePage';
 import { AdminPage } from './features/admin/pages/AdminPage';
 import { Layout } from './components/Layout';
+
+function TeamEditPageWrapper() {
+  const { id } = useParams<{ id: string }>();
+  return <TeamEditPage key={id} />;
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -37,8 +48,8 @@ function App() {
         >
           <Route index element={<Dashboard />} />
           <Route path="teams" element={<TeamsPage />} />
-          <Route path="teams/:id/edit" element={<TeamEditPage />} />
-          <Route path="teams/:id" element={<TeamEditPage />} />
+          <Route path="teams/:id/edit" element={<TeamEditPageWrapper />} />
+          <Route path="teams/:id" element={<TeamEditPageWrapper />} />
           <Route path="missions" element={<MissionsPage />} />
           <Route path="missions/:id/edit" element={<MissionEditPage />} />
           <Route path="missions/:id" element={<MissionEditPage />} />

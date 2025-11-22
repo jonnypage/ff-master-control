@@ -143,4 +143,8 @@ export class TeamsService {
 
     return byName || null;
   }
+
+  async deleteAll(): Promise<void> {
+    await this.teamModel.deleteMany({}).exec();
+  }
 }

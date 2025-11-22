@@ -57,4 +57,12 @@ export class TeamsResolver {
   ): Promise<Team> {
     return this.teamsService.update(id, updateTeamDto);
   }
+
+  @Mutation(() => Boolean)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async deleteAllTeams(): Promise<boolean> {
+    await this.teamsService.deleteAll();
+    return true;
+  }
 }

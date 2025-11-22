@@ -24,10 +24,20 @@ input CreateTeamDto {
   nfcCardId: String!
 }
 
+input ChangePasswordDto {
+  newPassword: String!
+  oldPassword: String
+}
+
 input CreateUserDto {
   password: String!
   role: UserRole!
   username: String!
+}
+
+input UpdateUserDto {
+  role: UserRole
+  username: String
 }
 
 input UpdateMissionDto {
@@ -74,11 +84,15 @@ type MissionCompletion {
 type Mutation {
   addCredits(amount: Int!, nfcCardId: String!): Team!
   adjustCredits(amount: Int!, nfcCardId: String!): Team!
+  changePassword(id: ID!, input: ChangePasswordDto!): Boolean!
   completeMission(missionId: ID!, nfcCardId: String!): MissionCompletion!
   createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
+  deleteAllTeams: Boolean!
+  deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
+  updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
   removeCredits(amount: Int!, nfcCardId: String!): Team!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
@@ -121,5 +135,6 @@ type User {
 enum UserRole {
   ADMIN
   MISSION_LEADER
+  QUEST_GIVER
   STORE
 }
