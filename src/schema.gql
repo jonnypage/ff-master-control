@@ -24,6 +24,11 @@ input CreateTeamDto {
   nfcCardId: String!
 }
 
+input ChangePasswordDto {
+  newPassword: String!
+  oldPassword: String
+}
+
 input CreateUserDto {
   password: String!
   role: UserRole!
@@ -79,6 +84,7 @@ type MissionCompletion {
 type Mutation {
   addCredits(amount: Int!, nfcCardId: String!): Team!
   adjustCredits(amount: Int!, nfcCardId: String!): Team!
+  changePassword(id: ID!, input: ChangePasswordDto!): Boolean!
   completeMission(missionId: ID!, nfcCardId: String!): MissionCompletion!
   createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!

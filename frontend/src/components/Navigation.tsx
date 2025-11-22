@@ -1,16 +1,19 @@
 import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 import type { UserRole } from '@/lib/graphql/generated'
-import { LogOut, Users, Target, ShoppingCart, Settings } from 'lucide-react'
+import { LogOut, Users, Target, ShoppingCart, Settings, Key } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './ThemeToggle'
+import { ChangePasswordDialog } from '@/features/admin/components/ChangePasswordDialog'
 
 interface NavigationProps {
-  user: { username: string; role: UserRole } | null
+  user: { _id: string; username: string; role: UserRole } | null
   onLogout: () => void
 }
 
 export function Navigation({ user, onLogout }: NavigationProps) {
   const location = useLocation()
+  const [showChangePassword, setShowChangePassword] = useState(false)
   const isActive = (path: string) => location.pathname === path
 
   const canAccessStore = user?.role === 'STORE' || user?.role === 'ADMIN'
@@ -77,6 +80,14 @@ export function Navigation({ user, onLogout }: NavigationProps) {
           </div>
           <div className="flex items-center space-x-4">
             <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowChangePassword(true)}
+              title="Change password"
+            >
+              <Key className="w-4 h-4" />
+            </Button>
             <span className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-lg">
               {user?.username} <span className="text-muted-foreground">({user?.role})</span>
             </span>
@@ -87,6 +98,16 @@ export function Navigation({ user, onLogout }: NavigationProps) {
           </div>
         </div>
       </div>
+
+      {user && (
+        <ChangePasswordDialog
+          open={showChangePassword}
+          onOpenChange={setShowChangePassword}
+          userId={user._id}
+          username={user.username}
+          isOwnPassword={true}
+        />
+      )}
     </nav>
   )
 }

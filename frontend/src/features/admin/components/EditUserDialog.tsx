@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Key } from 'lucide-react';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 import type { UserRole } from '@/lib/graphql/generated';
 
 const UPDATE_USER_MUTATION = graphql(`
@@ -53,6 +55,7 @@ export function EditUserDialog({
   const queryClient = useQueryClient();
   const [username, setUsername] = useState('');
   const [role, setRole] = useState<UserRole>('MISSION_LEADER');
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -141,6 +144,17 @@ export function EditUserDialog({
                 ))}
               </select>
             </div>
+            <div className="pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowChangePassword(true)}
+                className="w-full"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                Change Password
+              </Button>
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -156,6 +170,16 @@ export function EditUserDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {user && (
+        <ChangePasswordDialog
+          open={showChangePassword}
+          onOpenChange={setShowChangePassword}
+          userId={user._id}
+          username={user.username}
+          isOwnPassword={false}
+        />
+      )}
     </Dialog>
   );
 }

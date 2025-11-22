@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -60,6 +61,23 @@ export class UsersResolver {
     @CurrentUser() currentUser: User,
   ): Promise<boolean> {
     await this.usersService.remove(id, currentUser._id.toString());
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Args('id', { type: () => ID }) id: string,
+    @Args('input') changePasswordDto: ChangePasswordDto,
+    @CurrentUser() currentUser: User,
+  ): Promise<boolean> {
+    const isAdmin = currentUser.role === UserRole.ADMIN;
+    await this.usersService.changePassword(
+      id,
+      changePasswordDto,
+      currentUser._id.toString(),
+      isAdmin,
+    );
     return true;
   }
 }

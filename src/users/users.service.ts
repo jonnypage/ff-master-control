@@ -1,9 +1,10 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -73,6 +74,44 @@ export class UsersService {
     }
 
     await this.userModel.findByIdAndDelete(id);
+  }
+
+  async changePassword(
+    id: string,
+    changePasswordDto: ChangePasswordDto,
+    currentUserId: string,
+    isAdmin: boolean,
+  ): Promise<void> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // If user is changing their own password, require old password
+    if (id === currentUserId) {
+      if (!changePasswordDto.oldPassword) {
+        throw new BadRequestException('Old password is required');
+      }
+
+      const isOldPasswordValid = await bcrypt.compare(
+        changePasswordDto.oldPassword,
+        user.password,
+      );
+
+      if (!isOldPasswordValid) {
+        throw new UnauthorizedException('Invalid old password');
+      }
+    } else {
+      // Admin changing another user's password - no old password required
+      if (!isAdmin) {
+        throw new UnauthorizedException('Only admins can change other users\' passwords');
+      }
+    }
+
+    // Hash and set new password
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
   }
 }
 
