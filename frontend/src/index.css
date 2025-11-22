@@ -75,6 +75,19 @@
   * {
     border-color: hsl(var(--border));
   }
+  
+  /* Ensure placeholder colors respect theme */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+  
+  html.dark input::placeholder,
+  html.dark textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
 
   html {
     background-color: hsl(var(--background));
