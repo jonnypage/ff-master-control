@@ -32,6 +32,7 @@ export function useNFCReader() {
     setError(null);
 
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const reader = new (window as any).NDEFReader();
 
       await reader.scan();
@@ -46,7 +47,7 @@ export function useNFCReader() {
           // Try to abort the reader to stop listening
           try {
             reader.abort?.();
-          } catch (e) {
+          } catch (_e) {
             // Ignore abort errors
           }
           resolve(result);
@@ -56,11 +57,12 @@ export function useNFCReader() {
           resolveOnce({ success: false, error: 'NFC read timeout' });
         }, 10000);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reader.addEventListener('reading', (event: any) => {
           setIsReading(false);
 
           // Log the full event for debugging
-          console.log('NFC reading event:', {
+          console.log('[useNFCReader] NFC reading event:', {
             serialNumber: event.serialNumber,
             message: event.message,
             records: event.message?.records,
@@ -146,22 +148,25 @@ export function useNFCReader() {
           // Ensure it's a string and trim whitespace
           nfcId = String(nfcId).trim();
 
-          console.log('Extracted NFC ID:', nfcId);
+          console.log('[useNFCReader] Extracted NFC ID:', nfcId);
           resolveOnce({ success: true, nfcId });
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reader.addEventListener('readingerror', (event: any) => {
           const errorMsg = event.message || 'Failed to read NFC card';
           setError(errorMsg);
           resolveOnce({ success: false, error: errorMsg });
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         reader.addEventListener('error', (event: any) => {
           const errorMsg = event.message || 'Failed to read NFC card';
           setError(errorMsg);
           resolveOnce({ success: false, error: errorMsg });
         });
       });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setIsReading(false);
       const errorMessage = err.message || 'Failed to read NFC card';
