@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { UserList } from '../components/UserList';
@@ -35,10 +35,12 @@ export function AdminPage() {
   const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [editingUser, setEditingUser] =
-    useState<GetUsersQuery['users'][number] | null>(null);
+  const [editingUser, setEditingUser] = useState<
+    GetUsersQuery['users'][number] | null
+  >(null);
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
-  const [showDeleteAllTeamsDialog, setShowDeleteAllTeamsDialog] = useState(false);
+  const [showDeleteAllTeamsDialog, setShowDeleteAllTeamsDialog] =
+    useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const deleteUser = useMutation({
@@ -51,7 +53,7 @@ export function AdminPage() {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to delete user'
+        error.response?.errors?.[0]?.message || 'Failed to delete user',
       );
     },
   });
@@ -79,7 +81,7 @@ export function AdminPage() {
     },
     onError: (error: any) => {
       toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to delete all teams'
+        error.response?.errors?.[0]?.message || 'Failed to delete all teams',
       );
     },
   });
@@ -130,12 +132,16 @@ export function AdminPage() {
         }}
       />
 
-      <Dialog open={!!deletingUserId} onOpenChange={(open) => !open && setDeletingUserId(null)}>
+      <Dialog
+        open={!!deletingUserId}
+        onOpenChange={(open) => !open && setDeletingUserId(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete User</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be undone.
+              Are you sure you want to delete this user? This action cannot be
+              undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -165,7 +171,9 @@ export function AdminPage() {
           <DialogHeader>
             <DialogTitle>Delete All Teams</DialogTitle>
             <DialogDescription>
-              Are you absolutely sure you want to delete ALL teams? This will permanently remove all team data, including credits and mission completions. This action cannot be undone.
+              Are you absolutely sure you want to delete ALL teams? This will
+              permanently remove all team data, including credits and mission
+              completions. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -189,4 +197,3 @@ export function AdminPage() {
     </div>
   );
 }
-
