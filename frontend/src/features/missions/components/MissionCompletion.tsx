@@ -8,7 +8,6 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   GetMissionsQuery,
-  GetTeamsForStoreQuery,
   GetMissionQuery,
 } from '@/lib/graphql/generated';
 
@@ -25,11 +24,19 @@ const COMPLETE_MISSION_MUTATION = graphql(`
   }
 `);
 
+interface Team {
+  _id: string;
+  name: string;
+  nfcCardId: string;
+  credits: number;
+  completedMissionIds: string[];
+}
+
 interface MissionCompletionProps {
   mission:
     | GetMissionsQuery['missions'][number]
     | NonNullable<GetMissionQuery['mission']>;
-  team: GetTeamsForStoreQuery['teams'][number];
+  team: Team;
   onBack: () => void;
   onSuccess: () => void;
 }
@@ -102,7 +109,9 @@ export function MissionCompletion({
             <span className="text-sm font-medium text-muted-foreground">
               Mission Name
             </span>
-            <span className="text-foreground font-semibold">{mission.name}</span>
+            <span className="text-foreground font-semibold">
+              {mission.name}
+            </span>
           </div>
           {mission.description && (
             <div className="flex items-start justify-between">
@@ -173,7 +182,10 @@ export function MissionCompletion({
         <CardContent className="space-y-4">
           {isAlreadyCompleted ? (
             <div className="bg-muted/50 rounded-lg p-4 text-center">
-              <Badge variant="default" className="text-lg font-semibold px-4 py-2 mb-2">
+              <Badge
+                variant="default"
+                className="text-lg font-semibold px-4 py-2 mb-2"
+              >
                 Mission Already Completed
               </Badge>
               <p className="text-sm text-muted-foreground">
@@ -212,4 +224,3 @@ export function MissionCompletion({
     </div>
   );
 }
-
