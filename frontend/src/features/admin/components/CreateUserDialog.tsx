@@ -36,6 +36,7 @@ interface CreateUserDialogProps {
 const USER_ROLES: { value: UserRole; label: string }[] = [
   { value: 'ADMIN', label: 'Admin' },
   { value: 'MISSION_LEADER', label: 'Mission Leader' },
+  { value: 'QUEST_GIVER', label: 'Quest Giver' },
   { value: 'STORE', label: 'Store' },
 ];
 

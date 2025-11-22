@@ -16,6 +16,8 @@ export function Navigation({ user, onLogout }: NavigationProps) {
   const [showChangePassword, setShowChangePassword] = useState(false)
   const isActive = (path: string) => location.pathname === path
 
+  const canAccessTeams = user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER'
+  const canAccessMissions = user?.role === 'MISSION_LEADER' || user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER'
   const canAccessStore = user?.role === 'STORE' || user?.role === 'ADMIN'
   const canAccessAdmin = user?.role === 'ADMIN'
 
@@ -28,28 +30,32 @@ export function Navigation({ user, onLogout }: NavigationProps) {
               Freedom Fighters
             </Link>
             <div className="flex space-x-1">
-              <Link
-                to="/teams"
-                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/teams')
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-              >
-                <Users className="w-4 h-4 mr-2" />
-                Teams
-              </Link>
-              <Link
-                to="/missions"
-                className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive('/missions')
-                    ? 'bg-accent text-accent-foreground'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-                }`}
-              >
-                <Target className="w-4 h-4 mr-2" />
-                Missions
-              </Link>
+              {canAccessTeams && (
+                <Link
+                  to="/teams"
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/teams')
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Teams
+                </Link>
+              )}
+              {canAccessMissions && (
+                <Link
+                  to="/missions"
+                  className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isActive('/missions')
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  }`}
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Missions
+                </Link>
+              )}
               {canAccessStore && (
                 <Link
                   to="/store"

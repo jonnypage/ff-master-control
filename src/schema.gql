@@ -134,5 +134,6 @@ type User {
 enum UserRole {
   ADMIN
   MISSION_LEADER
+  QUEST_GIVER
   STORE
 }

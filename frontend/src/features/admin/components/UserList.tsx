@@ -29,12 +29,14 @@ interface UserListProps {
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Admin',
   MISSION_LEADER: 'Mission Leader',
+  QUEST_GIVER: 'Quest Giver',
   STORE: 'Store',
 };
 
 const ROLE_VARIANTS: Record<string, 'default' | 'secondary' | 'outline'> = {
   ADMIN: 'default',
   MISSION_LEADER: 'secondary',
+  QUEST_GIVER: 'secondary',
   STORE: 'outline',
 };
 
