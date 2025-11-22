@@ -21,6 +21,11 @@ function TeamEditPageWrapper() {
   return <TeamEditPage key={id} />;
 }
 
+function MissionEditPageWrapper() {
+  const { id } = useParams<{ id: string }>();
+  return <MissionEditPage key={id} />;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
@@ -51,8 +56,11 @@ function App() {
           <Route path="teams/:id/edit" element={<TeamEditPageWrapper />} />
           <Route path="teams/:id" element={<TeamEditPageWrapper />} />
           <Route path="missions" element={<MissionsPage />} />
-          <Route path="missions/:id/edit" element={<MissionEditPage />} />
-          <Route path="missions/:id" element={<MissionEditPage />} />
+          <Route
+            path="missions/:id/edit"
+            element={<MissionEditPageWrapper />}
+          />
+          <Route path="missions/:id" element={<MissionEditPageWrapper />} />
           <Route path="store" element={<StorePage />} />
           <Route path="admin" element={<AdminPage />} />
         </Route>
