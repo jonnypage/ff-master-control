@@ -30,6 +30,11 @@ input CreateUserDto {
   username: String!
 }
 
+input UpdateUserDto {
+  role: UserRole
+  username: String
+}
+
 input UpdateMissionDto {
   creditsAwarded: Int
   description: String
@@ -78,7 +83,9 @@ type Mutation {
   createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
+  deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
+  updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
   removeCredits(amount: Int!, nfcCardId: String!): Team!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
