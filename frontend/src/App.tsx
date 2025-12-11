@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import { useAuth } from './features/auth/lib/auth-context';
 import { LoginPage } from './features/auth/components/LoginPage';
+import { LeaderboardPage } from './features/leaderboard/pages/LeaderboardPage';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { TeamsPage } from './features/teams/pages/TeamsPage';
 import { TeamEditPage } from './features/teams/pages/TeamEditPage';
@@ -37,32 +38,31 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LeaderboardPage />} />
         <Route
           path="/login"
           element={
-            isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+            isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />
           }
         />
+        {/* Protected Routes with Layout */}
         <Route
-          path="/"
           element={
             <ProtectedRoute>
               <Layout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Dashboard />} />
-          <Route path="teams" element={<TeamsPage />} />
-          <Route path="teams/:id/edit" element={<TeamEditPageWrapper />} />
-          <Route path="teams/:id" element={<TeamEditPageWrapper />} />
-          <Route path="missions" element={<MissionsPage />} />
-          <Route
-            path="missions/:id/edit"
-            element={<MissionEditPageWrapper />}
-          />
-          <Route path="missions/:id" element={<MissionEditPageWrapper />} />
-          <Route path="store" element={<StorePage />} />
-          <Route path="admin" element={<AdminPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/teams" element={<TeamsPage />} />
+          <Route path="/teams/:id/edit" element={<TeamEditPageWrapper />} />
+          <Route path="/teams/:id" element={<TeamEditPageWrapper />} />
+          <Route path="/missions" element={<MissionsPage />} />
+          <Route path="/missions/:id/edit" element={<MissionEditPageWrapper />} />
+          <Route path="/missions/:id" element={<MissionEditPageWrapper />} />
+          <Route path="/store" element={<StorePage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
