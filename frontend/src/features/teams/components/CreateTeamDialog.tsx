@@ -1,7 +1,4 @@
 import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { graphqlClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
 import { useNFCReader } from '@/hooks/useNFCReader'
 import {
   Dialog,
@@ -16,17 +13,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Radio } from 'lucide-react'
 import { toast } from 'sonner'
-
-const CREATE_TEAM_MUTATION = graphql(`
-  mutation CreateTeam($input: CreateTeamDto!) {
-    createTeam(input: $input) {
-      _id
-      name
-      nfcCardId
-      credits
-    }
-  }
-`)
+import { useCreateTeam } from '@/lib/api/useApi'
 
 interface CreateTeamDialogProps {
   open: boolean
@@ -43,19 +30,7 @@ export function CreateTeamDialog({
   const [nfcCardId, setNfcCardId] = useState('')
   const { isSupported, isReading, readNFC, checkSupport } = useNFCReader()
 
-  const createTeam = useMutation({
-    mutationFn: (input: { name: string; nfcCardId: string }) =>
-      graphqlClient.request(CREATE_TEAM_MUTATION, { input }),
-    onSuccess: () => {
-      toast.success('Team created successfully!')
-      setName('')
-      setNfcCardId('')
-      onSuccess()
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.errors?.[0]?.message || 'Failed to create team')
-    },
-  })
+  const createTeam = useCreateTeam()
 
   const handleNFCRead = async () => {
     if (!isSupported) {
@@ -81,7 +56,23 @@ export function CreateTeamDialog({
       toast.error('Please fill in all fields')
       return
     }
-    createTeam.mutate({ name: name.trim(), nfcCardId: nfcCardId.trim() })
+    createTeam.mutate(
+      { input: { name: name.trim(), nfcCardId: nfcCardId.trim() } },
+      {
+        onSuccess: () => {
+          toast.success('Team created successfully!')
+          setName('')
+          setNfcCardId('')
+          onSuccess()
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to create team'
+          toast.error(message)
+        },
+      },
+    )
   }
 
   return (

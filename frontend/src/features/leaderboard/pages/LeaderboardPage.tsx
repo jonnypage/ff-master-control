@@ -1,52 +1,17 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
-import type { RequestDocument } from 'graphql-request';
 import { Button } from '@/components/ui/button';
 import { Trophy, LogIn } from 'lucide-react';
+import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
+import type {
+  GetLeaderboardTeamsQuery,
+  GetMissionsForLeaderboardQuery,
+} from '@/lib/graphql/generated';
 type LeaderboardTeam = {
   _id: string;
   name: string;
   completedMissionIds: string[];
 };
-
-type GetLeaderboardTeamsQuery = {
-  leaderboardTeams: LeaderboardTeam[];
-};
-
-const GET_LEADERBOARD_TEAMS_QUERY = graphql(`
-  query GetLeaderboardTeams {
-    leaderboardTeams {
-      _id
-      name
-      completedMissionIds
-    }
-  }
-`);
-const LEADERBOARD_TEAMS_DOCUMENT =
-  GET_LEADERBOARD_TEAMS_QUERY as unknown as RequestDocument;
-
-type GetMissionsForLeaderboardQuery = {
-  leaderboardMissions: {
-    _id: string;
-    isFinalChallenge: boolean;
-    name: string;
-  }[];
-};
-
-const GET_MISSIONS_FOR_LEADERBOARD_QUERY = graphql(`
-  query GetMissionsForLeaderboard {
-    leaderboardMissions {
-      _id
-      name
-      isFinalChallenge
-    }
-  }
-`);
-const MISSIONS_FOR_LEADERBOARD_DOCUMENT =
-  GET_MISSIONS_FOR_LEADERBOARD_QUERY as unknown as RequestDocument;
 
 export function LeaderboardPage() {
   const navigate = useNavigate();
@@ -56,34 +21,22 @@ export function LeaderboardPage() {
     data: teamsData,
     isLoading: teamsLoading,
     error: teamsError,
-  } = useQuery<GetLeaderboardTeamsQuery>({
-    queryKey: ['teams-leaderboard'],
-    queryFn: () =>
-      graphqlClient.request<GetLeaderboardTeamsQuery>(
-        LEADERBOARD_TEAMS_DOCUMENT,
-      ),
-    refetchInterval: 3000, // Refresh every 3 seconds
-  });
+  } = useLeaderboardTeams();
 
   const {
     data: missionsData,
     isLoading: missionsLoading,
     error: missionsError,
-  } = useQuery<GetMissionsForLeaderboardQuery>({
-    queryKey: ['missions-leaderboard'],
-    queryFn: () =>
-      graphqlClient.request<GetMissionsForLeaderboardQuery>(
-        MISSIONS_FOR_LEADERBOARD_DOCUMENT,
-      ),
-    refetchInterval: 3000,
-  });
+  } = useLeaderboardMissions();
 
   const isLoading = teamsLoading || missionsLoading;
   const hasError = teamsError || missionsError;
 
   const sortedTeams = useMemo(() => {
-    const teams = teamsData?.leaderboardTeams ?? [];
-    const missions = missionsData?.leaderboardMissions ?? [];
+    const teams = (teamsData?.leaderboardTeams ??
+      []) as GetLeaderboardTeamsQuery['leaderboardTeams'];
+    const missions = (missionsData?.leaderboardMissions ??
+      []) as GetMissionsForLeaderboardQuery['leaderboardMissions'];
     const totalMissions = missions.length;
     const finalChallengeIds = missions
       .filter((m) => m.isFinalChallenge)

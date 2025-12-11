@@ -1,7 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,17 +7,7 @@ import { Search, Radio, Users } from 'lucide-react';
 import { useNFCReader } from '@/hooks/useNFCReader';
 import { toast } from 'sonner';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
-
-const GET_TEAMS_FOR_STORE_QUERY = graphql(`
-  query GetTeamsForStore {
-    teams {
-      _id
-      name
-      nfcCardId
-      credits
-    }
-  }
-`);
+import { useTeamsForStore } from '@/lib/api/useApi';
 
 interface TeamSelectionProps {
   onTeamSelect: (team: GetTeamsForStoreQuery['teams'][number]) => void;
@@ -30,10 +17,7 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
-  const { data, isLoading } = useQuery<GetTeamsForStoreQuery>({
-    queryKey: ['teams'],
-    queryFn: () => graphqlClient.request(GET_TEAMS_FOR_STORE_QUERY),
-  });
+  const { data, isLoading } = useTeamsForStore();
 
   const filteredTeams = useMemo(() => {
     const allTeams = data?.teams ?? [];
@@ -176,4 +160,3 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
     </div>
   );
 }
-

@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,17 +6,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { Numpad } from '@/components/ui/numpad';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
-
-const ADJUST_CREDITS_MUTATION = graphql(`
-  mutation AdjustCredits($nfcCardId: String!, $amount: Int!) {
-    adjustCredits(nfcCardId: $nfcCardId, amount: $amount) {
-      _id
-      name
-      nfcCardId
-      credits
-    }
-  }
-`);
+import { useAdjustCredits } from '@/lib/api/useApi';
 
 interface CreditAdjustmentProps {
   team: GetTeamsForStoreQuery['teams'][number];
@@ -32,31 +19,9 @@ export function CreditAdjustment({
   onBack,
   onSuccess,
 }: CreditAdjustmentProps) {
-  const queryClient = useQueryClient();
   const [amount, setAmount] = useState('0');
   const [isAddMode, setIsAddMode] = useState(false);
-
-  const adjustCredits = useMutation({
-    mutationFn: (adjustmentAmount: number) =>
-      graphqlClient.request(ADJUST_CREDITS_MUTATION, {
-        nfcCardId: team.nfcCardId,
-        amount: adjustmentAmount,
-      }),
-    onSuccess: () => {
-      const action = isAddMode ? 'added' : 'removed';
-      toast.success(
-        `Successfully ${action} ${parseInt(amount || '0', 10).toLocaleString()} credits`,
-      );
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      onSuccess();
-    },
-    onError: (error: unknown) => {
-      const errorMessage =
-        (error as { response?: { errors?: Array<{ message?: string }> } })
-          ?.response?.errors?.[0]?.message || 'Failed to adjust credits';
-      toast.error(errorMessage);
-    },
-  });
+  const adjustCredits = useAdjustCredits();
 
   const currentCredits = team.credits;
   const adjustmentAmount = parseInt(amount || '0', 10);
@@ -71,7 +36,24 @@ export function CreditAdjustment({
     }
 
     const finalAmount = isAddMode ? adjustmentAmount : -adjustmentAmount;
-    adjustCredits.mutate(finalAmount);
+    adjustCredits.mutate(
+      { nfcCardId: team.nfcCardId, amount: finalAmount },
+      {
+        onSuccess: () => {
+          const action = isAddMode ? 'added' : 'removed';
+          toast.success(
+            `Successfully ${action} ${parseInt(amount || '0', 10).toLocaleString()} credits`,
+          );
+          onSuccess();
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to adjust credits';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   return (

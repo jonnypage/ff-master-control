@@ -1,7 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,44 +11,11 @@ import { useState, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { TeamSelectionForMission } from '../components/TeamSelectionForMission';
-import type { GetMissionQuery } from '@/lib/graphql/generated';
-
-const GET_MISSION_QUERY = graphql(`
-  query GetMission($id: ID!) {
-    mission(id: $id) {
-      _id
-      name
-      description
-      creditsAwarded
-      isFinalChallenge
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const UPDATE_MISSION_MUTATION = graphql(`
-  mutation UpdateMission($id: ID!, $input: UpdateMissionDto!) {
-    updateMission(id: $id, input: $input) {
-      _id
-      name
-      description
-      creditsAwarded
-      isFinalChallenge
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const GET_TEAMS_FOR_MISSION_QUERY = graphql(`
-  query GetTeamsForMission {
-    teams {
-      _id
-      completedMissionIds
-    }
-  }
-`);
+import {
+  useMission,
+  useTeamsForMission,
+  useUpdateMission,
+} from '@/lib/api/useApi';
 
 export function MissionEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -73,16 +38,9 @@ export function MissionEditPage() {
   const [creditsAwarded, setCreditsAwarded] = useState(0);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
 
-  const { data, isLoading } = useQuery<GetMissionQuery>({
-    queryKey: ['mission', id],
-    queryFn: () => graphqlClient.request(GET_MISSION_QUERY, { id: id! }),
-    enabled: !!id,
-  });
+  const { data, isLoading } = useMission(id);
 
-  const { data: teamsData } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => graphqlClient.request(GET_TEAMS_FOR_MISSION_QUERY),
-  });
+  const { data: teamsData } = useTeamsForMission();
 
   const completionCount = useMemo(() => {
     if (!teamsData?.teams || !id) return { completed: 0, total: 0 };
@@ -110,29 +68,7 @@ export function MissionEditPage() {
     setIsFinalChallenge(missionData.isFinalChallenge);
   }
 
-  const updateMission = useMutation({
-    mutationFn: (input: {
-      name?: string;
-      description?: string;
-      creditsAwarded?: number;
-      isFinalChallenge?: boolean;
-    }) =>
-      graphqlClient.request(UPDATE_MISSION_MUTATION, {
-        id: id!,
-        input,
-      }),
-    onSuccess: () => {
-      toast.success('Mission updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['mission', id] });
-      queryClient.invalidateQueries({ queryKey: ['missions'] });
-    },
-    onError: (error: unknown) => {
-      const errorMessage =
-        (error as { response?: { errors?: Array<{ message?: string }> } })
-          ?.response?.errors?.[0]?.message || 'Failed to update mission';
-      toast.error(errorMessage);
-    },
-  });
+  const updateMission = useUpdateMission();
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -165,7 +101,22 @@ export function MissionEditPage() {
       return;
     }
 
-    updateMission.mutate(input);
+    updateMission.mutate(
+      { id: id!, input },
+      {
+        onSuccess: () => {
+          toast.success('Mission updated successfully');
+          queryClient.invalidateQueries({ queryKey: ['mission', id] });
+          queryClient.invalidateQueries({ queryKey: ['missions'] });
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to update mission';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   if (isLoading) {

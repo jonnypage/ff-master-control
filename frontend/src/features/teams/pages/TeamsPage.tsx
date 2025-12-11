@@ -1,39 +1,17 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { TeamList } from '../components/TeamList';
 import { CreateTeamDialog } from '../components/CreateTeamDialog';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-
-const GET_TEAMS_QUERY = graphql(`
-  query GetTeams {
-    teams {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-      createdAt
-    }
-  }
-`);
+import { useTeams } from '@/lib/api/useApi';
 
 export function TeamsPage() {
   const { user } = useAuth();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const isAdmin = user?.role === 'ADMIN';
 
-  const {
-    data: teams,
-    isLoading,
-    refetch,
-  } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => graphqlClient.request(GET_TEAMS_QUERY),
-  });
+  const { data: teams, isLoading, refetch } = useTeams();
 
   return (
     <div className="space-y-6">

@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,18 +16,7 @@ import { UserList } from '../components/UserList';
 import { CreateUserDialog } from '../components/CreateUserDialog';
 import { EditUserDialog } from '../components/EditUserDialog';
 import type { GetUsersQuery } from '@/lib/graphql/generated';
-
-const DELETE_USER_MUTATION = graphql(`
-  mutation DeleteUser($id: ID!) {
-    deleteUser(id: $id)
-  }
-`);
-
-const DELETE_ALL_TEAMS_MUTATION = graphql(`
-  mutation DeleteAllTeams {
-    deleteAllTeams
-  }
-`);
+import { useDeleteUser, useDeleteAllTeams } from '@/lib/api/useApi';
 
 export function AdminPage() {
   const queryClient = useQueryClient();
@@ -43,20 +30,7 @@ export function AdminPage() {
     useState(false);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
-  const deleteUser = useMutation({
-    mutationFn: (id: string) =>
-      graphqlClient.request(DELETE_USER_MUTATION, { id }),
-    onSuccess: () => {
-      toast.success('User deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      setDeletingUserId(null);
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to delete user',
-      );
-    },
-  });
+  const deleteUser = useDeleteUser();
 
   const handleEdit = (user: GetUsersQuery['users'][number]) => {
     setEditingUser(user);
@@ -68,26 +42,41 @@ export function AdminPage() {
 
   const confirmDelete = () => {
     if (deletingUserId) {
-      deleteUser.mutate(deletingUserId);
+      deleteUser.mutate(
+        { id: deletingUserId },
+        {
+          onSuccess: () => {
+            toast.success('User deleted successfully');
+            queryClient.invalidateQueries({ queryKey: ['users'] });
+            setDeletingUserId(null);
+          },
+          onError: (error: unknown) => {
+            const message =
+              (error as { response?: { errors?: Array<{ message?: string }> } })
+                ?.response?.errors?.[0]?.message || 'Failed to delete user';
+            toast.error(message);
+          },
+        },
+      );
     }
   };
 
-  const deleteAllTeams = useMutation({
-    mutationFn: () => graphqlClient.request(DELETE_ALL_TEAMS_MUTATION),
-    onSuccess: () => {
-      toast.success('All teams deleted successfully');
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      setShowDeleteAllTeamsDialog(false);
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to delete all teams',
-      );
-    },
-  });
+  const deleteAllTeams = useDeleteAllTeams();
 
   const confirmDeleteAllTeams = () => {
-    deleteAllTeams.mutate();
+    deleteAllTeams.mutate(undefined, {
+      onSuccess: () => {
+        toast.success('All teams deleted successfully');
+        queryClient.invalidateQueries({ queryKey: ['teams'] });
+        setShowDeleteAllTeamsDialog(false);
+      },
+      onError: (error: unknown) => {
+        const message =
+          (error as { response?: { errors?: Array<{ message?: string }> } })
+            ?.response?.errors?.[0]?.message || 'Failed to delete all teams';
+        toast.error(message);
+      },
+    });
   };
 
   return (

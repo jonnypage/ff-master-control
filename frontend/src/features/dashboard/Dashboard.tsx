@@ -1,25 +1,9 @@
-import { useQuery } from '@tanstack/react-query'
-import { graphqlClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
+import { useStats } from '@/lib/api/useApi'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Target, DollarSign } from 'lucide-react'
 
-const GET_STATS_QUERY = graphql(`
-  query GetStats {
-    teams {
-      _id
-    }
-    missions {
-      _id
-    }
-  }
-`)
-
 export function Dashboard() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['stats'],
-    queryFn: () => graphqlClient.request(GET_STATS_QUERY),
-  })
+  const { data, isLoading } = useStats()
 
   if (isLoading) {
     return (

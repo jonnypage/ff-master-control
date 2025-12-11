@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -14,18 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
-const CREATE_MISSION_MUTATION = graphql(`
-  mutation CreateMission($input: CreateMissionDto!) {
-    createMission(input: $input) {
-      _id
-      name
-      description
-      creditsAwarded
-      isFinalChallenge
-    }
-  }
-`);
+import { useCreateMission } from '@/lib/api/useApi';
 
 interface CreateMissionDialogProps {
   open: boolean;
@@ -44,28 +31,7 @@ export function CreateMissionDialog({
   const [creditsAwarded, setCreditsAwarded] = useState(0);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
 
-  const createMission = useMutation({
-    mutationFn: (input: {
-      name: string;
-      description?: string;
-      creditsAwarded: number;
-      isFinalChallenge: boolean;
-    }) => graphqlClient.request(CREATE_MISSION_MUTATION, { input }),
-    onSuccess: () => {
-      toast.success('Mission created successfully!');
-      setName('');
-      setDescription('');
-      setCreditsAwarded(0);
-      setIsFinalChallenge(false);
-      queryClient.invalidateQueries({ queryKey: ['missions'] });
-      onSuccess();
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to create mission'
-      );
-    },
-  });
+  const createMission = useCreateMission();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,12 +40,33 @@ export function CreateMissionDialog({
       return;
     }
 
-    createMission.mutate({
-      name: name.trim(),
-      description: description.trim() || undefined,
-      creditsAwarded,
-      isFinalChallenge,
-    });
+    createMission.mutate(
+      {
+        input: {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          creditsAwarded,
+          isFinalChallenge,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Mission created successfully!');
+          setName('');
+          setDescription('');
+          setCreditsAwarded(0);
+          setIsFinalChallenge(false);
+          queryClient.invalidateQueries({ queryKey: ['missions'] });
+          onSuccess();
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to create mission';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   return (

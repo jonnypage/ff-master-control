@@ -1,6 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,19 +9,7 @@ import type {
   GetMissionQuery,
   GetTeamsForMissionCompletionQuery,
 } from '@/lib/graphql/generated';
-
-const COMPLETE_MISSION_MUTATION = graphql(`
-  mutation CompleteMission($missionId: ID!, $nfcCardId: String!) {
-    completeMission(missionId: $missionId, nfcCardId: $nfcCardId) {
-      _id
-      teamId
-      missionId
-      completedAt
-      completedBy
-      isManualOverride
-    }
-  }
-`);
+import { useCompleteMission } from '@/lib/api/useApi';
 
 interface MissionCompletionProps {
   mission:
@@ -42,36 +28,33 @@ export function MissionCompletion({
 }: MissionCompletionProps) {
   const queryClient = useQueryClient();
   const isAlreadyCompleted = team.completedMissionIds.includes(mission._id);
-
-  const completeMission = useMutation({
-    mutationFn: () =>
-      graphqlClient.request(COMPLETE_MISSION_MUTATION, {
-        missionId: mission._id,
-        nfcCardId: team.nfcCardId,
-      }),
-    onSuccess: () => {
-      toast.success(
-        `Mission "${mission.name}" marked as complete for ${team.name}`,
-      );
-      queryClient.invalidateQueries({ queryKey: ['missions'] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      onSuccess();
-    },
-    onError: (error: unknown) => {
-      const errorMessage =
-        (error as { response?: { errors?: Array<{ message?: string }> } })
-          ?.response?.errors?.[0]?.message ||
-        'Failed to mark mission as complete';
-      toast.error(errorMessage);
-    },
-  });
+  const completeMission = useCompleteMission();
 
   const handleComplete = () => {
     if (isAlreadyCompleted) {
       toast.error('This mission is already completed for this team');
       return;
     }
-    completeMission.mutate();
+    completeMission.mutate(
+      { missionId: mission._id, nfcCardId: team.nfcCardId },
+      {
+        onSuccess: () => {
+          toast.success(
+            `Mission "${mission.name}" marked as complete for ${team.name}`,
+          );
+          queryClient.invalidateQueries({ queryKey: ['missions'] });
+          queryClient.invalidateQueries({ queryKey: ['teams'] });
+          onSuccess();
+        },
+        onError: (error: unknown) => {
+          const errorMessage =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message ||
+            'Failed to mark mission as complete';
+          toast.error(errorMessage);
+        },
+      },
+    );
   };
 
   return (

@@ -1,7 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,37 +9,11 @@ import { useNFCReader } from '@/hooks/useNFCReader';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
-
-const GET_TEAMS_FOR_MISSION_COMPLETION_QUERY = graphql(`
-  query GetTeamsForMissionCompletion {
-    teams {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-    }
-  }
-`);
-
-const COMPLETE_MISSION_MUTATION = graphql(`
-  mutation CompleteMission($missionId: ID!, $nfcCardId: String!) {
-    completeMission(missionId: $missionId, nfcCardId: $nfcCardId) {
-      _id
-      teamId
-      missionId
-      completedAt
-      completedBy
-      isManualOverride
-    }
-  }
-`);
-
-const REMOVE_MISSION_COMPLETION_MUTATION = graphql(`
-  mutation RemoveMissionCompletion($teamId: ID!, $missionId: ID!) {
-    removeMissionCompletion(teamId: $teamId, missionId: $missionId)
-  }
-`);
+import {
+  useTeamsForMissionCompletion,
+  useCompleteMission,
+  useRemoveMissionCompletion,
+} from '@/lib/api/useApi';
 
 interface TeamSelectionForMissionProps {
   missionId: string;
@@ -63,58 +35,10 @@ export function TeamSelectionForMission({
   const queryClient = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () =>
-      graphqlClient.request(GET_TEAMS_FOR_MISSION_COMPLETION_QUERY),
-  });
+  const { data, isLoading } = useTeamsForMissionCompletion();
 
-  const completeMission = useMutation({
-    mutationFn: (nfcCardId: string) =>
-      graphqlClient.request(COMPLETE_MISSION_MUTATION, {
-        missionId,
-        nfcCardId,
-      }),
-    onSuccess: () => {
-      toast.success('Mission marked as complete');
-      setCompletingTeamId(null);
-      setSelectedTeamId(null);
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['missions'] });
-      queryClient.invalidateQueries({ queryKey: ['mission', missionId] });
-    },
-    onError: (error: unknown) => {
-      setCompletingTeamId(null);
-      const errorMessage =
-        (error as { response?: { errors?: Array<{ message?: string }> } })
-          ?.response?.errors?.[0]?.message ||
-        'Failed to mark mission as complete';
-      toast.error(errorMessage);
-    },
-  });
-
-  const removeMissionCompletion = useMutation({
-    mutationFn: (teamId: string) =>
-      graphqlClient.request(REMOVE_MISSION_COMPLETION_MUTATION, {
-        teamId,
-        missionId,
-      }),
-    onSuccess: () => {
-      toast.success('Mission completion removed');
-      setUncompletingTeamId(null);
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-      queryClient.invalidateQueries({ queryKey: ['missions'] });
-      queryClient.invalidateQueries({ queryKey: ['mission', missionId] });
-    },
-    onError: (error: unknown) => {
-      setUncompletingTeamId(null);
-      const errorMessage =
-        (error as { response?: { errors?: Array<{ message?: string }> } })
-          ?.response?.errors?.[0]?.message ||
-        'Failed to remove mission completion';
-      toast.error(errorMessage);
-    },
-  });
+  const completeMission = useCompleteMission();
+  const removeMissionCompletion = useRemoveMissionCompletion();
 
   interface Team {
     _id: string;
@@ -159,7 +83,32 @@ export function TeamSelectionForMission({
         );
         if (!isCompleted) {
           // Complete the mission directly if not completed
-          completeMission.mutate(foundTeam?.nfcCardId);
+          setCompletingTeamId(foundTeam?._id);
+          completeMission.mutate(
+            { missionId, nfcCardId: foundTeam?.nfcCardId },
+            {
+              onSuccess: () => {
+                toast.success('Mission marked as complete');
+                setCompletingTeamId(null);
+                setSelectedTeamId(null);
+                queryClient.invalidateQueries({
+                  queryKey: ['mission', missionId],
+                });
+                queryClient.invalidateQueries({ queryKey: ['missions'] });
+              },
+              onError: (error: unknown) => {
+                setCompletingTeamId(null);
+                const errorMessage =
+                  (
+                    error as {
+                      response?: { errors?: Array<{ message?: string }> };
+                    }
+                  )?.response?.errors?.[0]?.message ||
+                  'Failed to mark mission as complete';
+                toast.error(errorMessage);
+              },
+            },
+          );
         } else {
           toast.info('This team has already completed this mission');
         }
@@ -241,12 +190,59 @@ export function TeamSelectionForMission({
               const handleCompleteClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
                 setCompletingTeamId(team?._id);
-                completeMission.mutate(team?.nfcCardId);
+                completeMission.mutate(
+                  { missionId, nfcCardId: team?.nfcCardId },
+                  {
+                    onSuccess: () => {
+                      toast.success('Mission marked as complete');
+                      setCompletingTeamId(null);
+                      setSelectedTeamId(null);
+                      queryClient.invalidateQueries({
+                        queryKey: ['mission', missionId],
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['missions'] });
+                    },
+                    onError: (error: unknown) => {
+                      setCompletingTeamId(null);
+                      const errorMessage =
+                        (
+                          error as {
+                            response?: { errors?: Array<{ message?: string }> };
+                          }
+                        )?.response?.errors?.[0]?.message ||
+                        'Failed to mark mission as complete';
+                      toast.error(errorMessage);
+                    },
+                  },
+                );
               };
               const handleUncompleteClick = (e: React.MouseEvent) => {
                 e.stopPropagation();
                 setUncompletingTeamId(team?._id);
-                removeMissionCompletion.mutate(team?._id);
+                removeMissionCompletion.mutate(
+                  { missionId, teamId: team?._id },
+                  {
+                    onSuccess: () => {
+                      toast.success('Mission completion removed');
+                      setUncompletingTeamId(null);
+                      queryClient.invalidateQueries({
+                        queryKey: ['mission', missionId],
+                      });
+                      queryClient.invalidateQueries({ queryKey: ['missions'] });
+                    },
+                    onError: (error: unknown) => {
+                      setUncompletingTeamId(null);
+                      const errorMessage =
+                        (
+                          error as {
+                            response?: { errors?: Array<{ message?: string }> };
+                          }
+                        )?.response?.errors?.[0]?.message ||
+                        'Failed to remove mission completion';
+                      toast.error(errorMessage);
+                    },
+                  },
+                );
               };
 
               return (

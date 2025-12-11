@@ -1,49 +1,17 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Target } from 'lucide-react';
-
-const GET_MISSIONS_QUERY = graphql(`
-  query GetMissions {
-    missions {
-      _id
-      name
-      description
-      creditsAwarded
-      isFinalChallenge
-      createdAt
-      updatedAt
-    }
-  }
-`);
-
-const GET_TEAMS_FOR_MISSIONS_QUERY = graphql(`
-  query GetTeamsForMissions {
-    teams {
-      _id
-      completedMissionIds
-    }
-  }
-`);
+import { useMissions, useTeamsForMissions } from '@/lib/api/useApi';
 
 export function MissionList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['missions'],
-    queryFn: () => graphqlClient.request(GET_MISSIONS_QUERY),
-  });
-
-  const { data: teamsData } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => graphqlClient.request(GET_TEAMS_FOR_MISSIONS_QUERY),
-  });
+  const { data, isLoading } = useMissions();
+  const { data: teamsData } = useTeamsForMissions();
 
   const completionCounts = useMemo(() => {
     const counts: Record<string, number> = {};

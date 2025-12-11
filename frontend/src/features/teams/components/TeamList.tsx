@@ -1,8 +1,5 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -11,14 +8,7 @@ import { Search, Radio, Users } from 'lucide-react';
 import { useNFCReader } from '@/hooks/useNFCReader';
 import { toast } from 'sonner';
 import type { GetTeamsQuery } from '@/lib/graphql/generated';
-
-const GET_MISSIONS_FOR_TEAMS_QUERY = graphql(`
-  query GetMissionsForTeams {
-    missions {
-      _id
-    }
-  }
-`);
+import { useMissionsForTeams } from '@/lib/api/useApi';
 
 interface TeamListProps {
   teams: GetTeamsQuery['teams'];
@@ -31,10 +21,7 @@ export function TeamList({ teams, isLoading, onUpdate }: TeamListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
-  const { data: missionsData } = useQuery({
-    queryKey: ['missions'],
-    queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_TEAMS_QUERY),
-  });
+  const { data: missionsData } = useMissionsForTeams();
 
   const totalMissions = missionsData?.missions?.length ?? 0;
 

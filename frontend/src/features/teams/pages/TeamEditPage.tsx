@@ -1,7 +1,5 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,84 +19,15 @@ import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
 import { useNFCReader } from '@/hooks/useNFCReader';
-import type { GetTeamByIdQuery } from '@/lib/graphql/generated';
-
-const GET_TEAM_BY_ID_QUERY = graphql(`
-  query GetTeamById($id: ID!) {
-    teamById(id: $id) {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-      createdAt
-    }
-  }
-`);
-
-const UPDATE_TEAM_MUTATION = graphql(`
-  mutation UpdateTeam($id: ID!, $input: UpdateTeamDto!) {
-    updateTeam(id: $id, input: $input) {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-    }
-  }
-`);
-
-const ADD_CREDITS_MUTATION = graphql(`
-  mutation AddCredits($nfcCardId: String!, $amount: Int!) {
-    addCredits(nfcCardId: $nfcCardId, amount: $amount) {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-    }
-  }
-`);
-
-const REMOVE_CREDITS_MUTATION = graphql(`
-  mutation RemoveCredits($nfcCardId: String!, $amount: Int!) {
-    removeCredits(nfcCardId: $nfcCardId, amount: $amount) {
-      _id
-      name
-      nfcCardId
-      credits
-      completedMissionIds
-    }
-  }
-`);
-
-const GET_MISSIONS_FOR_TEAM_EDIT_QUERY = graphql(`
-  query GetMissionsForTeamEdit {
-    missions {
-      _id
-      name
-      description
-      creditsAwarded
-      isFinalChallenge
-    }
-  }
-`);
-
-const OVERRIDE_MISSION_COMPLETION_MUTATION = graphql(`
-  mutation OverrideMissionCompletion($teamId: ID!, $missionId: ID!) {
-    overrideMissionCompletion(teamId: $teamId, missionId: $missionId) {
-      _id
-      teamId
-      missionId
-    }
-  }
-`);
-
-const REMOVE_MISSION_COMPLETION_MUTATION = graphql(`
-  mutation RemoveMissionCompletion($teamId: ID!, $missionId: ID!) {
-    removeMissionCompletion(teamId: $teamId, missionId: $missionId)
-  }
-`);
+import {
+  useTeamById,
+  useMissionsForTeamEdit,
+  useUpdateTeam,
+  useAddCredits,
+  useRemoveCredits,
+  useOverrideMissionCompletion,
+  useRemoveMissionCompletion,
+} from '@/lib/api/useApi';
 
 export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -112,16 +41,9 @@ export function TeamEditPage() {
   const isEditMode = location.pathname.endsWith('/edit');
   const canEdit = canEditTeams && isEditMode;
 
-  const { data, isLoading } = useQuery<GetTeamByIdQuery>({
-    queryKey: ['team', id],
-    queryFn: () => graphqlClient.request(GET_TEAM_BY_ID_QUERY, { id: id! }),
-    enabled: !!id,
-  });
+  const { data, isLoading } = useTeamById(id || '');
 
-  const { data: missionsData } = useQuery({
-    queryKey: ['missions'],
-    queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_TEAM_EDIT_QUERY),
-  });
+  const { data: missionsData } = useMissionsForTeamEdit();
 
   // Initialize state from data - component resets when id changes (via key in App.tsx)
   const teamData = data?.teamById;
@@ -138,59 +60,9 @@ export function TeamEditPage() {
     setNfcCardId(teamData.nfcCardId);
   }
 
-  const updateTeam = useMutation({
-    mutationFn: (input: { name?: string; nfcCardId?: string }) =>
-      graphqlClient.request(UPDATE_TEAM_MUTATION, {
-        id: id!,
-        input,
-      }),
-    onSuccess: () => {
-      toast.success('Team updated successfully');
-      queryClient.invalidateQueries({ queryKey: ['team', id] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to update team',
-      );
-    },
-  });
-
-  const addCredits = useMutation({
-    mutationFn: (amount: number) =>
-      graphqlClient.request(ADD_CREDITS_MUTATION, {
-        nfcCardId: data?.teamById?.nfcCardId || '',
-        amount,
-      }),
-    onSuccess: () => {
-      toast.success('Credits added successfully');
-      queryClient.invalidateQueries({ queryKey: ['team', id] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to add credits',
-      );
-    },
-  });
-
-  const removeCredits = useMutation({
-    mutationFn: (amount: number) =>
-      graphqlClient.request(REMOVE_CREDITS_MUTATION, {
-        nfcCardId: data?.teamById?.nfcCardId || '',
-        amount,
-      }),
-    onSuccess: () => {
-      toast.success('Credits removed successfully');
-      queryClient.invalidateQueries({ queryKey: ['team', id] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to remove credits',
-      );
-    },
-  });
+  const updateTeam = useUpdateTeam();
+  const addCredits = useAddCredits();
+  const removeCredits = useRemoveCredits();
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -211,15 +83,62 @@ export function TeamEditPage() {
       return;
     }
 
-    updateTeam.mutate(input);
+    updateTeam.mutate(
+      { id: id!, input },
+      {
+        onSuccess: () => {
+          toast.success('Team updated successfully');
+          queryClient.invalidateQueries({ queryKey: ['team', id] });
+          queryClient.invalidateQueries({ queryKey: ['teams'] });
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to update team';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   const handleAddCredits = () => {
-    addCredits.mutate(100);
+    if (!data?.teamById?.nfcCardId) return;
+    addCredits.mutate(
+      { nfcCardId: data.teamById.nfcCardId, amount: 100 },
+      {
+        onSuccess: () => {
+          toast.success('Credits added successfully');
+          queryClient.invalidateQueries({ queryKey: ['team', id] });
+          queryClient.invalidateQueries({ queryKey: ['teams'] });
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to add credits';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   const handleRemoveCredits = () => {
-    removeCredits.mutate(100);
+    if (!data?.teamById?.nfcCardId) return;
+    removeCredits.mutate(
+      { nfcCardId: data.teamById.nfcCardId, amount: 100 },
+      {
+        onSuccess: () => {
+          toast.success('Credits removed successfully');
+          queryClient.invalidateQueries({ queryKey: ['team', id] });
+          queryClient.invalidateQueries({ queryKey: ['teams'] });
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to remove credits';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   const handleNFCScan = async () => {
@@ -240,51 +159,48 @@ export function TeamEditPage() {
     }
   };
 
-  const overrideMissionCompletion = useMutation({
-    mutationFn: (missionId: string) =>
-      graphqlClient.request(OVERRIDE_MISSION_COMPLETION_MUTATION, {
-        teamId: id!,
-        missionId,
-      }),
-    onSuccess: () => {
-      toast.success('Mission completion updated');
-      queryClient.invalidateQueries({ queryKey: ['team', id] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message ||
-          'Failed to update mission completion',
-      );
-    },
-  });
-
-  const removeMissionCompletion = useMutation({
-    mutationFn: (missionId: string) =>
-      graphqlClient.request(REMOVE_MISSION_COMPLETION_MUTATION as any, {
-        teamId: id!,
-        missionId,
-      }),
-    onSuccess: () => {
-      toast.success('Mission completion removed');
-      queryClient.invalidateQueries({ queryKey: ['team', id] });
-      queryClient.invalidateQueries({ queryKey: ['teams'] });
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message ||
-          'Failed to remove mission completion',
-      );
-    },
-  });
+  const overrideMissionCompletion = useOverrideMissionCompletion();
+  const removeMissionCompletion = useRemoveMissionCompletion();
 
   const handleMissionToggle = (missionId: string, isCompleted: boolean) => {
     if (!isCompleted) {
       // Complete the mission
-      overrideMissionCompletion.mutate(missionId);
+      overrideMissionCompletion.mutate(
+        { teamId: id!, missionId },
+        {
+          onSuccess: () => {
+            toast.success('Mission completion updated');
+            queryClient.invalidateQueries({ queryKey: ['team', id] });
+            queryClient.invalidateQueries({ queryKey: ['teams'] });
+          },
+          onError: (error: unknown) => {
+            const message =
+              (error as { response?: { errors?: Array<{ message?: string }> } })
+                ?.response?.errors?.[0]?.message ||
+              'Failed to update mission completion';
+            toast.error(message);
+          },
+        },
+      );
     } else {
       // Remove the mission completion
-      removeMissionCompletion.mutate(missionId);
+      removeMissionCompletion.mutate(
+        { teamId: id!, missionId },
+        {
+          onSuccess: () => {
+            toast.success('Mission completion removed');
+            queryClient.invalidateQueries({ queryKey: ['team', id] });
+            queryClient.invalidateQueries({ queryKey: ['teams'] });
+          },
+          onError: (error: unknown) => {
+            const message =
+              (error as { response?: { errors?: Array<{ message?: string }> } })
+                ?.response?.errors?.[0]?.message ||
+              'Failed to remove mission completion';
+            toast.error(message);
+          },
+        },
+      );
     }
   };
 

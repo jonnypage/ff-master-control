@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -15,17 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import type { UserRole } from '@/lib/graphql/generated';
-
-const CREATE_USER_MUTATION = graphql(`
-  mutation CreateUser($input: CreateUserDto!) {
-    createUser(input: $input) {
-      _id
-      username
-      role
-      createdAt
-    }
-  }
-`);
+import { useCreateUser } from '@/lib/api/useApi';
 
 interface CreateUserDialogProps {
   open: boolean;
@@ -51,27 +39,7 @@ export function CreateUserDialog({
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [role, setRole] = useState<UserRole>('MISSION_LEADER');
 
-  const createUser = useMutation({
-    mutationFn: (input: {
-      username: string;
-      password: string;
-      role: UserRole;
-    }) => graphqlClient.request(CREATE_USER_MUTATION, { input }),
-    onSuccess: () => {
-      toast.success('User created successfully!');
-      setUsername('');
-      setPassword('');
-      setPasswordConfirm('');
-      setRole('MISSION_LEADER');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      onSuccess();
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to create user'
-      );
-    },
-  });
+  const createUser = useCreateUser();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,11 +60,32 @@ export function CreateUserDialog({
       return;
     }
 
-    createUser.mutate({
-      username: username.trim(),
-      password,
-      role,
-    });
+    createUser.mutate(
+      {
+        input: {
+          username: username.trim(),
+          password,
+          role,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('User created successfully!');
+          setUsername('');
+          setPassword('');
+          setPasswordConfirm('');
+          setRole('MISSION_LEADER');
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+          onSuccess();
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to create user';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   return (

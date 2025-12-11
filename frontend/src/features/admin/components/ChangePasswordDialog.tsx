@@ -1,7 +1,4 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import {
   Dialog,
   DialogContent,
@@ -14,12 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-
-const CHANGE_PASSWORD_MUTATION = graphql(`
-  mutation ChangePassword($id: ID!, $input: ChangePasswordDto!) {
-    changePassword(id: $id, input: $input)
-  }
-`);
+import { useChangePassword } from '@/lib/api/useApi';
 
 interface ChangePasswordDialogProps {
   open: boolean;
@@ -42,29 +34,7 @@ export function ChangePasswordDialog({
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const changePassword = useMutation({
-    mutationFn: (input: { oldPassword?: string; newPassword: string }) =>
-      graphqlClient.request(CHANGE_PASSWORD_MUTATION, {
-        id: userId,
-        input: {
-          newPassword: input.newPassword,
-          oldPassword: input.oldPassword,
-        },
-      }),
-    onSuccess: () => {
-      toast.success('Password changed successfully!');
-      setOldPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      onSuccess?.();
-      onOpenChange(false);
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to change password'
-      );
-    },
-  });
+  const changePassword = useChangePassword();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,10 +59,31 @@ export function ChangePasswordDialog({
       return;
     }
 
-    changePassword.mutate({
-      newPassword,
-      oldPassword: isOwnPassword ? oldPassword : undefined,
-    });
+    changePassword.mutate(
+      {
+        id: userId,
+        input: {
+          newPassword,
+          oldPassword: isOwnPassword ? oldPassword : undefined,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast.success('Password changed successfully!');
+          setOldPassword('');
+          setNewPassword('');
+          setConfirmPassword('');
+          onSuccess?.();
+          onOpenChange(false);
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to change password';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   return (

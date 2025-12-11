@@ -1,55 +1,46 @@
-import { useState } from 'react'
-import { Download } from 'lucide-react'
-import { useAuth } from '../lib/auth-context'
-import { graphqlClient } from '@/lib/graphql/client'
-import { graphql } from '@/lib/graphql/generated'
-import { usePWAInstall } from '@/hooks/usePWAInstall'
-import { Button } from '@/components/ui/button'
-
-const LOGIN_MUTATION = graphql(`
-  mutation Login($input: LoginInput!) {
-    login(input: $input) {
-      access_token
-      user {
-        _id
-        username
-        role
-      }
-    }
-  }
-`)
+import { useState } from 'react';
+import { Download } from 'lucide-react';
+import { useAuth } from '../lib/auth-context';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { Button } from '@/components/ui/button';
+import { useLogin } from '@/lib/api/useApi';
 
 export function LoginPage() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
-  const { isInstallable, isInstalled, promptInstall } = usePWAInstall()
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const { isInstallable, isInstalled, promptInstall } = usePWAInstall();
+  const loginMutation = useLogin();
 
   const handleInstall = async () => {
-    await promptInstall()
-  }
+    await promptInstall();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setIsLoading(true)
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
 
-    try {
-      const data = await graphqlClient.request(LOGIN_MUTATION, {
-        input: { username, password },
-      })
-
-      if (data.login) {
-        login(data.login.access_token, data.login.user)
-      }
-    } catch (err: any) {
-      setError(err.response?.errors?.[0]?.message || 'Login failed')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    loginMutation.mutate(
+      { input: { username, password } },
+      {
+        onSuccess: (data) => {
+          if (data.login) {
+            login(data.login.access_token, data.login.user);
+          }
+        },
+        onError: (err: unknown) => {
+          const message =
+            (err as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Login failed';
+          setError(message);
+        },
+        onSettled: () => setIsLoading(false),
+      },
+    );
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -125,6 +116,5 @@ export function LoginPage() {
         </form>
       </div>
     </div>
-  )
+  );
 }
-

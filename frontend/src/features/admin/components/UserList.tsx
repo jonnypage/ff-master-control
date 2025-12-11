@@ -1,24 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, Edit, Trash2, User as UserIcon, AlertTriangle } from 'lucide-react';
 import type { GetUsersQuery } from '@/lib/graphql/generated';
-
-const GET_USERS_QUERY = graphql(`
-  query GetUsers {
-    users {
-      _id
-      username
-      role
-      createdAt
-    }
-  }
-`);
+import { useUsers } from '@/lib/api/useApi';
 
 interface UserListProps {
   onEdit: (user: GetUsersQuery['users'][number]) => void;
@@ -47,10 +34,7 @@ const ROLE_VARIANTS: Record<string, 'default' | 'secondary' | 'outline'> = {
 export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDeleteAllTeams, showDeleteAllTeams, isAdmin }: UserListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data, isLoading } = useQuery<GetUsersQuery>({
-    queryKey: ['users'],
-    queryFn: () => graphqlClient.request(GET_USERS_QUERY),
-  });
+  const { data, isLoading } = useUsers();
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);

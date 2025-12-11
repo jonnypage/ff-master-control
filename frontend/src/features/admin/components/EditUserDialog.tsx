@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { graphqlClient } from '@/lib/graphql/client';
-import { graphql } from '@/lib/graphql/generated';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
   DialogContent,
@@ -17,17 +15,7 @@ import { toast } from 'sonner';
 import { Key } from 'lucide-react';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import type { UserRole } from '@/lib/graphql/generated';
-
-const UPDATE_USER_MUTATION = graphql(`
-  mutation UpdateUser($id: ID!, $input: UpdateUserDto!) {
-    updateUser(id: $id, input: $input) {
-      _id
-      username
-      role
-      createdAt
-    }
-  }
-`);
+import { useUpdateUser } from '@/lib/api/useApi';
 
 interface EditUserDialogProps {
   open: boolean;
@@ -65,23 +53,7 @@ export function EditUserDialog({
     }
   }, [user]);
 
-  const updateUser = useMutation({
-    mutationFn: (input: { username?: string; role?: UserRole }) =>
-      graphqlClient.request(UPDATE_USER_MUTATION, {
-        id: user!._id,
-        input,
-      }),
-    onSuccess: () => {
-      toast.success('User updated successfully!');
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      onSuccess();
-    },
-    onError: (error: any) => {
-      toast.error(
-        error.response?.errors?.[0]?.message || 'Failed to update user'
-      );
-    },
-  });
+  const updateUser = useUpdateUser();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +75,22 @@ export function EditUserDialog({
       return;
     }
 
-    updateUser.mutate(updates);
+    updateUser.mutate(
+      { id: user!._id, input: updates },
+      {
+        onSuccess: () => {
+          toast.success('User updated successfully!');
+          queryClient.invalidateQueries({ queryKey: ['users'] });
+          onSuccess();
+        },
+        onError: (error: unknown) => {
+          const message =
+            (error as { response?: { errors?: Array<{ message?: string }> } })
+              ?.response?.errors?.[0]?.message || 'Failed to update user';
+          toast.error(message);
+        },
+      },
+    );
   };
 
   if (!user) return null;
