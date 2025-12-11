@@ -2,6 +2,7 @@ import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { TeamsService } from './teams.service';
 import { Team } from './schemas/team.schema';
+import { LeaderboardTeam } from './schemas/leaderboard-team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -31,6 +32,11 @@ export class TeamsResolver {
   @UseGuards(JwtAuthGuard)
   async teams(): Promise<Team[]> {
     return this.teamsService.findAll();
+  }
+
+  @Query(() => [LeaderboardTeam])
+  async leaderboardTeams(): Promise<LeaderboardTeam[]> {
+    return this.teamsService.findLeaderboard();
   }
 
   @Query(() => Team, { nullable: true })

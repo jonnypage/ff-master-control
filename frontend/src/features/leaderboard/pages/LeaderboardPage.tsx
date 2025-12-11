@@ -3,22 +3,32 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { graphqlClient } from '@/lib/graphql/client';
 import { graphql } from '@/lib/graphql/generated';
+import type { RequestDocument } from 'graphql-request';
 import { Button } from '@/components/ui/button';
 import { Trophy, LogIn } from 'lucide-react';
-import type {
-  GetTeamsForLeaderboardQuery,
-  GetMissionsForLeaderboardQuery,
-} from '@/lib/graphql/generated';
+type LeaderboardTeam = {
+  _id: string;
+  name: string;
+  completedMissionIds: string[];
+};
 
-const GET_TEAMS_FOR_LEADERBOARD_QUERY = graphql(`
-  query GetTeamsForLeaderboard {
-    teams {
+type GetLeaderboardTeamsQuery = {
+  leaderboardTeams: LeaderboardTeam[];
+};
+
+import type { GetMissionsForLeaderboardQuery } from '@/lib/graphql/generated';
+
+const GET_LEADERBOARD_TEAMS_QUERY = graphql(`
+  query GetLeaderboardTeams {
+    leaderboardTeams {
       _id
       name
       completedMissionIds
     }
   }
 `);
+const LEADERBOARD_TEAMS_DOCUMENT =
+  GET_LEADERBOARD_TEAMS_QUERY as unknown as RequestDocument;
 
 const GET_MISSIONS_FOR_LEADERBOARD_QUERY = graphql(`
   query GetMissionsForLeaderboard {
@@ -36,9 +46,12 @@ export function LeaderboardPage() {
     data: teamsData,
     isLoading: teamsLoading,
     error: teamsError,
-  } = useQuery<GetTeamsForLeaderboardQuery>({
+  } = useQuery<GetLeaderboardTeamsQuery>({
     queryKey: ['teams-leaderboard'],
-    queryFn: () => graphqlClient.request(GET_TEAMS_FOR_LEADERBOARD_QUERY),
+    queryFn: () =>
+      graphqlClient.request<GetLeaderboardTeamsQuery>(
+        LEADERBOARD_TEAMS_DOCUMENT,
+      ),
     refetchInterval: 3000, // Refresh every 3 seconds
   });
 
@@ -56,15 +69,22 @@ export function LeaderboardPage() {
   const hasError = teamsError || missionsError;
 
   const sortedTeams = useMemo(() => {
-    const teams = teamsData?.teams ?? [];
+    const teams = teamsData?.leaderboardTeams ?? [];
     const totalMissions = missionsData?.missions?.length ?? 0;
 
     return teams
-      .map((team) => ({
-        ...team,
-        completedCount: team.completedMissionIds?.length ?? 0,
-        totalMissions,
-      }))
+      .map(
+        (
+          team,
+        ): LeaderboardTeam & {
+          completedCount: number;
+          totalMissions: number;
+        } => ({
+          ...team,
+          completedCount: team.completedMissionIds?.length ?? 0,
+          totalMissions,
+        }),
+      )
       .sort((a, b) => {
         // Sort by completed missions (descending), then by name
         if (b.completedCount !== a.completedCount) {
@@ -72,7 +92,7 @@ export function LeaderboardPage() {
         }
         return a.name.localeCompare(b.name);
       });
-  }, [teamsData?.teams, missionsData?.missions]);
+  }, [teamsData?.leaderboardTeams, missionsData?.missions]);
 
   const getRankIcon = (index: number) => {
     if (index === 0) return '🥇';
@@ -124,11 +144,15 @@ export function LeaderboardPage() {
           {isLoading ? (
             <div className="text-center py-20">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-              <p className="text-2xl text-muted-foreground">Loading leaderboard...</p>
+              <p className="text-2xl text-muted-foreground">
+                Loading leaderboard...
+              </p>
             </div>
           ) : hasError ? (
             <div className="text-center py-20">
-              <p className="text-2xl text-destructive">Error loading leaderboard</p>
+              <p className="text-2xl text-destructive">
+                Error loading leaderboard
+              </p>
               <p className="text-lg text-muted-foreground mt-2">
                 Please refresh the page
               </p>
@@ -143,9 +167,7 @@ export function LeaderboardPage() {
               const rankColor = getRankColor(index);
               const percentage =
                 team.totalMissions > 0
-                  ? Math.round(
-                      (team.completedCount / team.totalMissions) * 100,
-                    )
+                  ? Math.round((team.completedCount / team.totalMissions) * 100)
                   : 0;
 
               return (
@@ -219,4 +241,3 @@ export function LeaderboardPage() {
     </div>
   );
 }
-

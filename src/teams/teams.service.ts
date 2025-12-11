@@ -6,6 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Team, TeamDocument } from './schemas/team.schema';
+import { LeaderboardTeam } from './schemas/leaderboard-team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
@@ -35,6 +36,11 @@ export class TeamsService {
 
   async findAll(): Promise<TeamDocument[]> {
     return this.teamModel.find().exec();
+  }
+
+  async findLeaderboard(): Promise<LeaderboardTeam[]> {
+    // Return only the minimal fields required for the public leaderboard
+    return this.teamModel.find({}, { name: 1, completedMissionIds: 1 }).lean();
   }
 
   async update(

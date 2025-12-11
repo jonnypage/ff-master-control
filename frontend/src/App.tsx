@@ -54,15 +54,15 @@ function App() {
             </ProtectedRoute>
           }
         >
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/teams" element={<TeamsPage />} />
-          <Route path="/teams/:id/edit" element={<TeamEditPageWrapper />} />
-          <Route path="/teams/:id" element={<TeamEditPageWrapper />} />
-          <Route path="/missions" element={<MissionsPage />} />
-          <Route path="/missions/:id/edit" element={<MissionEditPageWrapper />} />
-          <Route path="/missions/:id" element={<MissionEditPageWrapper />} />
-          <Route path="/store" element={<StorePage />} />
-          <Route path="/admin" element={<AdminPage />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="teams" element={<TeamsPage />} />
+          <Route path="teams/:id/edit" element={<TeamEditPageWrapper />} />
+          <Route path="teams/:id" element={<TeamEditPageWrapper />} />
+          <Route path="missions" element={<MissionsPage />} />
+          <Route path="missions/:id/edit" element={<MissionEditPageWrapper />} />
+          <Route path="missions/:id" element={<MissionEditPageWrapper />} />
+          <Route path="store" element={<StorePage />} />
+          <Route path="admin" element={<AdminPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
