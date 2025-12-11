@@ -29,13 +29,19 @@ const LEADERBOARD_TEAMS_DOCUMENT =
   GET_LEADERBOARD_TEAMS_QUERY as unknown as RequestDocument;
 
 type GetMissionsForLeaderboardQuery = {
-  leaderboardMissions: { _id: string }[];
+  leaderboardMissions: {
+    _id: string;
+    isFinalChallenge: boolean;
+    name: string;
+  }[];
 };
 
 const GET_MISSIONS_FOR_LEADERBOARD_QUERY = graphql(`
   query GetMissionsForLeaderboard {
     leaderboardMissions {
       _id
+      name
+      isFinalChallenge
     }
   }
 `);
@@ -77,7 +83,11 @@ export function LeaderboardPage() {
 
   const sortedTeams = useMemo(() => {
     const teams = teamsData?.leaderboardTeams ?? [];
-    const totalMissions = missionsData?.leaderboardMissions?.length ?? 0;
+    const missions = missionsData?.leaderboardMissions ?? [];
+    const totalMissions = missions.length;
+    const finalChallengeIds = missions
+      .filter((m) => m.isFinalChallenge)
+      .map((m) => m._id);
 
     return teams
       .map(
@@ -86,10 +96,14 @@ export function LeaderboardPage() {
         ): LeaderboardTeam & {
           completedCount: number;
           totalMissions: number;
+          hasCompletedFinal: boolean;
         } => ({
           ...team,
           completedCount: team.completedMissionIds?.length ?? 0,
           totalMissions,
+          hasCompletedFinal: finalChallengeIds.some((id) =>
+            team.completedMissionIds?.includes(id),
+          ),
         }),
       )
       .sort((a, b) => {
@@ -99,7 +113,7 @@ export function LeaderboardPage() {
         }
         return a.name.localeCompare(b.name);
       });
-  }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions?.length]);
+  }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions]);
 
   const getRankIcon = (index: number) => {
     if (index === 0) return '🥇';
@@ -184,7 +198,7 @@ export function LeaderboardPage() {
                     index < 3
                       ? 'border-primary scale-[1.02]'
                       : 'border-border scale-100'
-                  }`}
+                  } ${team.hasCompletedFinal ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-background' : ''}`}
                 >
                   <div className="flex items-center justify-between gap-6">
                     {/* Rank and Name */}
@@ -195,9 +209,16 @@ export function LeaderboardPage() {
                         {rankIcon || `#${index + 1}`}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h2 className="text-3xl md:text-4xl font-bold text-foreground truncate">
-                          {team.name}
-                        </h2>
+                        <div className="flex items-center gap-3">
+                          <h2 className="text-3xl md:text-4xl font-bold text-foreground truncate">
+                            {team.name}
+                          </h2>
+                          {team.hasCompletedFinal && (
+                            <span className="inline-flex items-center rounded-full bg-yellow-500/20 text-yellow-700 px-3 py-1 text-sm font-semibold">
+                              Final Challenge
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 

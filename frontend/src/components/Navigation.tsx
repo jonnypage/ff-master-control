@@ -1,29 +1,54 @@
-import { Link, useLocation } from 'react-router-dom'
-import { useState } from 'react'
-import type { UserRole } from '@/lib/graphql/generated'
-import { LogOut, Users, Target, ShoppingCart, Settings, Key, Menu, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ThemeToggle } from './ThemeToggle'
-import { ChangePasswordDialog } from '@/features/admin/components/ChangePasswordDialog'
+import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import type { UserRole } from '@/lib/graphql/generated';
+import {
+  LogOut,
+  Users,
+  Target,
+  ShoppingCart,
+  Settings,
+  Key,
+  Menu,
+  X,
+  Trophy,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from './ThemeToggle';
+import { ChangePasswordDialog } from '@/features/admin/components/ChangePasswordDialog';
 
 interface NavigationProps {
-  user: { _id: string; username: string; role: UserRole } | null
-  onLogout: () => void
+  user: { _id: string; username: string; role: UserRole } | null;
+  onLogout: () => void;
 }
 
 export function Navigation({ user, onLogout }: NavigationProps) {
-  const location = useLocation()
-  const [showChangePassword, setShowChangePassword] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const isActive = (path: string) => location.pathname === path
+  const location = useLocation();
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isActive = (path: string) => location.pathname === path;
 
-  const canAccessTeams = user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER'
-  const canAccessMissions = user?.role === 'MISSION_LEADER' || user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER'
-  const canAccessStore = user?.role === 'STORE' || user?.role === 'ADMIN'
-  const canAccessAdmin = user?.role === 'ADMIN'
+  const canAccessTeams = user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER';
+  const canAccessMissions =
+    user?.role === 'MISSION_LEADER' ||
+    user?.role === 'ADMIN' ||
+    user?.role === 'QUEST_GIVER';
+  const canAccessStore = user?.role === 'STORE' || user?.role === 'ADMIN';
+  const canAccessAdmin = user?.role === 'ADMIN';
 
   const navLinks = (
     <>
+      <Link
+        to="/"
+        onClick={() => setMobileMenuOpen(false)}
+        className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          isActive('/')
+            ? 'bg-accent text-accent-foreground'
+            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+        }`}
+      >
+        <Trophy className="w-4 h-4 mr-2" />
+        Leaderboard
+      </Link>
       {canAccessTeams && (
         <Link
           to="/teams"
@@ -81,7 +106,7 @@ export function Navigation({ user, onLogout }: NavigationProps) {
         </Link>
       )}
     </>
-  )
+  );
 
   return (
     <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-50 backdrop-blur-md">
@@ -96,7 +121,7 @@ export function Navigation({ user, onLogout }: NavigationProps) {
               {navLinks}
             </div>
           </div>
-          
+
           {/* Desktop User Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
@@ -109,7 +134,8 @@ export function Navigation({ user, onLogout }: NavigationProps) {
               <Key className="w-4 h-4" />
             </Button>
             <span className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-lg">
-              {user?.username} <span className="text-muted-foreground">({user?.role})</span>
+              {user?.username}{' '}
+              <span className="text-muted-foreground">({user?.role})</span>
             </span>
             <Button variant="ghost" size="sm" onClick={onLogout}>
               <LogOut className="w-4 h-4 mr-2" />
@@ -146,23 +172,24 @@ export function Navigation({ user, onLogout }: NavigationProps) {
                   size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setShowChangePassword(true)
-                    setMobileMenuOpen(false)
+                    setShowChangePassword(true);
+                    setMobileMenuOpen(false);
                   }}
                 >
                   <Key className="w-4 h-4 mr-2" />
                   Change Password
                 </Button>
                 <div className="px-4 py-2 text-sm font-medium text-foreground bg-muted rounded-lg">
-                  {user?.username} <span className="text-muted-foreground">({user?.role})</span>
+                  {user?.username}{' '}
+                  <span className="text-muted-foreground">({user?.role})</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={() => {
-                    onLogout()
-                    setMobileMenuOpen(false)
+                    onLogout();
+                    setMobileMenuOpen(false);
                   }}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -184,6 +211,5 @@ export function Navigation({ user, onLogout }: NavigationProps) {
         />
       )}
     </nav>
-  )
+  );
 }
-
