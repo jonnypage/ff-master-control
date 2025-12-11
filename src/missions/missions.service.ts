@@ -25,9 +25,13 @@ export class MissionsService {
     return this.missionModel.find().exec();
   }
 
-  async findAllForLeaderboard(): Promise<Pick<Mission, '_id'>[]> {
-    // Only return IDs for public leaderboard counts
-    return this.missionModel.find({}, { _id: 1 }).lean();
+  async findAllForLeaderboard(): Promise<
+    Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>[]
+  > {
+    // Return minimal fields required by the public leaderboard query
+    return this.missionModel
+      .find({}, { _id: 1, name: 1, isFinalChallenge: 1 })
+      .lean();
   }
 
   async findOne(id: string): Promise<MissionDocument | null> {
