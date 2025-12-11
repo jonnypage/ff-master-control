@@ -106,6 +106,7 @@ type Query {
   me: User
   mission(id: ID!): Mission
   missionCompletions(teamId: ID): [MissionCompletion!]!
+  leaderboardMissions: [Mission!]!
   missions: [Mission!]!
   leaderboardTeams: [LeaderboardTeam!]!
   searchTeam(searchTerm: String!): Team

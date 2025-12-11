@@ -16,8 +16,6 @@ type GetLeaderboardTeamsQuery = {
   leaderboardTeams: LeaderboardTeam[];
 };
 
-import type { GetMissionsForLeaderboardQuery } from '@/lib/graphql/generated';
-
 const GET_LEADERBOARD_TEAMS_QUERY = graphql(`
   query GetLeaderboardTeams {
     leaderboardTeams {
@@ -30,13 +28,19 @@ const GET_LEADERBOARD_TEAMS_QUERY = graphql(`
 const LEADERBOARD_TEAMS_DOCUMENT =
   GET_LEADERBOARD_TEAMS_QUERY as unknown as RequestDocument;
 
+type GetMissionsForLeaderboardQuery = {
+  leaderboardMissions: { _id: string }[];
+};
+
 const GET_MISSIONS_FOR_LEADERBOARD_QUERY = graphql(`
   query GetMissionsForLeaderboard {
-    missions {
+    leaderboardMissions {
       _id
     }
   }
 `);
+const MISSIONS_FOR_LEADERBOARD_DOCUMENT =
+  GET_MISSIONS_FOR_LEADERBOARD_QUERY as unknown as RequestDocument;
 
 export function LeaderboardPage() {
   const navigate = useNavigate();
@@ -61,7 +65,10 @@ export function LeaderboardPage() {
     error: missionsError,
   } = useQuery<GetMissionsForLeaderboardQuery>({
     queryKey: ['missions-leaderboard'],
-    queryFn: () => graphqlClient.request(GET_MISSIONS_FOR_LEADERBOARD_QUERY),
+    queryFn: () =>
+      graphqlClient.request<GetMissionsForLeaderboardQuery>(
+        MISSIONS_FOR_LEADERBOARD_DOCUMENT,
+      ),
     refetchInterval: 3000,
   });
 
@@ -70,7 +77,7 @@ export function LeaderboardPage() {
 
   const sortedTeams = useMemo(() => {
     const teams = teamsData?.leaderboardTeams ?? [];
-    const totalMissions = missionsData?.missions?.length ?? 0;
+    const totalMissions = missionsData?.leaderboardMissions?.length ?? 0;
 
     return teams
       .map(
@@ -92,7 +99,7 @@ export function LeaderboardPage() {
         }
         return a.name.localeCompare(b.name);
       });
-  }, [teamsData?.leaderboardTeams, missionsData?.missions]);
+  }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions?.length]);
 
   const getRankIcon = (index: number) => {
     if (index === 0) return '🥇';

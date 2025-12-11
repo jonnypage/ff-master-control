@@ -1,9 +1,7 @@
 import { GraphQLClient } from 'graphql-request';
 
-const API_URL =
-  import.meta.env.DEV && import.meta.env.VITE_DEV_API_URL
-    ? import.meta.env.VITE_DEV_API_URL
-    : import.meta.env.VITE_API_URL || 'http://localhost:3000/graphql';
+// Always prefer the production API URL; ignore per-env dev overrides
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/graphql';
 
 export const graphqlClient = new GraphQLClient(API_URL, {
   credentials: 'include',

@@ -12,4 +12,3 @@ export class LeaderboardTeam {
   @Field(() => [ID])
   completedMissionIds: ObjectId[];
 }
-

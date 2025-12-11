@@ -17,6 +17,11 @@ export class MissionsResolver {
   constructor(private missionsService: MissionsService) {}
 
   @Query(() => [Mission])
+  async leaderboardMissions(): Promise<Mission[]> {
+    return this.missionsService.findAllForLeaderboard() as unknown as Mission[];
+  }
+
+  @Query(() => [Mission])
   @UseGuards(JwtAuthGuard)
   async missions(): Promise<Mission[]> {
     return this.missionsService.findAll();
@@ -99,4 +104,3 @@ export class MissionsResolver {
     return true;
   }
 }
-
