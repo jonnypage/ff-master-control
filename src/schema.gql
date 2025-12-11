@@ -107,11 +107,18 @@ type Query {
   mission(id: ID!): Mission
   missionCompletions(teamId: ID): [MissionCompletion!]!
   missions: [Mission!]!
+  leaderboardTeams: [LeaderboardTeam!]!
   searchTeam(searchTerm: String!): Team
   team(nfcCardId: String!): Team
   teamById(id: ID!): Team
   teams: [Team!]!
   users: [User!]!
+}
+
+type LeaderboardTeam {
+  _id: ID!
+  name: String!
+  completedMissionIds: [ID!]!
 }
 
 type Team {
