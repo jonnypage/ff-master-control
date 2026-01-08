@@ -55,11 +55,11 @@ The API provides queries and mutations for:
 
 ## Deployment
 
-For deployment to free hosting platforms (Railway, Render), see [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+For deployment to Railway, see [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 Quick start:
 1. Set up MongoDB Atlas (free tier)
 2. Push code to GitHub
-3. Deploy to Railway or Render (both have free tiers)
+3. Deploy to Railway
 4. Configure environment variables
 5. Test your GraphQL endpoint

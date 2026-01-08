@@ -89,4 +89,4 @@ frontend/
 1. Complete shadcn/ui setup (run commands above)
 2. Generate GraphQL types (`npm run codegen`)
 3. Build out feature components (teams, missions, store)
-4. Deploy to Vercel
+4. Deploy frontend + backend to Railway (see `PWA_SETUP.md` for a quick, phone-testing-friendly flow)

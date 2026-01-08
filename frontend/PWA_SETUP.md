@@ -1,14 +1,29 @@
 # PWA Setup Guide - Testing on Your Phone
 
-## Quick Start: Deploy to Vercel (Recommended)
+## Quick Start: Deploy to Railway (Recommended)
 
-### 1. Create Environment Variable
-Create a `.env` file in the `frontend` directory:
+### 1. Deploy the backend to Railway
+Deploy the backend (repo root) as a Railway service:
+
+- **Root directory**: `/`
+- **Build command**: `npm ci && npm run build`
+- **Start command**: `npm run start:prod`
+- **Variables**:
+  - `MONGODB_URI`
+  - `JWT_SECRET`
+  - `JWT_EXPIRES_IN=24h`
+
+Once deployed, copy your backend GraphQL URL:
+- `https://<backend-domain>/graphql`
+
+### 2. Create Environment Variable for the frontend
+Create a `.env` file in the `frontend` directory (for local dev). For Railway deploy, set the same variable in the Railway service Variables tab.
+
 ```env
-VITE_API_URL=https://ff-master-control-production.up.railway.app/graphql
+VITE_API_URL=https://<backend-domain>/graphql
 ```
 
-### 2. Create PWA Icons (Required)
+### 3. Create PWA Icons (Required)
 You need to create two icon files in `frontend/public/`:
 - `pwa-192x192.png` (192x192 pixels)
 - `pwa-512x512.png` (512x512 pixels)
@@ -18,29 +33,20 @@ You can:
 - Create simple icons with any image editor
 - Use a placeholder image for now (the app will still work)
 
-### 3. Deploy to Vercel
+### 4. Deploy the frontend to Railway
+Deploy the frontend as a second Railway service from the same repo:
 
-**Option A: Using Vercel CLI**
-```bash
-cd frontend
-npm install -g vercel
-vercel
-```
-Follow the prompts. When asked about environment variables, add:
-- `VITE_API_URL` = `https://ff-master-control-production.up.railway.app/graphql`
+**Railway service settings**
+- **Root directory**: `/frontend`
+- **Build command**: `npm ci && npm run build`
+- **Start command**: `npm run preview -- --host 0.0.0.0 --port $PORT`
+- **Variables**:
+  - `VITE_API_URL=https://<backend-domain>/graphql`
 
-**Option B: Using GitHub + Vercel Dashboard**
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com) and sign in
-3. Click "New Project"
-4. Import your GitHub repository
-5. Set root directory to `frontend`
-6. Add environment variable:
-   - Name: `VITE_API_URL`
-   - Value: `https://ff-master-control-production.up.railway.app/graphql`
-7. Click "Deploy"
+After deploy, copy your frontend URL:
+- `https://<frontend-domain>/`
 
-### 4. Install PWA on Your Phone
+### 5. Install PWA on Your Phone
 
 **Android:**
 1. Open the deployed URL in Chrome
@@ -73,7 +79,7 @@ npm run dev -- --host
 
 ### 3. Create .env File
 ```env
-VITE_API_URL=https://ff-master-control-production.up.railway.app/graphql
+VITE_API_URL=https://<backend-domain>/graphql
 ```
 
 ### 4. Access from Phone

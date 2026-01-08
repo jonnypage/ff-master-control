@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-// @ts-expect-error - TypeScript module resolution issue in Vercel builds
+// @ts-expect-error - TypeScript module resolution issue in some CI/build environments
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import * as path from 'path';

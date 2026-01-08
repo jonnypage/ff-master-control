@@ -48,40 +48,6 @@ Click on your service → "Variables" tab → Add:
 
 ---
 
-### Option B: Render (Free Tier with Cold Starts)
-
-**Setup:**
-1. Go to [Render](https://render.com/)
-2. Sign up with GitHub
-3. Click "New" → "Web Service"
-4. Connect your `ff-master-control` repository
-5. Render will auto-detect settings
-
-**Configuration:**
-- **Name:** `ff-master-control`
-- **Environment:** `Node`
-- **Build Command:** `npm ci && npm run build`
-- **Start Command:** `npm run start:prod`
-- **Instance Type:** Free
-
-**Environment Variables:**
-Add in the "Environment" section:
-- `MONGODB_URI` = your MongoDB Atlas connection string
-- `JWT_SECRET` = generate a random string
-- `JWT_EXPIRES_IN` = `24h`
-- `NODE_ENV` = `production`
-
-**Deploy:**
-- Click "Create Web Service"
-- Render will build and deploy
-- Get your URL (e.g., `https://ff-master-control.onrender.com`)
-
-**Note:** Free tier sleeps after 15 minutes of inactivity. First request after sleep takes ~30 seconds.
-
-**Cost:** Free
-
----
-
 ## Step 3: Test Your Deployment
 
 1. Once deployed, visit `https://your-app-url/graphql`
@@ -224,5 +190,5 @@ Or, from the Admin UI, use the “Delete All Teams” action (admin-only).
 
 For platform-specific issues:
 - Railway: [Docs](https://docs.railway.app/)
-- Render: [Docs](https://render.com/docs)
+ 
 
