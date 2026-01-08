@@ -202,11 +202,23 @@ app.enableCors({
 ## Next Steps
 
 1. Test all GraphQL queries/mutations
-2. Create test teams with NFC card IDs
+2. Create test teams (name + 4-digit PIN) and use the returned Team GUID to log in
 3. Create missions
 4. Test mission completion flow
 5. Test store credit adjustments
 6. Set up your React PWA frontend to connect to this backend
+
+## Event reset (recommended each year)
+
+Because teams are ephemeral and the Team schema requires `teamGuid` + `pinHash`, the safest approach is to **delete all teams before the event** and let kids create new ones during the event.
+
+To delete all teams from the database:
+
+```bash
+CONFIRM=true npm run reset:teams
+```
+
+Or, from the Admin UI, use the “Delete All Teams” action (admin-only).
 
 ## Support
 

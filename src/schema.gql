@@ -20,8 +20,9 @@ input CreateMissionDto {
 }
 
 input CreateTeamDto {
+  image: TeamImageInput
   name: String!
-  nfcCardId: String!
+  pin: String!
 }
 
 input ChangePasswordDto {
@@ -48,8 +49,12 @@ input UpdateMissionDto {
 }
 
 input UpdateTeamDto {
+  image: TeamImageInput
   name: String
-  nfcCardId: String
+}
+
+input TeamImageInput {
+  url: String
 }
 
 """
@@ -82,23 +87,29 @@ type MissionCompletion {
 }
 
 type Mutation {
-  addCredits(amount: Int!, nfcCardId: String!): Team!
-  adjustCredits(amount: Int!, nfcCardId: String!): Team!
+  addCredits(amount: Int!, teamId: ID!): Team!
+  adjustCredits(amount: Int!, teamId: ID!): Team!
   changePassword(id: ID!, input: ChangePasswordDto!): Boolean!
-  completeMission(missionId: ID!, nfcCardId: String!): MissionCompletion!
+  completeMission(missionId: ID!, teamId: ID!): MissionCompletion!
   createMission(input: CreateMissionDto!): Mission!
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
   deleteAllTeams: Boolean!
   deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
+  teamLogin(input: TeamLoginInput!): TeamAuthPayload!
   updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
-  removeCredits(amount: Int!, nfcCardId: String!): Team!
+  removeCredits(amount: Int!, teamId: ID!): Team!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!
   updateMission(id: ID!, input: UpdateMissionDto!): Mission!
   updateTeam(id: ID!, input: UpdateTeamDto!): Team!
+}
+
+input TeamLoginInput {
+  pin: String!
+  teamGuid: String!
 }
 
 type Query {
@@ -109,8 +120,9 @@ type Query {
   leaderboardMissions: [Mission!]!
   missions: [Mission!]!
   leaderboardTeams: [LeaderboardTeam!]!
+  myTeam: Team
   searchTeam(searchTerm: String!): Team
-  team(nfcCardId: String!): Team
+  team(teamGuid: String!): Team
   teamById(id: ID!): Team
   teams: [Team!]!
   users: [User!]!
@@ -127,9 +139,19 @@ type Team {
   completedMissionIds: [ID!]!
   createdAt: DateTime!
   credits: Float!
+  image: TeamImage
   name: String!
-  nfcCardId: String!
+  teamGuid: String!
   updatedAt: DateTime!
+}
+
+type TeamAuthPayload {
+  access_token: String!
+  team: Team!
+}
+
+type TeamImage {
+  url: String
 }
 
 type User {

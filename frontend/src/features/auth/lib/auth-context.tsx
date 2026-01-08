@@ -14,10 +14,19 @@ interface User {
   role: UserRole;
 }
 
+interface Team {
+  _id: string;
+  name: string;
+  teamGuid: string;
+  image?: { url?: string | null } | null;
+}
+
 interface AuthContextType {
   user: User | null;
+  team: Team | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  loginUser: (token: string, user: User) => void;
+  loginTeam: (token: string, team: Team) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -25,26 +34,32 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'ff_auth_token';
+const PRINCIPAL_TYPE_KEY = 'ff_principal_type';
 const USER_KEY = 'ff_user';
+const TEAM_KEY = 'ff_team';
 
 function getInitialAuth() {
   const savedToken = localStorage.getItem(TOKEN_KEY);
+  const principalType = localStorage.getItem(PRINCIPAL_TYPE_KEY);
   const savedUser = localStorage.getItem(USER_KEY);
+  const savedTeam = localStorage.getItem(TEAM_KEY);
 
-  if (savedToken && savedUser) {
-    return {
-      token: savedToken,
-      user: JSON.parse(savedUser) as User,
-    };
+  if (savedToken && principalType === 'user' && savedUser) {
+    return { token: savedToken, user: JSON.parse(savedUser) as User, team: null };
   }
 
-  return { token: null, user: null };
+  if (savedToken && principalType === 'team' && savedTeam) {
+    return { token: savedToken, user: null, team: JSON.parse(savedTeam) as Team };
+  }
+
+  return { token: null, user: null, team: null };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const initialState = getInitialAuth();
   const [token, setToken] = useState<string | null>(initialState.token);
   const [user, setUser] = useState<User | null>(initialState.user);
+  const [team, setTeam] = useState<Team | null>(initialState.team);
 
   // Set auth token in GraphQL client when token is available
   useEffect(() => {
@@ -55,19 +70,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token]);
 
-  const login = (newToken: string, newUser: User) => {
+  const loginUser = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
+    setTeam(null);
     localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem(PRINCIPAL_TYPE_KEY, 'user');
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+    localStorage.removeItem(TEAM_KEY);
+    setAuthToken(newToken);
+  };
+
+  const loginTeam = (newToken: string, newTeam: Team) => {
+    setToken(newToken);
+    setTeam(newTeam);
+    setUser(null);
+    localStorage.setItem(TOKEN_KEY, newToken);
+    localStorage.setItem(PRINCIPAL_TYPE_KEY, 'team');
+    localStorage.setItem(TEAM_KEY, JSON.stringify(newTeam));
+    localStorage.removeItem(USER_KEY);
     setAuthToken(newToken);
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
+    setTeam(null);
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(PRINCIPAL_TYPE_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(TEAM_KEY);
     setAuthToken(null);
   };
 
@@ -75,10 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
+        team,
         token,
-        login,
+        loginUser,
+        loginTeam,
         logout,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!token && (!!user || !!team),
       }}
     >
       {children}

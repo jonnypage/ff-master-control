@@ -33,7 +33,6 @@ export function TeamsPage() {
       <TeamList
         teams={teams?.teams || []}
         isLoading={isLoading}
-        onUpdate={() => refetch()}
       />
 
       {isAdmin && (

@@ -36,7 +36,7 @@ export function MissionCompletion({
       return;
     }
     completeMission.mutate(
-      { missionId: mission._id, nfcCardId: team.nfcCardId },
+      { missionId: mission._id, teamId: team._id },
       {
         onSuccess: () => {
           toast.success(

@@ -6,10 +6,12 @@ import { AuthService } from './auth.service';
 import { AuthResolver } from './auth.resolver';
 import { JwtStrategy } from './jwt.strategy';
 import { UsersModule } from '../users/users.module';
+import { TeamsModule } from '../teams/teams.module';
 
 @Module({
   imports: [
     UsersModule,
+    TeamsModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

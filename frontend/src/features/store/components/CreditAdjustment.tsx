@@ -37,7 +37,7 @@ export function CreditAdjustment({
 
     const finalAmount = isAddMode ? adjustmentAmount : -adjustmentAmount;
     adjustCredits.mutate(
-      { nfcCardId: team.nfcCardId, amount: finalAmount },
+      { teamId: team._id, amount: finalAmount },
       {
         onSuccess: () => {
           const action = isAddMode ? 'added' : 'removed';

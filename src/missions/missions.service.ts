@@ -25,13 +25,9 @@ export class MissionsService {
     return this.missionModel.find().exec();
   }
 
-  async findAllForLeaderboard(): Promise<
-    Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>[]
-  > {
-    // Return minimal fields required by the public leaderboard query
-    return this.missionModel
-      .find({}, { _id: 1, name: 1, isFinalChallenge: 1 })
-      .lean();
+  async findAllForLeaderboard(): Promise<Pick<Mission, '_id'>[]> {
+    // Only return IDs for public leaderboard counts
+    return this.missionModel.find({}, { _id: 1 }).lean();
   }
 
   async findOne(id: string): Promise<MissionDocument | null> {
@@ -39,12 +35,12 @@ export class MissionsService {
   }
 
   async completeMission(
-    nfcCardId: string,
+    teamId: string,
     missionId: string,
     completedBy: string,
     isManualOverride = false,
   ): Promise<MissionCompletionDocument> {
-    const team = await this.teamsService.findByNfcCardId(nfcCardId);
+    const team = await this.teamsService.findOne(teamId);
     if (!team) {
       throw new NotFoundException('Team not found');
     }
@@ -115,7 +111,7 @@ export class MissionsService {
     }
 
     // Create override completion
-    return this.completeMission(team.nfcCardId, missionId, completedBy, true);
+    return this.completeMission(team._id.toString(), missionId, completedBy, true);
   }
 
   async findCompletions(teamId?: string): Promise<MissionCompletionDocument[]> {

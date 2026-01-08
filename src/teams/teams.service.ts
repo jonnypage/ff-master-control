@@ -1,10 +1,11 @@
 import {
   Injectable,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { randomUUID } from 'crypto';
+import * as bcrypt from 'bcrypt';
 import { Team, TeamDocument } from './schemas/team.schema';
 import { LeaderboardTeam } from './schemas/leaderboard-team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -14,20 +15,26 @@ export class TeamsService {
   constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
 
   async create(createTeamDto: CreateTeamDto): Promise<TeamDocument> {
-    const existingTeam = await this.teamModel.findOne({
-      nfcCardId: createTeamDto.nfcCardId,
+    const teamGuid = randomUUID();
+    const pinHash = await bcrypt.hash(createTeamDto.pin, 10);
+
+    const createdTeam = new this.teamModel({
+      name: createTeamDto.name,
+      teamGuid,
+      pinHash,
+      image: createTeamDto.image ?? null,
     });
 
-    if (existingTeam) {
-      throw new ConflictException('Team with this NFC card ID already exists');
-    }
-
-    const createdTeam = new this.teamModel(createTeamDto);
     return createdTeam.save();
   }
 
-  async findByNfcCardId(nfcCardId: string): Promise<TeamDocument | null> {
-    return this.teamModel.findOne({ nfcCardId }).exec();
+  async findByTeamGuid(teamGuid: string): Promise<TeamDocument | null> {
+    return this.teamModel.findOne({ teamGuid }).exec();
+  }
+
+  async findByTeamGuidForAuth(teamGuid: string): Promise<TeamDocument | null> {
+    // pinHash is excluded by default (`select: false`), so opt-in here.
+    return this.teamModel.findOne({ teamGuid }).select('+pinHash').exec();
   }
 
   async findOne(id: string): Promise<TeamDocument | null> {
@@ -45,28 +52,19 @@ export class TeamsService {
 
   async update(
     id: string,
-    updateData: { name?: string; nfcCardId?: string },
+    updateData: { name?: string; image?: any },
   ): Promise<TeamDocument> {
     const team = await this.teamModel.findById(id);
     if (!team) {
       throw new NotFoundException('Team not found');
     }
 
-    // Check if NFC card ID is being changed and if it's already taken
-    if (updateData.nfcCardId && updateData.nfcCardId !== team.nfcCardId) {
-      const existingTeam = await this.teamModel.findOne({
-        nfcCardId: updateData.nfcCardId,
-      });
-      if (existingTeam) {
-        throw new ConflictException(
-          'Team with this NFC card ID already exists',
-        );
-      }
-      team.nfcCardId = updateData.nfcCardId;
-    }
-
     if (updateData.name !== undefined) {
       team.name = updateData.name;
+    }
+
+    if (updateData.image !== undefined) {
+      team.image = updateData.image;
     }
 
     return team.save();
@@ -128,16 +126,12 @@ export class TeamsService {
     );
   }
 
-  async findByNameOrNfcCardId(
+  async findByNameOrTeamGuid(
     searchTerm: string,
   ): Promise<TeamDocument | null> {
-    // Try NFC card ID first (exact match)
-    const byNfcCardId = await this.teamModel
-      .findOne({ nfcCardId: searchTerm })
-      .exec();
-    if (byNfcCardId) {
-      return byNfcCardId;
-    }
+    // Try team GUID first (exact match)
+    const byTeamGuid = await this.teamModel.findOne({ teamGuid: searchTerm }).exec();
+    if (byTeamGuid) return byTeamGuid;
 
     // Then try team name (partial match, case-insensitive)
     // This will match if the search term appears anywhere in the team name

@@ -47,12 +47,12 @@ export class MissionsResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MISSION_LEADER, UserRole.ADMIN)
   async completeMission(
-    @Args('nfcCardId') nfcCardId: string,
+    @Args('teamId') teamId: string,
     @Args('missionId', { type: () => ID }) missionId: string,
     @CurrentUser() user: User,
   ): Promise<MissionCompletion> {
     return this.missionsService.completeMission(
-      nfcCardId,
+      teamId,
       missionId,
       user._id.toString(),
       false,

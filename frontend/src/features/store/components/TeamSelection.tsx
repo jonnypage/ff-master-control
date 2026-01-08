@@ -1,11 +1,8 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Search, Radio, Users } from 'lucide-react';
-import { useNFCReader } from '@/hooks/useNFCReader';
-import { toast } from 'sonner';
+import { Search, Users } from 'lucide-react';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
 import { useTeamsForStore } from '@/lib/api/useApi';
 
@@ -15,49 +12,19 @@ interface TeamSelectionProps {
 
 export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
   const { data, isLoading } = useTeamsForStore();
 
   const filteredTeams = useMemo(() => {
-    const allTeams = data?.teams ?? [];
+    const allTeams = (data?.teams ?? []) as GetTeamsForStoreQuery['teams'];
     if (!searchTerm.trim()) return allTeams;
 
     const searchLower = searchTerm.toLowerCase();
     return allTeams.filter(
-      (team) =>
-        team.name.toLowerCase().includes(searchLower) ||
-        team.nfcCardId.toLowerCase().includes(searchLower),
+      (team: GetTeamsForStoreQuery['teams'][number]) =>
+        team.name.toLowerCase().includes(searchLower),
     );
   }, [data?.teams, searchTerm]);
-
-  const handleNFCRead = async () => {
-    if (!isSupported) {
-      checkSupport();
-      if (!isSupported) {
-        toast.error('NFC is not supported on this device');
-        return;
-      }
-    }
-
-    const result = await readNFC();
-    if (result.success && result.nfcId) {
-      const foundTeam = data?.teams?.find(
-        (team) => team.nfcCardId.toLowerCase() === result.nfcId?.toLowerCase(),
-      );
-      if (foundTeam) {
-        toast.success('Team found!');
-        setSearchTerm(result.nfcId);
-        // Navigate directly to credit adjustment for this team
-        onTeamSelect(foundTeam);
-      } else {
-        toast.error('Team not found');
-        setSearchTerm(result.nfcId);
-      }
-    } else {
-      toast.error(result.error || 'Failed to read NFC card');
-    }
-  };
 
   if (isLoading) {
     return (
@@ -90,27 +57,16 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search teams by name or NFC card ID..."
+            placeholder="Search teams by name or team ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-11"
           />
         </div>
-        {isSupported && (
-          <Button
-            onClick={handleNFCRead}
-            disabled={isReading}
-            variant="outline"
-            className="h-11"
-          >
-            <Radio className="w-4 h-4 mr-2" />
-            {isReading ? 'Reading...' : 'Scan NFC'}
-          </Button>
-        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredTeams.map((team) => (
+        {filteredTeams.map((team: GetTeamsForStoreQuery['teams'][number]) => (
           <Card
             key={team._id}
             className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
@@ -135,9 +91,9 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
               </div>
               <div className="pt-2 border-t">
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">Card ID:</span>{' '}
+                  <span className="font-medium">Team ID:</span>{' '}
                   <code className="bg-muted px-2 py-1 rounded font-mono">
-                    {team.nfcCardId}
+                    {team._id}
                   </code>
                 </div>
               </div>

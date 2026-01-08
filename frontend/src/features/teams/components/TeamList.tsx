@@ -1,67 +1,40 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Search, Radio, Users } from 'lucide-react';
-import { useNFCReader } from '@/hooks/useNFCReader';
-import { toast } from 'sonner';
+import { Search, Users } from 'lucide-react';
 import type { GetTeamsQuery } from '@/lib/graphql/generated';
 import { useMissionsForTeams } from '@/lib/api/useApi';
+import { TeamCard } from './TeamCard';
+
+type TeamWithProgress = GetTeamsQuery['teams'][number] & {
+  completedMissionIds?: string[];
+};
 
 interface TeamListProps {
-  teams: GetTeamsQuery['teams'];
+  teams: TeamWithProgress[];
   isLoading: boolean;
-  onUpdate?: () => void;
 }
 
-export function TeamList({ teams, isLoading, onUpdate }: TeamListProps) {
+export function TeamList({ teams, isLoading }: TeamListProps) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
   const { data: missionsData } = useMissionsForTeams();
 
   const totalMissions = missionsData?.missions?.length ?? 0;
 
   const filteredTeams = useMemo(() => {
-    const allTeams = teams ?? [];
+    const allTeams = (teams ?? []) as TeamWithProgress[];
     if (!searchTerm.trim()) return allTeams;
 
     const searchLower = searchTerm.toLowerCase();
     return allTeams.filter(
       (team) =>
         team.name.toLowerCase().includes(searchLower) ||
-        team.nfcCardId.toLowerCase().includes(searchLower),
+        team.teamGuid.toLowerCase().includes(searchLower),
     );
   }, [teams, searchTerm]);
-
-  const handleNFCRead = async () => {
-    if (!isSupported) {
-      checkSupport();
-      if (!isSupported) {
-        toast.error('NFC is not supported on this device');
-        return;
-      }
-    }
-
-    const result = await readNFC();
-    if (result.success && result.nfcId) {
-      setSearchTerm(result.nfcId);
-      const foundTeam = teams.find(
-        (team) => team.nfcCardId.toLowerCase() === result.nfcId?.toLowerCase(),
-      );
-      if (foundTeam) {
-        toast.success('Team found!');
-        onUpdate?.();
-      } else {
-        toast.error('Team not found');
-      }
-    } else {
-      toast.error(result.error || 'Failed to read NFC card');
-    }
-  };
 
   if (isLoading) {
     return (
@@ -94,67 +67,22 @@ export function TeamList({ teams, isLoading, onUpdate }: TeamListProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search teams by name or NFC card ID..."
+            placeholder="Search teams by name or team ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-11"
           />
         </div>
-        {isSupported && (
-          <Button
-            onClick={handleNFCRead}
-            disabled={isReading}
-            variant="outline"
-            className="h-11"
-          >
-            <Radio className="w-4 h-4 mr-2" />
-            {isReading ? 'Reading...' : 'Scan NFC'}
-          </Button>
-        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredTeams.map((team: GetTeamsQuery['teams'][number]) => (
-          <Card
+        {filteredTeams.map((team: TeamWithProgress) => (
+          <TeamCard
             key={team._id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+            team={team}
+            totalMissions={totalMissions}
             onClick={() => navigate(`/teams/${team._id}`)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                {team.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Credits
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="text-base font-semibold px-3 py-1"
-                >
-                  {team.credits}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Missions
-                </span>
-                <Badge className="text-base font-semibold px-3 py-1">
-                  {team.completedMissionIds.length}/{totalMissions}
-                </Badge>
-              </div>
-              <div className="pt-2 border-t">
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">Card ID:</span>{' '}
-                  <code className="bg-muted px-2 py-1 rounded font-mono">
-                    {team.nfcCardId}
-                  </code>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          />
         ))}
       </div>
 

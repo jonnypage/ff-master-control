@@ -18,17 +18,23 @@ import { ChangePasswordDialog } from '@/features/admin/components/ChangePassword
 
 interface NavigationProps {
   user: { _id: string; username: string; role: UserRole } | null;
+  team: { _id: string; name: string; teamGuid: string } | null;
   onLogout: () => void;
 }
 
-export function Navigation({ user, onLogout }: NavigationProps) {
+export function Navigation({ user, team, onLogout }: NavigationProps) {
   const location = useLocation();
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isActive = (path: string) => location.pathname === path;
 
-  const canAccessTeams = user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER';
+  const isStaff = !!user;
+  const isTeam = !!team && !user;
+
+  const canAccessTeams =
+    isTeam || user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER';
   const canAccessMissions =
+    isTeam ||
     user?.role === 'MISSION_LEADER' ||
     user?.role === 'ADMIN' ||
     user?.role === 'QUEST_GIVER';
@@ -49,6 +55,20 @@ export function Navigation({ user, onLogout }: NavigationProps) {
         <Trophy className="w-4 h-4 mr-2" />
         Leaderboard
       </Link>
+      {isTeam && (
+        <Link
+          to="/team"
+          onClick={() => setMobileMenuOpen(false)}
+          className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            isActive('/team')
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+          }`}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          My Team
+        </Link>
+      )}
       {canAccessTeams && (
         <Link
           to="/teams"
@@ -125,18 +145,31 @@ export function Navigation({ user, onLogout }: NavigationProps) {
           {/* Desktop User Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowChangePassword(true)}
-              title="Change password"
-            >
-              <Key className="w-4 h-4" />
-            </Button>
-            <span className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-lg">
-              {user?.username}{' '}
-              <span className="text-muted-foreground">({user?.role})</span>
-            </span>
+            {isStaff && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowChangePassword(true)}
+                title="Change password"
+              >
+                <Key className="w-4 h-4" />
+              </Button>
+            )}
+            {(isStaff || isTeam) && (
+              <span className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-lg">
+                {isStaff ? (
+                  <>
+                    {user?.username}{' '}
+                    <span className="text-muted-foreground">({user?.role})</span>
+                  </>
+                ) : (
+                  <>
+                    {team?.name}{' '}
+                    <span className="text-muted-foreground">(team)</span>
+                  </>
+                )}
+              </span>
+            )}
             <Button variant="ghost" size="sm" onClick={onLogout}>
               <LogOut className="w-4 h-4 mr-2" />
               Logout
@@ -172,16 +205,28 @@ export function Navigation({ user, onLogout }: NavigationProps) {
                   size="sm"
                   className="w-full justify-start"
                   onClick={() => {
-                    setShowChangePassword(true);
+                    if (isStaff) {
+                      setShowChangePassword(true);
+                    }
                     setMobileMenuOpen(false);
                   }}
+                  disabled={!isStaff}
                 >
                   <Key className="w-4 h-4 mr-2" />
                   Change Password
                 </Button>
                 <div className="px-4 py-2 text-sm font-medium text-foreground bg-muted rounded-lg">
-                  {user?.username}{' '}
-                  <span className="text-muted-foreground">({user?.role})</span>
+                  {isStaff ? (
+                    <>
+                      {user?.username}{' '}
+                      <span className="text-muted-foreground">({user?.role})</span>
+                    </>
+                  ) : (
+                    <>
+                      {team?.name}{' '}
+                      <span className="text-muted-foreground">(team)</span>
+                    </>
+                  )}
                 </div>
                 <Button
                   variant="ghost"

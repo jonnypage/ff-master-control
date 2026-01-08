@@ -3,7 +3,7 @@ NestJS GraphQL backend for Freedom Fighters event management system.
 
 ## Overview
 
-Backend system for managing teams, missions, credits, and NFC card-based mission completions for the Freedom Fighters youth group event.
+Backend system for managing teams, missions, credits, and team-based mission completions for the Freedom Fighters youth group event.
 
 ## Features
 
@@ -11,7 +11,7 @@ Backend system for managing teams, missions, credits, and NFC card-based mission
 - MongoDB database with Mongoose
 - JWT authentication with role-based authorization
 - Role-based access control (admin, mission-leader, store)
-- NFC card-based team identification
+- Team GUID + 4-digit PIN team login (kid-friendly)
 - Mission completion tracking with credit awards
 - Store credit management
 - Admin override capabilities
@@ -48,7 +48,7 @@ The GraphQL playground will be available at `http://localhost:3000/graphql`.
 The API provides queries and mutations for:
 - Authentication (login)
 - User management (admin only)
-- Team management (NFC card lookup, team creation)
+- Team management (team creation, team GUID lookup, team login)
 - Mission management (list missions, complete missions, override completions)
 - Store operations (credit adjustments)
 - Configuration management (required missions for final challenge)

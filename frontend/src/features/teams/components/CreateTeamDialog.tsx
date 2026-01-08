@@ -1,5 +1,4 @@
-import { useState } from 'react'
-import { useNFCReader } from '@/hooks/useNFCReader'
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,18 +6,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Radio } from 'lucide-react'
-import { toast } from 'sonner'
-import { useCreateTeam } from '@/lib/api/useApi'
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { useCreateTeam } from '@/lib/api/useApi';
 
 interface CreateTeamDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
 export function CreateTeamDialog({
@@ -26,54 +24,49 @@ export function CreateTeamDialog({
   onOpenChange,
   onSuccess,
 }: CreateTeamDialogProps) {
-  const [name, setName] = useState('')
-  const [nfcCardId, setNfcCardId] = useState('')
-  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader()
+  const [name, setName] = useState('');
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
 
-  const createTeam = useCreateTeam()
-
-  const handleNFCRead = async () => {
-    if (!isSupported) {
-      checkSupport()
-      if (!isSupported) {
-        toast.error('NFC is not supported on this device')
-        return
-      }
-    }
-
-    const result = await readNFC()
-    if (result.success && result.nfcId) {
-      setNfcCardId(result.nfcId)
-      toast.success('NFC card scanned successfully!')
-    } else {
-      toast.error(result.error || 'Failed to read NFC card')
-    }
-  }
+  const createTeam = useCreateTeam();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || !nfcCardId.trim()) {
-      toast.error('Please fill in all fields')
-      return
+    e.preventDefault();
+    if (!name.trim() || !pin.trim() || !confirmPin.trim()) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+    if (!/^\d{4}$/.test(pin)) {
+      toast.error('PIN must be exactly 4 digits');
+      return;
+    }
+    if (pin !== confirmPin) {
+      toast.error('PINs do not match');
+      return;
     }
     createTeam.mutate(
-      { input: { name: name.trim(), nfcCardId: nfcCardId.trim() } },
+      { input: { name: name.trim(), pin } },
       {
-        onSuccess: () => {
-          toast.success('Team created successfully!')
-          setName('')
-          setNfcCardId('')
-          onSuccess()
+        onSuccess: (data) => {
+          toast.success('Team created successfully!');
+          setName('');
+          setPin('');
+          setConfirmPin('');
+          const teamGuid = data?.createTeam?.teamGuid;
+          if (teamGuid) {
+            toast.message(`Team GUID: ${teamGuid}`);
+          }
+          onSuccess();
         },
         onError: (error: unknown) => {
-          const message =
+          const errorMessage =
             (error as { response?: { errors?: Array<{ message?: string }> } })
-              ?.response?.errors?.[0]?.message || 'Failed to create team'
-          toast.error(message)
+              ?.response?.errors?.[0]?.message || 'Failed to create team';
+          toast.error(errorMessage);
         },
       },
-    )
-  }
+    );
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -81,7 +74,7 @@ export function CreateTeamDialog({
         <DialogHeader>
           <DialogTitle>Create New Team</DialogTitle>
           <DialogDescription>
-            Create a new team with an NFC card ID
+            Create a new team
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -97,28 +90,28 @@ export function CreateTeamDialog({
               />
             </div>
             <div>
-              <Label htmlFor="nfc-id">NFC Card ID</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="nfc-id"
-                  value={nfcCardId}
-                  onChange={(e) => setNfcCardId(e.target.value)}
-                  placeholder="Enter NFC card ID or scan"
-                  required
-                  className="flex-1"
-                />
-                {isSupported && (
-                  <Button
-                    type="button"
-                    onClick={handleNFCRead}
-                    disabled={isReading}
-                    variant="outline"
-                  >
-                    <Radio className="w-4 h-4 mr-2" />
-                    {isReading ? 'Scanning...' : 'Scan'}
-                  </Button>
-                )}
-              </div>
+              <Label htmlFor="pin">4-digit PIN</Label>
+              <Input
+                id="pin"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="1234"
+                inputMode="numeric"
+                pattern="\\d{4}"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-pin">Confirm PIN</Label>
+              <Input
+                id="confirm-pin"
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value)}
+                placeholder="1234"
+                inputMode="numeric"
+                pattern="\\d{4}"
+                required
+              />
             </div>
           </div>
           <DialogFooter>
@@ -136,6 +129,5 @@ export function CreateTeamDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

@@ -42,12 +42,12 @@ export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDe
   };
 
   const filteredUsers = useMemo(() => {
-    const allUsers = data?.users ?? [];
+    const allUsers = (data?.users ?? []) as GetUsersQuery['users'];
     if (!searchTerm.trim()) return allUsers;
 
     const searchLower = searchTerm.toLowerCase();
     return allUsers.filter(
-      (user) =>
+      (user: GetUsersQuery['users'][number]) =>
         user.username.toLowerCase().includes(searchLower) ||
         ROLE_LABELS[user.role]?.toLowerCase().includes(searchLower),
     );
@@ -115,7 +115,7 @@ export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDe
             </CardContent>
           </Card>
         )}
-        {filteredUsers.map((user) => (
+        {filteredUsers.map((user: GetUsersQuery['users'][number]) => (
           <Card key={user._id} className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
               <CardTitle className="text-xl">{user.username}</CardTitle>

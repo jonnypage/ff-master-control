@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Target } from 'lucide-react';
 import { useMissions, useTeamsForMissions } from '@/lib/api/useApi';
+import type { GetMissionsQuery } from '@/lib/graphql/generated';
 
 export function MissionList() {
   const navigate = useNavigate();
@@ -24,7 +25,7 @@ export function MissionList() {
       return { counts: {}, totalTeams: 0 };
     }
 
-    data?.missions?.forEach((mission) => {
+    (data?.missions ?? []).forEach((mission: GetMissionsQuery['missions'][number]) => {
       const completedCount = teams.filter(
         (team: { completedMissionIds?: string[] }) =>
           team.completedMissionIds?.includes(mission._id) ?? false,
@@ -36,12 +37,12 @@ export function MissionList() {
   }, [data?.missions, teamsData]);
 
   const filteredMissions = useMemo(() => {
-    const missions = data?.missions ?? [];
+    const missions = (data?.missions ?? []) as GetMissionsQuery['missions'];
     if (!searchTerm.trim()) return missions;
 
     const searchLower = searchTerm.toLowerCase();
     return missions.filter(
-      (mission) =>
+      (mission: GetMissionsQuery['missions'][number]) =>
         mission.name.toLowerCase().includes(searchLower) ||
         mission.description?.toLowerCase().includes(searchLower),
     );
@@ -85,7 +86,7 @@ export function MissionList() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredMissions.map((mission) => (
+        {filteredMissions.map((mission: GetMissionsQuery['missions'][number]) => (
           <Card
             key={mission._id}
             className="cursor-pointer hover:shadow-lg transition-all duration-200 group"

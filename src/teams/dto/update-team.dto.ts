@@ -1,5 +1,6 @@
 import { InputType, Field } from '@nestjs/graphql';
 import { IsString, IsOptional } from 'class-validator';
+import { TeamImageInput } from './create-team.dto';
 
 @InputType()
 export class UpdateTeamDto {
@@ -8,9 +9,8 @@ export class UpdateTeamDto {
   @IsString()
   name?: string;
 
-  @Field({ nullable: true })
+  @Field(() => TeamImageInput, { nullable: true })
   @IsOptional()
-  @IsString()
-  nfcCardId?: string;
+  image?: TeamImageInput;
 }
 

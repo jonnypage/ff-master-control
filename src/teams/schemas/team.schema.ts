@@ -4,19 +4,33 @@ import { ObjectType, Field, ID } from '@nestjs/graphql';
 
 export type TeamDocument = Team & Document;
 
+@ObjectType()
+export class TeamImage {
+  @Field({ nullable: true })
+  url?: string;
+}
+
 @Schema({ timestamps: true })
 @ObjectType()
 export class Team {
   @Field(() => ID)
   _id: ObjectId;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true, unique: true, index: true })
   @Field()
-  nfcCardId: string;
+  teamGuid: string;
 
   @Prop({ required: true })
   @Field()
   name: string;
+
+  @Prop({ type: Object, default: null })
+  @Field(() => TeamImage, { nullable: true })
+  image?: TeamImage | null;
+
+  // Hashed 4-digit PIN. Never expose via GraphQL.
+  @Prop({ required: true, select: false })
+  pinHash: string;
 
   @Prop({ default: 0 })
   @Field()

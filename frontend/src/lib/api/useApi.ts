@@ -22,7 +22,7 @@ export function useLeaderboardTeams() {
           }
         `) as unknown as RequestDocument,
       ),
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 }
 
@@ -41,7 +41,7 @@ export function useLeaderboardMissions() {
           }
         `) as unknown as RequestDocument,
       ),
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 }
 
@@ -55,7 +55,6 @@ export function useTeamsForStore() {
             teams {
               _id
               name
-              nfcCardId
               credits
             }
           }
@@ -67,14 +66,13 @@ export function useTeamsForStore() {
 export function useAdjustCredits() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { nfcCardId: string; amount: number }) =>
+    mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation AdjustCredits($nfcCardId: String!, $amount: Int!) {
-            adjustCredits(nfcCardId: $nfcCardId, amount: $amount) {
+          mutation AdjustCredits($teamId: ID!, $amount: Int!) {
+            adjustCredits(teamId: $teamId, amount: $amount) {
               _id
               name
-              nfcCardId
               credits
             }
           }
@@ -84,6 +82,30 @@ export function useAdjustCredits() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['teams-for-store'] });
     },
+  });
+}
+
+export function useTeamLogin() {
+  return useMutation({
+    mutationFn: (variables: { input: { teamGuid: string; pin: string } }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation TeamLogin($input: TeamLoginInput!) {
+            teamLogin(input: $input) {
+              access_token
+              team {
+                _id
+                name
+                teamGuid
+                image {
+                  url
+                }
+              }
+            }
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
   });
 }
 
@@ -121,6 +143,7 @@ export function useUsers() {
               _id
               username
               role
+              createdAt
             }
           }
         `) as unknown as RequestDocument,
@@ -235,8 +258,12 @@ export function useTeams() {
             teams {
               _id
               name
-              nfcCardId
+              teamGuid
+              image {
+                url
+              }
               credits
+              completedMissionIds
             }
           }
         `) as unknown as RequestDocument,
@@ -254,8 +281,12 @@ export function useTeamById(id: string) {
             teamById(id: $id) {
               _id
               name
-              nfcCardId
+              teamGuid
+              image {
+                url
+              }
               credits
+              completedMissionIds
             }
           }
         `) as unknown as RequestDocument,
@@ -268,14 +299,19 @@ export function useTeamById(id: string) {
 export function useCreateTeam() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { input: { name: string; nfcCardId: string } }) =>
+    mutationFn: (variables: {
+      input: { name: string; pin: string; image?: { url?: string } };
+    }) =>
       graphqlClient.request(
         graphql(`
           mutation CreateTeam($input: CreateTeamDto!) {
             createTeam(input: $input) {
               _id
               name
-              nfcCardId
+              teamGuid
+              image {
+                url
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -290,7 +326,7 @@ export function useUpdateTeam() {
   return useMutation({
     mutationFn: (variables: {
       id: string;
-      input: { name?: string; nfcCardId?: string };
+      input: { name?: string; image?: { url?: string } };
     }) =>
       graphqlClient.request(
         graphql(`
@@ -298,7 +334,10 @@ export function useUpdateTeam() {
             updateTeam(id: $id, input: $input) {
               _id
               name
-              nfcCardId
+              teamGuid
+              image {
+                url
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -311,11 +350,11 @@ export function useUpdateTeam() {
 export function useAddCredits() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { nfcCardId: string; amount: number }) =>
+    mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation AddCredits($nfcCardId: String!, $amount: Int!) {
-            addCredits(nfcCardId: $nfcCardId, amount: $amount) {
+          mutation AddCredits($teamId: ID!, $amount: Int!) {
+            addCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
             }
@@ -330,11 +369,11 @@ export function useAddCredits() {
 export function useRemoveCredits() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { nfcCardId: string; amount: number }) =>
+    mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation RemoveCredits($nfcCardId: String!, $amount: Int!) {
-            removeCredits(nfcCardId: $nfcCardId, amount: $amount) {
+          mutation RemoveCredits($teamId: ID!, $amount: Int!) {
+            removeCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
             }
@@ -482,7 +521,6 @@ export function useTeamsForMissionCompletion() {
             teams {
               _id
               name
-              nfcCardId
               credits
               completedMissionIds
             }
@@ -495,11 +533,11 @@ export function useTeamsForMissionCompletion() {
 export function useCompleteMission() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (variables: { missionId: string; nfcCardId: string }) =>
+    mutationFn: (variables: { missionId: string; teamId: string }) =>
       graphqlClient.request(
         graphql(`
-          mutation CompleteMission($missionId: ID!, $nfcCardId: String!) {
-            completeMission(missionId: $missionId, nfcCardId: $nfcCardId) {
+          mutation CompleteMission($missionId: ID!, $teamId: ID!) {
+            completeMission(missionId: $missionId, teamId: $teamId) {
               _id
               teamId
               missionId
@@ -515,6 +553,29 @@ export function useCompleteMission() {
       qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
       qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
     },
+  });
+}
+
+export function useMyTeam() {
+  return useQuery({
+    queryKey: ['my-team'],
+    queryFn: () =>
+      graphqlClient.request(
+        graphql(`
+          query MyTeam {
+            myTeam {
+              _id
+              name
+              teamGuid
+              image {
+                url
+              }
+              credits
+              completedMissionIds
+            }
+          }
+        `) as unknown as RequestDocument,
+      ),
   });
 }
 

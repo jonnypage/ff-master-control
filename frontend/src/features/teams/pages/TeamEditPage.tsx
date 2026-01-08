@@ -11,14 +11,12 @@ import {
   Plus,
   Minus,
   CheckCircle2,
-  Radio,
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
-import { useNFCReader } from '@/hooks/useNFCReader';
 import {
   useTeamById,
   useMissionsForTeamEdit,
@@ -35,7 +33,6 @@ export function TeamEditPage() {
   const location = useLocation();
   const { canEditTeams, canAdjustCredits } = usePermissions();
   const queryClient = useQueryClient();
-  const { isSupported, isReading, readNFC, checkSupport } = useNFCReader();
 
   // Check if we're in edit mode based on URL path
   const isEditMode = location.pathname.endsWith('/edit');
@@ -48,16 +45,11 @@ export function TeamEditPage() {
   // Initialize state from data - component resets when id changes (via key in App.tsx)
   const teamData = data?.teamById;
   const [name, setName] = useState(() => teamData?.name ?? '');
-  const [nfcCardId, setNfcCardId] = useState(() => teamData?.nfcCardId ?? '');
 
   // Update state when data loads for the current team
   // Component resets when id changes, so we only need to sync when data becomes available
-  if (
-    teamData &&
-    (name !== teamData.name || nfcCardId !== teamData.nfcCardId)
-  ) {
+  if (teamData && name !== teamData.name) {
     setName(teamData.name);
-    setNfcCardId(teamData.nfcCardId);
   }
 
   const updateTeam = useUpdateTeam();
@@ -70,12 +62,9 @@ export function TeamEditPage() {
       return;
     }
 
-    const input: { name?: string; nfcCardId?: string } = {};
+    const input: { name?: string } = {};
     if (name !== data?.teamById?.name) {
       input.name = name;
-    }
-    if (nfcCardId !== data?.teamById?.nfcCardId) {
-      input.nfcCardId = nfcCardId;
     }
 
     if (Object.keys(input).length === 0) {
@@ -102,9 +91,9 @@ export function TeamEditPage() {
   };
 
   const handleAddCredits = () => {
-    if (!data?.teamById?.nfcCardId) return;
+    if (!data?.teamById?._id) return;
     addCredits.mutate(
-      { nfcCardId: data.teamById.nfcCardId, amount: 100 },
+      { teamId: data.teamById._id, amount: 100 },
       {
         onSuccess: () => {
           toast.success('Credits added successfully');
@@ -122,9 +111,9 @@ export function TeamEditPage() {
   };
 
   const handleRemoveCredits = () => {
-    if (!data?.teamById?.nfcCardId) return;
+    if (!data?.teamById?._id) return;
     removeCredits.mutate(
-      { nfcCardId: data.teamById.nfcCardId, amount: 100 },
+      { teamId: data.teamById._id, amount: 100 },
       {
         onSuccess: () => {
           toast.success('Credits removed successfully');
@@ -139,24 +128,6 @@ export function TeamEditPage() {
         },
       },
     );
-  };
-
-  const handleNFCScan = async () => {
-    if (!isSupported) {
-      checkSupport();
-      if (!isSupported) {
-        toast.error('NFC is not supported on this device');
-        return;
-      }
-    }
-
-    const result = await readNFC();
-    if (result.success && result.nfcId) {
-      setNfcCardId(result.nfcId);
-      toast.success('NFC card scanned successfully!');
-    } else {
-      toast.error(result.error || 'Failed to read NFC card');
-    }
   };
 
   const overrideMissionCompletion = useOverrideMissionCompletion();
@@ -300,25 +271,9 @@ export function TeamEditPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="nfc-card-id">NFC Card ID</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="nfc-card-id"
-                      value={nfcCardId}
-                      onChange={(e) => setNfcCardId(e.target.value)}
-                      className="flex-1"
-                    />
-                    {isSupported && (
-                      <Button
-                        type="button"
-                        onClick={handleNFCScan}
-                        disabled={isReading}
-                        variant="outline"
-                      >
-                        <Radio className="w-4 h-4 mr-2" />
-                        {isReading ? 'Scanning...' : 'Scan'}
-                      </Button>
-                    )}
+                  <Label>Team GUID</Label>
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                    {team.teamGuid}
                   </div>
                 </div>
               </>
@@ -331,9 +286,9 @@ export function TeamEditPage() {
                   </div>
                 </div>
                 <div>
-                  <Label>NFC Card ID</Label>
+                  <Label>Team GUID</Label>
                   <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                    {team.nfcCardId}
+                    {team.teamGuid}
                   </div>
                 </div>
               </>

@@ -9,6 +9,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '../auth/roles.decorator';
+import { CurrentTeam } from '../common/decorators/current-team.decorator';
 
 @Resolver(() => Team)
 export class TeamsResolver {
@@ -16,8 +17,15 @@ export class TeamsResolver {
 
   @Query(() => Team, { nullable: true })
   @UseGuards(JwtAuthGuard)
-  async team(@Args('nfcCardId') nfcCardId: string): Promise<Team | null> {
-    return this.teamsService.findByNfcCardId(nfcCardId);
+  async myTeam(@CurrentTeam() team: any): Promise<Team | null> {
+    if (!team?._id) return null;
+    return this.teamsService.findOne(team._id.toString());
+  }
+
+  @Query(() => Team, { nullable: true })
+  @UseGuards(JwtAuthGuard)
+  async team(@Args('teamGuid') teamGuid: string): Promise<Team | null> {
+    return this.teamsService.findByTeamGuid(teamGuid);
   }
 
   @Query(() => Team, { nullable: true })
@@ -25,7 +33,7 @@ export class TeamsResolver {
   async searchTeam(
     @Args('searchTerm') searchTerm: string,
   ): Promise<Team | null> {
-    return this.teamsService.findByNameOrNfcCardId(searchTerm);
+    return this.teamsService.findByNameOrTeamGuid(searchTerm);
   }
 
   @Query(() => [Team])
@@ -48,8 +56,6 @@ export class TeamsResolver {
   }
 
   @Mutation(() => Team)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
   async createTeam(@Args('input') createTeamDto: CreateTeamDto): Promise<Team> {
     return this.teamsService.create(createTeamDto);
   }

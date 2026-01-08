@@ -80,7 +80,7 @@ frontend/
 - ✅ GraphQL Code Generator for type-safe queries
 - ✅ Tailwind CSS + shadcn/ui for styling
 - ✅ PWA support with Vite PWA plugin
-- ✅ NFC reading support (Android)
+- ✅ Team GUID + 4-digit PIN team login
 - ✅ Vitest for testing
 - ✅ Authentication with JWT
 
@@ -89,5 +89,4 @@ frontend/
 1. Complete shadcn/ui setup (run commands above)
 2. Generate GraphQL types (`npm run codegen`)
 3. Build out feature components (teams, missions, store)
-4. Test NFC reading on Android device
-5. Deploy to Vercel
+4. Deploy to Vercel

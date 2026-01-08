@@ -15,29 +15,29 @@ export class StoreResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STORE, UserRole.ADMIN)
   async adjustCredits(
-    @Args('nfcCardId') nfcCardId: string,
+    @Args('teamId') teamId: string,
     @Args('amount', { type: () => Int }) amount: number,
   ): Promise<Team> {
-    return this.storeService.adjustCredits(nfcCardId, amount);
+    return this.storeService.adjustCredits(teamId, amount);
   }
 
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STORE, UserRole.ADMIN)
   async addCredits(
-    @Args('nfcCardId') nfcCardId: string,
+    @Args('teamId') teamId: string,
     @Args('amount', { type: () => Int }) amount: number,
   ): Promise<Team> {
-    return this.storeService.addCredits(nfcCardId, amount);
+    return this.storeService.addCredits(teamId, amount);
   }
 
   @Mutation(() => Team)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.STORE, UserRole.ADMIN)
   async removeCredits(
-    @Args('nfcCardId') nfcCardId: string,
+    @Args('teamId') teamId: string,
     @Args('amount', { type: () => Int }) amount: number,
   ): Promise<Team> {
-    return this.storeService.removeCredits(nfcCardId, amount);
+    return this.storeService.removeCredits(teamId, amount);
   }
 }

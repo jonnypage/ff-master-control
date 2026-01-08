@@ -97,8 +97,7 @@ VITE_API_URL=https://ff-master-control-production.up.railway.app/graphql
 - Check that Railway backend is running
 - Test the GraphQL endpoint in a browser first
 
-### NFC Not Working?
-- NFC only works on Android devices (iOS has limited support)
-- Make sure you're testing on a physical device (not emulator)
-- Grant browser permissions for NFC if prompted
+### Team login not working?
+- Verify you’re using the correct **Team GUID** and **4-digit PIN**
+- Make sure the backend URL (`VITE_API_URL`) is reachable from your device
 
