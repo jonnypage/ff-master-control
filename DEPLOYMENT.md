@@ -1,6 +1,6 @@
-# Deployment Guide
+# Deployment Guide (Railway)
 
-This guide will help you deploy the Freedom Fighters backend to a free hosting platform for testing.
+This guide will help you deploy the Freedom Fighters backend + frontend to Railway.
 
 ## Prerequisites
 
@@ -22,23 +22,30 @@ This guide will help you deploy the Freedom Fighters backend to a free hosting p
 
 **Save this connection string** - you'll need it for environment variables.
 
-## Step 2: Choose Your Platform
-
-### Option A: Railway (Recommended - No Cold Starts)
+## Step 2: Deploy to Railway (two services)
 
 **Setup:**
 1. Go to [Railway](https://railway.app/)
 2. Sign up with GitHub
 3. Click "New Project" → "Deploy from GitHub repo"
 4. Select your `ff-master-control` repository
-5. Railway will auto-detect it's a Node.js app
+5. Create **two services** from the same repo:
+   - Backend service (root directory `/`)
+   - Frontend service (root directory `/frontend`)
 
-**Environment Variables:**
-Click on your service → "Variables" tab → Add:
+### Backend service (repo root)
+**Service settings:**
+- **Root directory:** `/`
+- **Build command:** `npm ci && npm run build`
+- **Start command:** `npm run start:prod`
+
+**Variables (Service → Variables):**
 - `MONGODB_URI` = your MongoDB Atlas connection string
 - `JWT_SECRET` = generate a random string (e.g., use `openssl rand -base64 32`)
 - `JWT_EXPIRES_IN` = `24h`
 - `PORT` = Railway sets this automatically, but you can leave it
+- (Optional) `NODE_ENV` = `production`
+- (Recommended) `CORS_ORIGINS` = `https://<frontend-domain>` (comma-separated list)
 
 **Deploy:**
 - Railway auto-deploys on git push
@@ -47,6 +54,18 @@ Click on your service → "Variables" tab → Add:
 **Cost:** Free tier includes $5/month credit (usually enough for small apps)
 
 ---
+
+### Frontend service (`/frontend`)
+**Service settings:**
+- **Root directory:** `/frontend`
+- **Build command:** `npm ci && npm run build`
+- **Start command:** `npm run preview -- --host 0.0.0.0 --port $PORT`
+
+**Variables (must be set for Vite builds):**
+- `VITE_API_URL` = `https://<backend-domain>/graphql`
+
+**Important note about codegen:**
+The frontend `build` runs GraphQL codegen only if `../src/schema.gql` exists. On Railway (frontend service rooted at `/frontend`), the backend schema file is not present, so codegen is skipped and the committed generated client code is used.
 
 ## Step 3: Test Your Deployment
 

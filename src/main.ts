@@ -4,9 +4,20 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable CORS for PWA
+  // CORS
+  // - Dev-safe default: reflect Origin (origin: true)
+  // - Prod hardening: set CORS_ORIGINS="https://<frontend-domain>,https://<another-domain>"
+  const corsOriginsEnv = process.env.CORS_ORIGINS;
+  const corsOrigins =
+    corsOriginsEnv && corsOriginsEnv.trim().length > 0
+      ? corsOriginsEnv
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : true;
+
   app.enableCors({
-    origin: true,
+    origin: corsOrigins,
     credentials: true,
   });
   

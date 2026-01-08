@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run codegen",
+    "prebuild": "if test -f ../src/schema.gql; then npm run codegen; else echo \"Skipping codegen: ../src/schema.gql not found (expected on Railway when service root is /frontend)\"; fi",
     "build": "tsc -b && vite build",
     "codegen:check": "test -f ../src/schema.gql || (echo 'Error: schema.gql not found' && exit 1)",
     "lint": "eslint .",
