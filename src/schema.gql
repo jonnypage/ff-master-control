@@ -134,6 +134,8 @@ type Query {
 
 type LeaderboardTeam {
   _id: ID!
+  bannerColor: String!
+  bannerIcon: String!
   name: String!
   completedMissionIds: [ID!]!
 }

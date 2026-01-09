@@ -17,6 +17,8 @@ export function useLeaderboardTeams() {
             leaderboardTeams {
               _id
               name
+              bannerColor
+              bannerIcon
               completedMissionIds
             }
           }
@@ -340,7 +342,12 @@ export function useUpdateTeam() {
   return useMutation({
     mutationFn: (variables: {
       id: string;
-      input: { name?: string; image?: { url?: string } };
+      input: {
+        name?: string;
+        image?: { url?: string };
+        bannerColor?: string;
+        bannerIcon?: string;
+      };
     }) =>
       graphqlClient.request(
         graphql(`
@@ -349,6 +356,8 @@ export function useUpdateTeam() {
               _id
               name
               teamGuid
+              bannerColor
+              bannerIcon
               image {
                 url
               }

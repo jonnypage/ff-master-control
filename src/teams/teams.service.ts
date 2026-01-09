@@ -93,7 +93,12 @@ export class TeamsService {
 
   async findLeaderboard(): Promise<LeaderboardTeam[]> {
     // Return only the minimal fields required for the public leaderboard
-    return this.teamModel.find({}, { name: 1, completedMissionIds: 1 }).lean();
+    return this.teamModel
+      .find(
+        {},
+        { name: 1, completedMissionIds: 1, bannerColor: 1, bannerIcon: 1 },
+      )
+      .lean();
   }
 
   async update(

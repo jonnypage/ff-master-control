@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
+import { TeamBanner } from '../components/TeamBanner';
+import { BANNER_ICON_OPTIONS, type BannerIconId } from '../components/banner-icons';
 import {
   useTeamById,
   useMissionsForTeamEdit,
@@ -45,11 +47,24 @@ export function TeamEditPage() {
   // Initialize state from data - component resets when id changes (via key in App.tsx)
   const teamData = data?.teamById;
   const [name, setName] = useState(() => teamData?.name ?? '');
+  const [bannerColor, setBannerColor] = useState(
+    () => teamData?.bannerColor ?? '#7c3aed',
+  );
+  const [bannerIcon, setBannerIcon] = useState<BannerIconId>(
+    () => (teamData?.bannerIcon as BannerIconId) ?? 'Shield',
+  );
 
   // Update state when data loads for the current team
   // Component resets when id changes, so we only need to sync when data becomes available
-  if (teamData && name !== teamData.name) {
+  if (
+    teamData &&
+    (name !== teamData.name ||
+      bannerColor !== teamData.bannerColor ||
+      bannerIcon !== (teamData.bannerIcon as BannerIconId))
+  ) {
     setName(teamData.name);
+    setBannerColor(teamData.bannerColor);
+    setBannerIcon((teamData.bannerIcon as BannerIconId) ?? 'Shield');
   }
 
   const updateTeam = useUpdateTeam();
@@ -62,9 +77,15 @@ export function TeamEditPage() {
       return;
     }
 
-    const input: { name?: string } = {};
+    const input: { name?: string; bannerColor?: string; bannerIcon?: string } = {};
     if (name !== data?.teamById?.name) {
       input.name = name;
+    }
+    if (bannerColor !== data?.teamById?.bannerColor) {
+      input.bannerColor = bannerColor;
+    }
+    if (bannerIcon !== data?.teamById?.bannerIcon) {
+      input.bannerIcon = bannerIcon;
     }
 
     if (Object.keys(input).length === 0) {
@@ -262,6 +283,67 @@ export function TeamEditPage() {
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
+                <div className="flex items-start gap-4">
+                  <div className="shrink-0">
+                    <Label>Banner Preview</Label>
+                    <div className="mt-2">
+                      <TeamBanner
+                        color={bannerColor}
+                        icon={
+                          BANNER_ICON_OPTIONS.find((o) => o.id === bannerIcon)
+                            ?.Icon
+                        }
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="banner-color">Banner Color</Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="banner-color"
+                          type="color"
+                          value={bannerColor}
+                          onChange={(e) => setBannerColor(e.target.value)}
+                          className="h-11 w-16 p-1"
+                        />
+                        <Input
+                          value={bannerColor}
+                          onChange={(e) => setBannerColor(e.target.value)}
+                          placeholder="#7c3aed"
+                          className="font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Banner Icon</Label>
+                      <div className="grid grid-cols-6 gap-2">
+                        {BANNER_ICON_OPTIONS.map(({ id, label, Icon }) => {
+                          const isSelected = bannerIcon === id;
+                          return (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setBannerIcon(id)}
+                              className={`h-10 rounded-md border flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? 'border-primary ring-2 ring-primary/30 bg-accent'
+                                  : 'border-border hover:bg-accent/50'
+                              }`}
+                              aria-pressed={isSelected}
+                              aria-label={label}
+                              title={label}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <Label htmlFor="team-name">Team Name</Label>
                   <Input
@@ -279,6 +361,8 @@ export function TeamEditPage() {
               </>
             ) : (
               <>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-2">
                 <div>
                   <Label>Team Name</Label>
                   <div className="px-3 py-2 bg-muted rounded-md text-sm">
@@ -290,6 +374,17 @@ export function TeamEditPage() {
                   <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
                     {team.teamGuid}
                   </div>
+                </div>
+                  </div>
+                  <TeamBanner
+                    color={team.bannerColor}
+                    icon={
+                      BANNER_ICON_OPTIONS.find(
+                        (o) => o.id === (team.bannerIcon as BannerIconId),
+                      )?.Icon
+                    }
+                    size="sm"
+                  />
                 </div>
               </>
             )}

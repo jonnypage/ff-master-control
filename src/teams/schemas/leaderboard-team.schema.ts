@@ -9,6 +9,12 @@ export class LeaderboardTeam {
   @Field()
   name: string;
 
+  @Field()
+  bannerColor: string;
+
+  @Field()
+  bannerIcon: string;
+
   @Field(() => [ID])
   completedMissionIds: ObjectId[];
 }

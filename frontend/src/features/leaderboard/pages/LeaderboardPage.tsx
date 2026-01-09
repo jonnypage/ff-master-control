@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Trophy, LogIn } from 'lucide-react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
+import { TeamBanner } from '@/features/teams/components/TeamBanner';
+import { getBannerIconById } from '@/features/teams/components/banner-icons';
 import type {
   GetLeaderboardTeamsQuery,
   GetMissionsForLeaderboardQuery,
@@ -10,6 +12,8 @@ import type {
 type LeaderboardTeam = {
   _id: string;
   name: string;
+  bannerColor: string;
+  bannerIcon: string;
   completedMissionIds: string[];
 };
 
@@ -162,7 +166,13 @@ export function LeaderboardPage() {
                         {rankIcon || `#${index + 1}`}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
+                          <TeamBanner
+                            color={team.bannerColor}
+                            icon={getBannerIconById(team.bannerIcon)}
+                            size="sm"
+                            className="hidden sm:block"
+                          />
                           <h2 className="text-3xl md:text-4xl font-bold text-foreground truncate">
                             {team.name}
                           </h2>
