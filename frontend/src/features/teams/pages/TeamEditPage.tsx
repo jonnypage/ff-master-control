@@ -356,6 +356,12 @@ export function TeamEditPage() {
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
+                <div>
+                  <Label>Team Code</Label>
+                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                    {team.teamCode}
+                  </div>
+                </div>
               </>
             ) : (
               <>
@@ -365,6 +371,12 @@ export function TeamEditPage() {
                       <Label>Team Name</Label>
                       <div className="px-3 py-2 bg-muted rounded-md text-sm">
                         {team.name}
+                      </div>
+                    </div>
+                    <div>
+                      <Label>Team Code</Label>
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                        {team.teamCode}
                       </div>
                     </div>
                   </div>

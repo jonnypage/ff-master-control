@@ -50,6 +50,14 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
               {(team.completedMissionIds ?? []).length}/{totalMissions}
             </Badge>
           </div>
+          <div className="pt-2 border-t">
+            <div className="text-xs text-muted-foreground">
+              <span className="font-medium">Team Code:</span>{' '}
+              <code className="bg-muted px-2 py-1 rounded font-mono">
+                {team.teamCode}
+              </code>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

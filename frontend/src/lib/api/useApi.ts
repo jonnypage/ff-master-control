@@ -263,6 +263,7 @@ export function useTeams() {
             teams {
               _id
               name
+              teamCode
               teamGuid
               bannerColor
               bannerIcon
@@ -288,6 +289,7 @@ export function useTeamById(id: string) {
             teamById(id: $id) {
               _id
               name
+              teamCode
               teamGuid
               bannerColor
               bannerIcon

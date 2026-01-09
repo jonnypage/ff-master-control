@@ -32,7 +32,7 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
     return allTeams.filter(
       (team) =>
         team.name.toLowerCase().includes(searchLower) ||
-        team.teamGuid.toLowerCase().includes(searchLower),
+        team.teamCode.toLowerCase().includes(searchLower),
     );
   }, [teams, searchTerm]);
 
@@ -67,7 +67,7 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search teams by name or team ID..."
+            placeholder="Search teams by name or team code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-11"
