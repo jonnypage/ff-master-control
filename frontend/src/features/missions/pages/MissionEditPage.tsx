@@ -7,12 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Save, Edit, Target } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { TeamSelectionForMission } from '../components/TeamSelectionForMission';
 import {
   useMission,
+  useMyTeam,
   useTeamsForMission,
   useUpdateMission,
 } from '@/lib/api/useApi';
@@ -22,8 +23,9 @@ export function MissionEditPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { canEditMissions } = usePermissions();
-  const { user } = useAuth();
+  const { user, team } = useAuth();
   const queryClient = useQueryClient();
+  const isTeamSession = !!team && !user;
 
   // Check if we're in edit mode based on URL path
   const isEditMode = location.pathname.endsWith('/edit');
@@ -40,9 +42,11 @@ export function MissionEditPage() {
 
   const { data, isLoading } = useMission(id);
 
-  const { data: teamsData } = useTeamsForMission();
+  const { data: teamsData } = useTeamsForMission({ enabled: !isTeamSession });
+  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession });
 
   const completionCount = useMemo(() => {
+    if (isTeamSession) return { completed: 0, total: 0 };
     if (!teamsData?.teams || !id) return { completed: 0, total: 0 };
     const teams =
       (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })
@@ -51,22 +55,25 @@ export function MissionEditPage() {
       team.completedMissionIds.includes(id),
     ).length;
     return { completed, total: teams.length };
-  }, [teamsData, id]);
+  }, [teamsData, id, isTeamSession]);
 
-  // Initialize state from data - component resets when id changes
+  const isCompletedByThisTeam = useMemo(() => {
+    if (!isTeamSession || !id) return false;
+    const completedIds = (myTeamData?.myTeam?.completedMissionIds ?? []) as string[];
+    return completedIds.includes(id);
+  }, [id, isTeamSession, myTeamData?.myTeam?.completedMissionIds]);
+
   const missionData = data?.mission;
-  if (
-    missionData &&
-    (name !== missionData.name ||
-      description !== (missionData.description || '') ||
-      creditsAwarded !== missionData.creditsAwarded ||
-      isFinalChallenge !== missionData.isFinalChallenge)
-  ) {
+
+  // Initialize form state when the mission loads (or when id changes).
+  // Important: do NOT setState during render; it will clobber user edits.
+  useEffect(() => {
+    if (!missionData) return;
     setName(missionData.name);
-    setDescription(missionData.description || '');
+    setDescription(missionData.description ?? '');
     setCreditsAwarded(missionData.creditsAwarded);
     setIsFinalChallenge(missionData.isFinalChallenge);
-  }
+  }, [missionData?._id]);
 
   const updateMission = useUpdateMission();
 
@@ -198,14 +205,20 @@ export function MissionEditPage() {
           <CardHeader className="bg-muted/50 border-b">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl">Mission Information</CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  Completed:
-                </span>
-                <Badge variant="outline">
-                  {completionCount.completed}/{completionCount.total}
+              {isTeamSession ? (
+                <Badge variant={isCompletedByThisTeam ? 'default' : 'outline'}>
+                  {isCompletedByThisTeam ? 'Completed' : 'Not completed'}
                 </Badge>
-              </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Completed:
+                  </span>
+                  <Badge variant="outline">
+                    {completionCount.completed}/{completionCount.total}
+                  </Badge>
+                </div>
+              )}
             </div>
           </CardHeader>
           <CardContent className="space-y-5 pt-6">

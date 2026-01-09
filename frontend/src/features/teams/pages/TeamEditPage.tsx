@@ -122,6 +122,8 @@ export function TeamEditPage() {
       {
         onSuccess: () => {
           toast.success('Credits added successfully');
+          queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
+          // Back-compat: older code used this key
           queryClient.invalidateQueries({ queryKey: ['team', id] });
           queryClient.invalidateQueries({ queryKey: ['teams'] });
         },
@@ -142,6 +144,8 @@ export function TeamEditPage() {
       {
         onSuccess: () => {
           toast.success('Credits removed successfully');
+          queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
+          // Back-compat: older code used this key
           queryClient.invalidateQueries({ queryKey: ['team', id] });
           queryClient.invalidateQueries({ queryKey: ['teams'] });
         },
@@ -166,6 +170,8 @@ export function TeamEditPage() {
         {
           onSuccess: () => {
             toast.success('Mission completion updated');
+            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
+            // Back-compat: older code used this key
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
           },
@@ -185,6 +191,8 @@ export function TeamEditPage() {
         {
           onSuccess: () => {
             toast.success('Mission completion removed');
+            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
+            // Back-compat: older code used this key
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
           },

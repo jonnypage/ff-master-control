@@ -4,17 +4,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Search, Target } from 'lucide-react';
-import { useMissions, useTeamsForMissions } from '@/lib/api/useApi';
+import { useMissions, useMyTeam, useTeamsForMissions } from '@/lib/api/useApi';
 import type { GetMissionsQuery } from '@/lib/graphql/generated';
+import { useAuth } from '@/features/auth/lib/auth-context';
 
 export function MissionList() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const { user, team } = useAuth();
+  const isTeamSession = !!team && !user;
 
   const { data, isLoading } = useMissions();
-  const { data: teamsData } = useTeamsForMissions();
+  const { data: teamsData } = useTeamsForMissions({ enabled: !isTeamSession });
+  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession });
 
   const completionCounts = useMemo(() => {
+    if (isTeamSession) {
+      return { counts: {}, totalTeams: 0 };
+    }
     const counts: Record<string, number> = {};
     const teams =
       (teamsData as { teams?: Array<{ completedMissionIds?: string[] }> })
@@ -25,27 +32,48 @@ export function MissionList() {
       return { counts: {}, totalTeams: 0 };
     }
 
-    (data?.missions ?? []).forEach((mission: GetMissionsQuery['missions'][number]) => {
-      const completedCount = teams.filter(
-        (team: { completedMissionIds?: string[] }) =>
-          team.completedMissionIds?.includes(mission._id) ?? false,
-      ).length;
-      counts[mission._id] = completedCount;
-    });
+    (data?.missions ?? []).forEach(
+      (mission: GetMissionsQuery['missions'][number]) => {
+        const completedCount = teams.filter(
+          (team: { completedMissionIds?: string[] }) =>
+            team.completedMissionIds?.includes(mission._id) ?? false,
+        ).length;
+        counts[mission._id] = completedCount;
+      },
+    );
 
     return { counts, totalTeams };
-  }, [data?.missions, teamsData]);
+  }, [data?.missions, teamsData, isTeamSession]);
+
+  const myCompletedMissionIds = useMemo(() => {
+    if (!isTeamSession) return [];
+    return (myTeamData?.myTeam?.completedMissionIds ?? []) as string[];
+  }, [isTeamSession, myTeamData?.myTeam?.completedMissionIds]);
 
   const filteredMissions = useMemo(() => {
     const missions = (data?.missions ?? []) as GetMissionsQuery['missions'];
-    if (!searchTerm.trim()) return missions;
+    const search = searchTerm.trim().toLowerCase();
+    const filtered = !search
+      ? missions
+      : missions.filter(
+          (mission: GetMissionsQuery['missions'][number]) =>
+            mission.name.toLowerCase().includes(search) ||
+            mission.description?.toLowerCase().includes(search),
+        );
 
-    const searchLower = searchTerm.toLowerCase();
-    return missions.filter(
-      (mission: GetMissionsQuery['missions'][number]) =>
-        mission.name.toLowerCase().includes(searchLower) ||
-        mission.description?.toLowerCase().includes(searchLower),
-    );
+    return [...filtered].sort((a, b) => {
+      // Final challenge is always last, regardless of name.
+      if (a.isFinalChallenge && !b.isFinalChallenge) return 1;
+      if (!a.isFinalChallenge && b.isFinalChallenge) return -1;
+
+      const nameCmp = a.name.localeCompare(b.name, undefined, {
+        sensitivity: 'base',
+      });
+      if (nameCmp !== 0) return nameCmp;
+
+      // Stable tie-breaker
+      return a._id.localeCompare(b._id);
+    });
   }, [data?.missions, searchTerm]);
 
   if (isLoading) {
@@ -86,54 +114,82 @@ export function MissionList() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredMissions.map((mission: GetMissionsQuery['missions'][number]) => (
-          <Card
-            key={mission._id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
-            onClick={() => navigate(`/missions/${mission._id}`)}
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between gap-2">
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                  {mission.name}
-                </CardTitle>
-                {mission.isFinalChallenge && (
-                  <Badge variant="default">Final</Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {mission.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                  {mission.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Credits
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="text-base font-semibold px-3 py-1"
-                >
-                  {mission.creditsAwarded}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Completed
-                </span>
-                <Badge
-                  variant="outline"
-                  className="text-base font-semibold px-3 py-1"
-                >
-                  {completionCounts.counts?.[mission._id] ?? 0}/
-                  {completionCounts.totalTeams ?? 0}
-                </Badge>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+        {filteredMissions.map((mission: GetMissionsQuery['missions'][number]) =>
+          (() => {
+            const isCompletedByTeam = isTeamSession
+              ? myCompletedMissionIds.includes(mission._id)
+              : false;
+            return (
+              <Card
+                key={mission._id}
+                className={`cursor-pointer hover:shadow-lg transition-all duration-200 group ${
+                  isTeamSession
+                    ? isCompletedByTeam
+                      ? 'border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-500/5 hover:bg-emerald-500/10'
+                      : 'border-border'
+                    : ''
+                }`}
+                onClick={() => navigate(`/missions/${mission._id}`)}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {mission.name}
+                    </CardTitle>
+                    {mission.isFinalChallenge && (
+                      <Badge variant="default">Final</Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {mission.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+                      {mission.description}
+                    </p>
+                  )}
+                  {!isTeamSession && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Credits
+                      </span>
+                      <Badge
+                        variant="secondary"
+                        className="text-base font-semibold px-3 py-1"
+                      >
+                        {mission.creditsAwarded}
+                      </Badge>
+                    </div>
+                  )}
+                  {isTeamSession ? (
+                    <div className="flex items-center justify-between pt-6 border-t">
+                      <span className="text-sm font-medium text-muted-foreground ">
+                        Status
+                      </span>
+                      {isCompletedByTeam ? (
+                        <Badge variant="default">Completed</Badge>
+                      ) : (
+                        <Badge variant="outline">Not completed</Badge>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between pt-2 border-t">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        Completed
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-base font-semibold px-3 py-1"
+                      >
+                        {completionCounts.counts?.[mission._id] ?? 0}/
+                        {completionCounts.totalTeams ?? 0}
+                      </Badge>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })(),
+        )}
       </div>
 
       {filteredMissions.length === 0 && searchTerm && (

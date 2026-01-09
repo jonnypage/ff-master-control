@@ -47,7 +47,7 @@ export class MissionsResolver {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.MISSION_LEADER, UserRole.ADMIN)
   async completeMission(
-    @Args('teamId') teamId: string,
+    @Args('teamId', { type: () => ID }) teamId: string,
     @Args('missionId', { type: () => ID }) missionId: string,
     @CurrentUser() user: User,
   ): Promise<MissionCompletion> {

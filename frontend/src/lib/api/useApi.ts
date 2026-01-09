@@ -450,7 +450,7 @@ export function useMissions() {
   });
 }
 
-export function useTeamsForMissions() {
+export function useTeamsForMissions(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['teams-for-missions'],
     queryFn: () =>
@@ -464,6 +464,7 @@ export function useTeamsForMissions() {
           }
         `) as unknown as RequestDocument,
       ),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -521,7 +522,7 @@ export function useUpdateMission() {
   });
 }
 
-export function useTeamsForMission() {
+export function useTeamsForMission(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['teams-for-mission'],
     queryFn: () =>
@@ -535,6 +536,7 @@ export function useTeamsForMission() {
           }
         `) as unknown as RequestDocument,
       ),
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -583,7 +585,7 @@ export function useCompleteMission() {
   });
 }
 
-export function useMyTeam() {
+export function useMyTeam(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['my-team'],
     queryFn: () =>
@@ -607,6 +609,7 @@ export function useMyTeam() {
           }
         `) as unknown as RequestDocument,
       ),
+    enabled: options?.enabled ?? true,
   });
 }
 

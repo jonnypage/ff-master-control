@@ -18,7 +18,12 @@ import { ChangePasswordDialog } from '@/features/admin/components/ChangePassword
 
 interface NavigationProps {
   user: { _id: string; username: string; role: UserRole } | null;
-  team: { _id: string; name: string; teamCode: string; teamGuid: string } | null;
+  team: {
+    _id: string;
+    name: string;
+    teamCode: string;
+    teamGuid: string;
+  } | null;
   onLogout: () => void;
 }
 
@@ -31,8 +36,7 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
   const isStaff = !!user;
   const isTeam = !!team && !user;
 
-  const canAccessTeams =
-    isTeam || user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER';
+  const canAccessTeams = user?.role === 'ADMIN' || user?.role === 'QUEST_GIVER';
   const canAccessMissions =
     isTeam ||
     user?.role === 'MISSION_LEADER' ||
@@ -158,10 +162,7 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
             {(isStaff || isTeam) && (
               <span className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-lg">
                 {isStaff ? (
-                  <>
-                    {user?.username}{' '}
-                    <span className="text-muted-foreground">({user?.role})</span>
-                  </>
+                  <>{user?.username}</>
                 ) : (
                   <>
                     {team?.name}{' '}
@@ -200,33 +201,22 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navLinks}
               <div className="pt-4 border-t border-border space-y-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start"
-                  onClick={() => {
-                    if (isStaff) {
+                {isStaff && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => {
                       setShowChangePassword(true);
-                    }
-                    setMobileMenuOpen(false);
-                  }}
-                  disabled={!isStaff}
-                >
-                  <Key className="w-4 h-4 mr-2" />
-                  Change Password
-                </Button>
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    <Key className="w-4 h-4 mr-2" />
+                    Change Password
+                  </Button>
+                )}
                 <div className="px-4 py-2 text-sm font-medium text-foreground bg-muted rounded-lg">
-                  {isStaff ? (
-                    <>
-                      {user?.username}{' '}
-                      <span className="text-muted-foreground">({user?.role})</span>
-                    </>
-                  ) : (
-                    <>
-                      {team?.name}{' '}
-                      <span className="text-muted-foreground">(team)</span>
-                    </>
-                  )}
+                  {isStaff ? <>{user?.username}</> : <>{team?.name}</>}
                 </div>
                 <Button
                   variant="ghost"

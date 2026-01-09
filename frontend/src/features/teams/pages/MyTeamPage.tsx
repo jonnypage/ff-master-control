@@ -79,17 +79,6 @@ export function MyTeamPage() {
     }
   };
 
-  const handleCopyPin = async () => {
-    const pin = team.pin ?? '';
-    if (!pin) return;
-    try {
-      await navigator.clipboard.writeText(pin);
-      toast.success('Team PIN copied');
-    } catch {
-      toast.error('Failed to copy');
-    }
-  };
-
   const handleCopyInviteLink = async () => {
     if (!inviteUrl) return;
     try {
@@ -114,25 +103,48 @@ export function MyTeamPage() {
             icon={getBannerIconById(team.bannerIcon)}
             size="sm"
           />
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">
+                Team Code
+              </span>
               <code className="bg-muted px-3 py-2 rounded font-mono text-sm text-center">
                 {team.teamCode}
               </code>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm font-medium text-muted-foreground">
+                Team PIN
+              </span>
               <code className="bg-muted px-3 py-2 rounded font-mono text-sm text-center">
                 {team.pin ?? '••••'}
               </code>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleCopyPin}
-                disabled={!team.pin}
-              >
-                Copy PIN
-              </Button>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Progress</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Credits
+            </span>
+            <Badge variant="secondary" className="text-base font-semibold">
+              {team.credits?.toLocaleString?.() ?? team.credits}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Missions
+            </span>
+            <Badge className="text-base font-semibold">
+              {completedCount}/{totalMissions}
+            </Badge>
           </div>
         </CardContent>
       </Card>
@@ -195,30 +207,6 @@ export function MyTeamPage() {
             </div>
           </CardContent>
         </details>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Progress</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Credits
-            </span>
-            <Badge variant="secondary" className="text-base font-semibold">
-              {team.credits?.toLocaleString?.() ?? team.credits}
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Missions
-            </span>
-            <Badge className="text-base font-semibold">
-              {completedCount}/{totalMissions}
-            </Badge>
-          </div>
-        </CardContent>
       </Card>
     </div>
   );
