@@ -19,7 +19,7 @@ export class TeamsResolver {
   @UseGuards(JwtAuthGuard)
   async myTeam(@CurrentTeam() team: any): Promise<Team | null> {
     if (!team?._id) return null;
-    return this.teamsService.findOne(team._id.toString());
+    return this.teamsService.findOneForTeamSession(team._id.toString());
   }
 
   @Query(() => Team, { nullable: true })

@@ -40,6 +40,12 @@ export class Team {
   @Field()
   bannerIcon: string;
 
+  // Plaintext 4-digit PIN (event-only teams). Expose only to the authenticated team session.
+  // Excluded by default from Mongo queries to avoid accidental exposure.
+  @Prop({ required: true, select: false })
+  @Field({ nullable: true })
+  pin?: string;
+
   // Hashed 4-digit PIN. Never expose via GraphQL.
   @Prop({ required: true, select: false })
   pinHash: string;

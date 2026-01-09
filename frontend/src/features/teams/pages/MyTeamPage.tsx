@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -5,6 +7,8 @@ import { toast } from 'sonner';
 import { useMyTeam, useMissionsForTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '../components/TeamBanner';
 import { getBannerIconById } from '../components/banner-icons';
+import QRCode from 'qrcode';
+import { ChevronDown } from 'lucide-react';
 
 export function MyTeamPage() {
   const { data, isLoading, refetch } = useMyTeam();
@@ -12,6 +16,30 @@ export function MyTeamPage() {
 
   const team = data?.myTeam;
   const totalMissions = missionsData?.missions?.length ?? 0;
+
+  const inviteUrl = useMemo(() => {
+    if (!team?.teamCode) return null;
+    try {
+      const url = new URL('/login', window.location.origin);
+      url.searchParams.set('teamCode', team.teamCode);
+      return url.toString();
+    } catch {
+      return null;
+    }
+  }, [team]);
+
+  const inviteQr = useQuery({
+    queryKey: ['team-invite-qr', inviteUrl],
+    enabled: !!inviteUrl,
+    queryFn: async () => {
+      if (!inviteUrl) throw new Error('Missing invite URL');
+      return await QRCode.toDataURL(inviteUrl, {
+        errorCorrectionLevel: 'M',
+        margin: 1,
+        width: 256,
+      });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -51,51 +79,122 @@ export function MyTeamPage() {
     }
   };
 
+  const handleCopyPin = async () => {
+    const pin = team.pin ?? '';
+    if (!pin) return;
+    try {
+      await navigator.clipboard.writeText(pin);
+      toast.success('Team PIN copied');
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
+  const handleCopyInviteLink = async () => {
+    if (!inviteUrl) return;
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success('Invite link copied');
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">My Team</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Track your progress for today’s event.
-        </p>
+        <h1 className="text-3xl font-bold text-foreground">{team.name}</h1>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Team Info</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Team Name
-                </span>
-                <span className="text-foreground font-semibold">
-                  {team.name}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Team Code
-                </span>
-                <div className="flex items-center gap-2">
-                  <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
-                    {team.teamCode}
-                  </code>
-                  <Button size="sm" variant="outline" onClick={handleCopyCode}>
-                    Copy
-                  </Button>
-                </div>
-              </div>
+        <CardHeader></CardHeader>
+        <CardContent className="flex flex-col items-center gap-4">
+          <TeamBanner
+            color={team.bannerColor}
+            icon={getBannerIconById(team.bannerIcon)}
+            size="sm"
+          />
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              <code className="bg-muted px-3 py-2 rounded font-mono text-sm text-center">
+                {team.teamCode}
+              </code>
             </div>
-            <TeamBanner
-              color={team.bannerColor}
-              icon={getBannerIconById(team.bannerIcon)}
-              size="sm"
-            />
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+              <code className="bg-muted px-3 py-2 rounded font-mono text-sm text-center">
+                {team.pin ?? '••••'}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleCopyPin}
+                disabled={!team.pin}
+              >
+                Copy PIN
+              </Button>
+            </div>
           </div>
         </CardContent>
+      </Card>
+
+      <Card>
+        <details className="group">
+          <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Invite a Teammate</CardTitle>
+              <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" />
+            </CardHeader>
+          </summary>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Scan this QR code to open the login screen with your Team Code
+              filled in. Your teammate will still need the 4-digit PIN.
+            </p>
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-56 h-56 rounded-lg border bg-background flex items-center justify-center overflow-hidden">
+                {inviteQr.data ? (
+                  <img
+                    src={inviteQr.data}
+                    alt="Team invite QR code"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center px-4">
+                    {inviteQr.isError ? (
+                      <p className="text-sm text-destructive">
+                        Failed to generate QR code
+                      </p>
+                    ) : (
+                      <>
+                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-3"></div>
+                        <p className="text-sm text-muted-foreground">
+                          Generating QR…
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCopyInviteLink}
+                  disabled={!inviteUrl}
+                >
+                  Copy Invite Link
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleCopyCode}
+                >
+                  Copy Team Code
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </details>
       </Card>
 
       <Card>

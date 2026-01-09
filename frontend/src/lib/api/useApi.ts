@@ -595,6 +595,7 @@ export function useMyTeam() {
               name
               teamCode
               teamGuid
+              pin
               bannerColor
               bannerIcon
               image {

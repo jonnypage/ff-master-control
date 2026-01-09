@@ -149,6 +149,7 @@ type Team {
   credits: Float!
   image: TeamImage
   name: String!
+  pin: String
   teamCode: String!
   teamGuid: String!
   updatedAt: DateTime!

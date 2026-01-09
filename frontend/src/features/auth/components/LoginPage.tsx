@@ -4,10 +4,11 @@ import { useAuth } from '../lib/auth-context';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
 import { useLogin, useTeamLogin } from '@/lib/api/useApi';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 export function LoginPage() {
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<'team' | 'staff'>('team');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,6 +29,14 @@ export function LoginPage() {
       setTeamCode(maybeTeamCode);
     }
   }, [location.state]);
+
+  useEffect(() => {
+    const fromQuery = searchParams.get('teamCode');
+    if (fromQuery) {
+      setMode('team');
+      setTeamCode(fromQuery.toUpperCase());
+    }
+  }, [searchParams]);
 
   const handleInstall = async () => {
     await promptInstall();

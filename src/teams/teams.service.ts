@@ -32,17 +32,21 @@ export class TeamsService {
           { teamCode: { $exists: false } },
           { teamCode: null },
           { teamCode: '' },
+          { pin: { $exists: false } },
+          { pin: null },
+          { pin: '' },
           { pinHash: { $exists: false } },
           { pinHash: null },
           { pinHash: '' },
         ],
       })
-      .select('+pinHash')
+      .select('+pin +pinHash')
       .exec();
 
     if (legacyTeams.length === 0) return;
 
-    const defaultPinHash = await bcrypt.hash('0000', 10);
+    const defaultPin = '0000';
+    const defaultPinHash = await bcrypt.hash(defaultPin, 10);
 
     for (const team of legacyTeams) {
       let changed = false;
@@ -57,8 +61,14 @@ export class TeamsService {
         changed = true;
       }
 
+      if (!team.pin) {
+        team.pin = defaultPin;
+        changed = true;
+      }
+
       if (!team.pinHash) {
-        team.pinHash = defaultPinHash;
+        // If we have a plaintext pin, prefer hashing that; otherwise fall back.
+        team.pinHash = await bcrypt.hash(team.pin ?? defaultPin, 10);
         changed = true;
       }
 
@@ -88,6 +98,7 @@ export class TeamsService {
       name: createTeamDto.name,
       teamGuid,
       teamCode,
+      pin: createTeamDto.pin,
       pinHash,
       image: createTeamDto.image ?? null,
       bannerColor: createTeamDto.bannerColor ?? '#7c3aed',
@@ -110,6 +121,12 @@ export class TeamsService {
     // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
     return this.teamModel.findById(id).exec();
+  }
+
+  async findOneForTeamSession(id: string): Promise<TeamDocument | null> {
+    // Ensure legacy teams become schema-compatible before returning to GraphQL.
+    await this.backfillLegacyTeamFields();
+    return this.teamModel.findById(id).select('+pin').exec();
   }
 
   async findAll(): Promise<TeamDocument[]> {
