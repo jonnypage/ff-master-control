@@ -25,9 +25,17 @@ export class MissionsService {
     return this.missionModel.find().exec();
   }
 
-  async findAllForLeaderboard(): Promise<Pick<Mission, '_id'>[]> {
-    // Only return IDs for public leaderboard counts
-    return this.missionModel.find({}, { _id: 1 }).lean();
+  async findAllForLeaderboard(): Promise<
+    Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>
+  >[] {
+    // Public leaderboard needs mission metadata (id + name + final flag).
+    // Also guard against bad data (null/empty names) so GraphQL doesn't error on non-nullable fields.
+    return this.missionModel
+      .find(
+        { name: { $type: 'string', $ne: '' } },
+        { _id: 1, name: 1, isFinalChallenge: 1 },
+      )
+      .lean();
   }
 
   async findOne(id: string): Promise<MissionDocument | null> {
