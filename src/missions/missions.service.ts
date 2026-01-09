@@ -26,16 +26,35 @@ export class MissionsService {
   }
 
   async findAllForLeaderboard(): Promise<
-    Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>
-  >[] {
+    Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>[]
+  > {
     // Public leaderboard needs mission metadata (id + name + final flag).
-    // Also guard against bad data (null/empty names) so GraphQL doesn't error on non-nullable fields.
+    // IMPORTANT: GraphQL schema defines Mission.name as non-nullable.
+    // Some legacy/bad DB rows may have null/empty name; we must never return null here.
+    //
+    // Using an aggregation keeps the response shape stable and guarantees name/isFinalChallenge defaults.
     return this.missionModel
-      .find(
-        { name: { $type: 'string', $ne: '' } },
-        { _id: 1, name: 1, isFinalChallenge: 1 },
-      )
-      .lean();
+      .aggregate<Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>>([
+        {
+          $project: {
+            _id: 1,
+            name: {
+              $cond: [
+                {
+                  $and: [
+                    { $ne: ['$name', null] },
+                    { $ne: ['$name', ''] },
+                  ],
+                },
+                '$name',
+                'Unnamed Mission',
+              ],
+            },
+            isFinalChallenge: { $ifNull: ['$isFinalChallenge', false] },
+          },
+        },
+      ])
+      .exec();
   }
 
   async findOne(id: string): Promise<MissionDocument | null> {
