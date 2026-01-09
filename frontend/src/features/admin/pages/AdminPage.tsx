@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus } from 'lucide-react';
+import { Plus, RotateCcw, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import { UserList } from '../components/UserList';
@@ -28,7 +29,6 @@ export function AdminPage() {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [showDeleteAllTeamsDialog, setShowDeleteAllTeamsDialog] =
     useState(false);
-  const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const deleteUser = useDeleteUser();
 
@@ -68,6 +68,10 @@ export function AdminPage() {
       onSuccess: () => {
         toast.success('All teams deleted successfully');
         queryClient.invalidateQueries({ queryKey: ['teams'] });
+        queryClient.invalidateQueries({ queryKey: ['teams-for-store'] });
+        queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+        queryClient.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
+        queryClient.invalidateQueries({ queryKey: ['my-team'] });
         setShowDeleteAllTeamsDialog(false);
       },
       onError: (error: unknown) => {
@@ -94,14 +98,42 @@ export function AdminPage() {
         </Button>
       </div>
 
+      {currentUser?.role === 'ADMIN' && (
+        <details className="rounded-lg border border-border bg-card">
+          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground">
+            Game Admin
+          </summary>
+          <div className="px-4 pb-4">
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl text-destructive flex items-center">
+                  <AlertTriangle className="w-5 h-5 mr-2" />
+                  Reset Game
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  This will permanently delete all teams, including credits and mission
+                  completions. This action cannot be undone.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteAllTeamsDialog(true)}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Delete All Teams
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </details>
+      )}
+
       <UserList
         onEdit={handleEdit}
         onDelete={handleDelete}
         currentUserId={currentUser?._id}
-        onSearchChange={setUserSearchTerm}
-        onDeleteAllTeams={() => setShowDeleteAllTeamsDialog(true)}
-        showDeleteAllTeams={userSearchTerm.toLowerCase() === 'delete'}
-        isAdmin={currentUser?.role === 'ADMIN'}
       />
 
       <CreateUserDialog

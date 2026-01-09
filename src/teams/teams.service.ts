@@ -14,6 +14,46 @@ import { CreateTeamDto } from './dto/create-team.dto';
 export class TeamsService {
   constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
 
+  private async backfillLegacyTeamFields(): Promise<void> {
+    // Only backfill teams that truly lack the new fields.
+    // Important: pinHash is `select:false`, so never assume `undefined` means missing.
+    const legacyTeams = await this.teamModel
+      .find({
+        $or: [
+          { teamGuid: { $exists: false } },
+          { teamGuid: null },
+          { teamGuid: '' },
+          { pinHash: { $exists: false } },
+          { pinHash: null },
+          { pinHash: '' },
+        ],
+      })
+      .select('+pinHash')
+      .exec();
+
+    if (legacyTeams.length === 0) return;
+
+    const defaultPinHash = await bcrypt.hash('0000', 10);
+
+    for (const team of legacyTeams) {
+      let changed = false;
+
+      if (!team.teamGuid) {
+        team.teamGuid = randomUUID();
+        changed = true;
+      }
+
+      if (!team.pinHash) {
+        team.pinHash = defaultPinHash;
+        changed = true;
+      }
+
+      if (changed) {
+        await team.save();
+      }
+    }
+  }
+
   async create(createTeamDto: CreateTeamDto): Promise<TeamDocument> {
     const teamGuid = randomUUID();
     const pinHash = await bcrypt.hash(createTeamDto.pin, 10);
@@ -38,10 +78,14 @@ export class TeamsService {
   }
 
   async findOne(id: string): Promise<TeamDocument | null> {
+    // Ensure legacy teams become schema-compatible before returning to GraphQL.
+    await this.backfillLegacyTeamFields();
     return this.teamModel.findById(id).exec();
   }
 
   async findAll(): Promise<TeamDocument[]> {
+    // Ensure legacy teams become schema-compatible before returning to GraphQL.
+    await this.backfillLegacyTeamFields();
     return this.teamModel.find().exec();
   }
 

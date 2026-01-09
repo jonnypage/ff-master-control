@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Edit, Trash2, User as UserIcon, AlertTriangle } from 'lucide-react';
+import { Search, Edit, Trash2, User as UserIcon } from 'lucide-react';
 import type { GetUsersQuery } from '@/lib/graphql/generated';
 import { useUsers } from '@/lib/api/useApi';
 
@@ -12,9 +12,6 @@ interface UserListProps {
   onDelete: (userId: string) => void;
   currentUserId?: string;
   onSearchChange?: (searchTerm: string) => void;
-  onDeleteAllTeams?: () => void;
-  showDeleteAllTeams?: boolean;
-  isAdmin?: boolean;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -31,7 +28,12 @@ const ROLE_VARIANTS: Record<string, 'default' | 'secondary' | 'outline'> = {
   STORE: 'outline',
 };
 
-export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDeleteAllTeams, showDeleteAllTeams, isAdmin }: UserListProps) {
+export function UserList({
+  onEdit,
+  onDelete,
+  currentUserId,
+  onSearchChange,
+}: UserListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data, isLoading } = useUsers();
@@ -64,7 +66,7 @@ export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDe
     );
   }
 
-  if ((!data?.users || data.users.length === 0) && !showDeleteAllTeams) {
+  if (!data?.users || data.users.length === 0) {
     return (
       <Card className="border-dashed">
         <CardContent className="py-12 text-center">
@@ -91,30 +93,6 @@ export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDe
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {showDeleteAllTeams && onDeleteAllTeams && isAdmin && (
-          <Card className="hover:shadow-lg transition-all duration-200 border-destructive/50 bg-destructive/5">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl text-destructive flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2" />
-                Delete All Teams
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                This will permanently delete all teams, including credits and mission completions.
-              </p>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={onDeleteAllTeams}
-                className="w-full"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete All Teams
-              </Button>
-            </CardContent>
-          </Card>
-        )}
         {filteredUsers.map((user: GetUsersQuery['users'][number]) => (
           <Card key={user._id} className="hover:shadow-lg transition-all duration-200">
             <CardHeader className="pb-3">
@@ -165,7 +143,7 @@ export function UserList({ onEdit, onDelete, currentUserId, onSearchChange, onDe
         ))}
       </div>
 
-      {filteredUsers.length === 0 && searchTerm && !showDeleteAllTeams && (
+      {filteredUsers.length === 0 && searchTerm && (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
             <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
