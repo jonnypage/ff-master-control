@@ -5,7 +5,7 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "startCommand": "caddy run --config /assets/Caddyfile --adapter caddyfile",
+    "startCommand": "caddy run --config Caddyfile --adapter caddyfile",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",

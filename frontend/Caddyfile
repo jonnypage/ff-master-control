@@ -1,0 +1,11 @@
+:{$PORT}
+
+root * /app/dist
+
+encode gzip zstd
+
+# SPA fallback: if a path doesn't exist as a file, serve index.html so React Router can handle routing.
+try_files {path} /index.html
+
+file_server
+
