@@ -69,7 +69,8 @@ The frontend `build` runs GraphQL codegen only if `../src/schema.gql` exists. On
 
 ## Step 3: Test Your Deployment
 
-1. Once deployed, visit `https://your-app-url/graphql`
+1. Once deployed, visit `https://your-app-url/health` (should return `{\"ok\":true}`)
+2. Then visit `https://your-app-url/graphql`
 2. You should see the GraphQL Playground
 3. Test the login mutation:
 

@@ -10,6 +10,7 @@ import { TeamsModule } from './teams/teams.module';
 import { MissionsModule } from './missions/missions.module';
 import { StoreModule } from './store/store.module';
 import { ConfigModule as AppConfigModule } from './config/config.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -34,5 +35,6 @@ import { ConfigModule as AppConfigModule } from './config/config.module';
     StoreModule,
     AppConfigModule,
   ],
+  controllers: [HealthController],
 })
 export class AppModule {}
