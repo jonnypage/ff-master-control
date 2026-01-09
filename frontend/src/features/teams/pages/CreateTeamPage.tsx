@@ -6,6 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useCreateTeam } from '@/lib/api/useApi';
+import { TeamBanner } from '../components/TeamBanner';
+import {
+  BANNER_ICON_OPTIONS,
+  type BannerIconId,
+} from '../components/banner-icons';
 
 export function CreateTeamPage() {
   const navigate = useNavigate();
@@ -13,6 +18,8 @@ export function CreateTeamPage() {
   const [name, setName] = useState('');
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [bannerColor, setBannerColor] = useState('#7c3aed');
+  const [bannerIcon, setBannerIcon] = useState<BannerIconId>('Shield');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +38,7 @@ export function CreateTeamPage() {
     }
 
     createTeam.mutate(
-      { input: { name: name.trim(), pin } },
+      { input: { name: name.trim(), pin, bannerColor, bannerIcon } },
       {
         onSuccess: async (data) => {
           const teamGuid = data?.createTeam?.teamGuid;
@@ -72,6 +79,70 @@ export function CreateTeamPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex items-start gap-6">
+                <div className="shrink-0">
+                  <Label>Banner Preview</Label>
+                  <div className="mt-2">
+                    <TeamBanner
+                      color={bannerColor}
+                      icon={
+                        BANNER_ICON_OPTIONS.find((o) => o.id === bannerIcon)?.Icon
+                      }
+                      size="md"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="banner-color">Banner Color</Label>
+                    <div className="flex items-center gap-3">
+                      <Input
+                        id="banner-color"
+                        type="color"
+                        value={bannerColor}
+                        onChange={(e) => setBannerColor(e.target.value)}
+                        className="h-11 w-16 p-1"
+                      />
+                      <Input
+                        value={bannerColor}
+                        onChange={(e) => setBannerColor(e.target.value)}
+                        placeholder="#7c3aed"
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Banner Icon</Label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {BANNER_ICON_OPTIONS.map(({ id, label, Icon }) => {
+                        const isSelected = bannerIcon === id;
+                        return (
+                          <button
+                            key={id}
+                            type="button"
+                            onClick={() => setBannerIcon(id)}
+                            className={`h-11 rounded-md border flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? 'border-primary ring-2 ring-primary/30 bg-accent'
+                                : 'border-border hover:bg-accent/50'
+                            }`}
+                            aria-pressed={isSelected}
+                            aria-label={label}
+                            title={label}
+                          >
+                            <Icon className="w-5 h-5" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Tap an icon to choose it.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="team-name">Team Name</Label>
                 <Input

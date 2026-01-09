@@ -97,6 +97,8 @@ export function useTeamLogin() {
                 _id
                 name
                 teamGuid
+                bannerColor
+                bannerIcon
                 image {
                   url
                 }
@@ -259,6 +261,8 @@ export function useTeams() {
               _id
               name
               teamGuid
+              bannerColor
+              bannerIcon
               image {
                 url
               }
@@ -282,6 +286,8 @@ export function useTeamById(id: string) {
               _id
               name
               teamGuid
+              bannerColor
+              bannerIcon
               image {
                 url
               }
@@ -300,7 +306,13 @@ export function useCreateTeam() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (variables: {
-      input: { name: string; pin: string; image?: { url?: string } };
+      input: {
+        name: string;
+        pin: string;
+        image?: { url?: string };
+        bannerColor?: string;
+        bannerIcon?: string;
+      };
     }) =>
       graphqlClient.request(
         graphql(`
@@ -309,6 +321,8 @@ export function useCreateTeam() {
               _id
               name
               teamGuid
+              bannerColor
+              bannerIcon
               image {
                 url
               }
@@ -567,6 +581,8 @@ export function useMyTeam() {
               _id
               name
               teamGuid
+              bannerColor
+              bannerIcon
               image {
                 url
               }

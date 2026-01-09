@@ -1,5 +1,5 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, Matches, IsHexColor } from 'class-validator';
 
 @InputType()
 export class TeamImageInput {
@@ -24,5 +24,15 @@ export class CreateTeamDto {
   @Field(() => TeamImageInput, { nullable: true })
   @IsOptional()
   image?: TeamImageInput;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsHexColor()
+  bannerColor?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  bannerIcon?: string;
 }
 

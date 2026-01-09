@@ -63,6 +63,8 @@ export class TeamsService {
       teamGuid,
       pinHash,
       image: createTeamDto.image ?? null,
+      bannerColor: createTeamDto.bannerColor ?? '#7c3aed',
+      bannerIcon: createTeamDto.bannerIcon ?? 'Shield',
     });
 
     return createdTeam.save();
@@ -96,7 +98,7 @@ export class TeamsService {
 
   async update(
     id: string,
-    updateData: { name?: string; image?: any },
+    updateData: { name?: string; image?: any; bannerColor?: string; bannerIcon?: string },
   ): Promise<TeamDocument> {
     const team = await this.teamModel.findById(id);
     if (!team) {
@@ -109,6 +111,14 @@ export class TeamsService {
 
     if (updateData.image !== undefined) {
       team.image = updateData.image;
+    }
+
+    if (updateData.bannerColor !== undefined) {
+      team.bannerColor = updateData.bannerColor;
+    }
+
+    if (updateData.bannerIcon !== undefined) {
+      team.bannerIcon = updateData.bannerIcon;
     }
 
     return team.save();

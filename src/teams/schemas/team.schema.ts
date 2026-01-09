@@ -28,6 +28,14 @@ export class Team {
   @Field(() => TeamImage, { nullable: true })
   image?: TeamImage | null;
 
+  @Prop({ default: '#7c3aed' })
+  @Field()
+  bannerColor: string;
+
+  @Prop({ default: 'Shield' })
+  @Field()
+  bannerIcon: string;
+
   // Hashed 4-digit PIN. Never expose via GraphQL.
   @Prop({ required: true, select: false })
   pinHash: string;

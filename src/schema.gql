@@ -20,6 +20,8 @@ input CreateMissionDto {
 }
 
 input CreateTeamDto {
+  bannerColor: String
+  bannerIcon: String
   image: TeamImageInput
   name: String!
   pin: String!
@@ -49,6 +51,8 @@ input UpdateMissionDto {
 }
 
 input UpdateTeamDto {
+  bannerColor: String
+  bannerIcon: String
   image: TeamImageInput
   name: String
 }
@@ -136,6 +140,8 @@ type LeaderboardTeam {
 
 type Team {
   _id: ID!
+  bannerColor: String!
+  bannerIcon: String!
   completedMissionIds: [ID!]!
   createdAt: DateTime!
   credits: Float!

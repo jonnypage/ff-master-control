@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { GetTeamsQuery } from '@/lib/graphql/generated';
+import { TeamBanner } from './TeamBanner';
+import { getBannerIconById } from './banner-icons';
 
 type TeamWithProgress = GetTeamsQuery['teams'][number] & {
   completedMissionIds?: string[];
@@ -17,9 +19,16 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
     <div className="cursor-pointer group" onClick={onClick}>
       <Card className="h-full hover:!border-primary hover:ring-2 hover:ring-primary/30 hover:shadow-xl transition-all duration-200 active:scale-[0.98] group-hover:[background-color:hsl(var(--accent)/0.35)]">
         <CardHeader className="pb-3">
-          <CardTitle className="text-xl group-hover:text-primary transition-colors">
-            {team.name}
-          </CardTitle>
+          <div className="flex items-start justify-between gap-3">
+            <CardTitle className="text-xl group-hover:text-primary transition-colors">
+              {team.name}
+            </CardTitle>
+            <TeamBanner
+              color={team.bannerColor}
+              icon={getBannerIconById(team.bannerIcon)}
+              size="sm"
+            />
+          </div>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">

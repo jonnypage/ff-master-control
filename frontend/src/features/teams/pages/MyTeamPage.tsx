@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { useMyTeam, useMissionsForTeams } from '@/lib/api/useApi';
+import { TeamBanner } from '../components/TeamBanner';
+import { getBannerIconById } from '../components/banner-icons';
 
 export function MyTeamPage() {
   const { data, isLoading, refetch } = useMyTeam();
@@ -63,6 +65,8 @@ export function MyTeamPage() {
           <CardTitle>Team Info</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-4 flex-1">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">
               Team Name
@@ -81,6 +85,13 @@ export function MyTeamPage() {
                 Copy
               </Button>
             </div>
+          </div>
+            </div>
+            <TeamBanner
+              color={team.bannerColor}
+              icon={getBannerIconById(team.bannerIcon)}
+              size="sm"
+            />
           </div>
         </CardContent>
       </Card>
