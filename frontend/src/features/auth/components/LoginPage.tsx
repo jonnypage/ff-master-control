@@ -11,7 +11,7 @@ export function LoginPage() {
   const [mode, setMode] = useState<'team' | 'staff'>('team');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [teamGuid, setTeamGuid] = useState('');
+  const [teamCode, setTeamCode] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -21,11 +21,11 @@ export function LoginPage() {
   const teamLoginMutation = useTeamLogin();
 
   useEffect(() => {
-    const maybeTeamGuid = (location.state as { teamGuid?: string } | null)
-      ?.teamGuid;
-    if (maybeTeamGuid) {
+    const maybeTeamCode = (location.state as { teamCode?: string } | null)
+      ?.teamCode;
+    if (maybeTeamCode) {
       setMode('team');
-      setTeamGuid(maybeTeamGuid);
+      setTeamCode(maybeTeamCode);
     }
   }, [location.state]);
 
@@ -40,7 +40,7 @@ export function LoginPage() {
 
     if (mode === 'team') {
       teamLoginMutation.mutate(
-        { input: { teamGuid, pin } },
+        { input: { teamCode, pin } },
         {
           onSuccess: (data) => {
             if (data.teamLogin) {
@@ -143,18 +143,18 @@ export function LoginPage() {
           {mode === 'team' ? (
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <label htmlFor="teamGuid" className="sr-only">
-                  Team GUID
+                <label htmlFor="teamCode" className="sr-only">
+                  Team Code
                 </label>
                 <input
-                  id="teamGuid"
-                  name="teamGuid"
+                  id="teamCode"
+                  name="teamCode"
                   type="text"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-t-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
-                  placeholder="Team GUID"
-                  value={teamGuid}
-                  onChange={(e) => setTeamGuid(e.target.value)}
+                  placeholder="Team Code (8 chars)"
+                  value={teamCode}
+                  onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
                 />
               </div>
               <div>

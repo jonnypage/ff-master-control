@@ -18,7 +18,7 @@ import { ChangePasswordDialog } from '@/features/admin/components/ChangePassword
 
 interface NavigationProps {
   user: { _id: string; username: string; role: UserRole } | null;
-  team: { _id: string; name: string; teamGuid: string } | null;
+  team: { _id: string; name: string; teamCode: string; teamGuid: string } | null;
   onLogout: () => void;
 }
 

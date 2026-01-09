@@ -14,6 +14,12 @@ import { CreateTeamDto } from './dto/create-team.dto';
 export class TeamsService {
   constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
 
+  private deriveTeamCode(teamGuid: string): string {
+    // Use last 8 hex chars of UUID (strip hyphens), uppercase for readability.
+    const hex = String(teamGuid).replace(/-/g, '').toUpperCase();
+    return hex.slice(-8);
+  }
+
   private async backfillLegacyTeamFields(): Promise<void> {
     // Only backfill teams that truly lack the new fields.
     // Important: pinHash is `select:false`, so never assume `undefined` means missing.
@@ -23,6 +29,9 @@ export class TeamsService {
           { teamGuid: { $exists: false } },
           { teamGuid: null },
           { teamGuid: '' },
+          { teamCode: { $exists: false } },
+          { teamCode: null },
+          { teamCode: '' },
           { pinHash: { $exists: false } },
           { pinHash: null },
           { pinHash: '' },
@@ -43,6 +52,11 @@ export class TeamsService {
         changed = true;
       }
 
+      if (!team.teamCode) {
+        team.teamCode = this.deriveTeamCode(team.teamGuid);
+        changed = true;
+      }
+
       if (!team.pinHash) {
         team.pinHash = defaultPinHash;
         changed = true;
@@ -55,12 +69,25 @@ export class TeamsService {
   }
 
   async create(createTeamDto: CreateTeamDto): Promise<TeamDocument> {
-    const teamGuid = randomUUID();
+    let teamGuid = randomUUID();
+    let teamCode = this.deriveTeamCode(teamGuid);
+
+    // Ensure teamCode uniqueness (rare collisions, but handle safely).
+    // If collision occurs, regenerate GUID until unique.
+    // Note: for an annual event, this is more than sufficient.
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const existing = await this.teamModel.findOne({ teamCode }).lean();
+      if (!existing) break;
+      teamGuid = randomUUID();
+      teamCode = this.deriveTeamCode(teamGuid);
+    }
     const pinHash = await bcrypt.hash(createTeamDto.pin, 10);
 
     const createdTeam = new this.teamModel({
       name: createTeamDto.name,
       teamGuid,
+      teamCode,
       pinHash,
       image: createTeamDto.image ?? null,
       bannerColor: createTeamDto.bannerColor ?? '#7c3aed',
@@ -74,9 +101,9 @@ export class TeamsService {
     return this.teamModel.findOne({ teamGuid }).exec();
   }
 
-  async findByTeamGuidForAuth(teamGuid: string): Promise<TeamDocument | null> {
+  async findByTeamCodeForAuth(teamCode: string): Promise<TeamDocument | null> {
     // pinHash is excluded by default (`select: false`), so opt-in here.
-    return this.teamModel.findOne({ teamGuid }).select('+pinHash').exec();
+    return this.teamModel.findOne({ teamCode }).select('+pinHash').exec();
   }
 
   async findOne(id: string): Promise<TeamDocument | null> {

@@ -35,8 +35,8 @@ export class AuthService {
     };
   }
 
-  async validateTeam(teamGuid: string, pin: string): Promise<any> {
-    const team = await this.teamsService.findByTeamGuidForAuth(teamGuid);
+  async validateTeam(teamCode: string, pin: string): Promise<any> {
+    const team = await this.teamsService.findByTeamCodeForAuth(teamCode);
     if (!team) {
       throw new UnauthorizedException('Invalid credentials');
     }

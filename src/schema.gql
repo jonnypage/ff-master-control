@@ -113,7 +113,7 @@ type Mutation {
 
 input TeamLoginInput {
   pin: String!
-  teamGuid: String!
+  teamCode: String!
 }
 
 type Query {
@@ -149,6 +149,7 @@ type Team {
   credits: Float!
   image: TeamImage
   name: String!
+  teamCode: String!
   teamGuid: String!
   updatedAt: DateTime!
 }

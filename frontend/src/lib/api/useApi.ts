@@ -89,7 +89,7 @@ export function useAdjustCredits() {
 
 export function useTeamLogin() {
   return useMutation({
-    mutationFn: (variables: { input: { teamGuid: string; pin: string } }) =>
+    mutationFn: (variables: { input: { teamCode: string; pin: string } }) =>
       graphqlClient.request(
         graphql(`
           mutation TeamLogin($input: TeamLoginInput!) {
@@ -98,6 +98,7 @@ export function useTeamLogin() {
               team {
                 _id
                 name
+                teamCode
                 teamGuid
                 bannerColor
                 bannerIcon
@@ -322,6 +323,7 @@ export function useCreateTeam() {
             createTeam(input: $input) {
               _id
               name
+              teamCode
               teamGuid
               bannerColor
               bannerIcon
@@ -589,6 +591,7 @@ export function useMyTeam() {
             myTeam {
               _id
               name
+              teamCode
               teamGuid
               bannerColor
               bannerIcon

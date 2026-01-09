@@ -30,7 +30,7 @@ export function MyTeamPage() {
         <CardContent className="py-12 text-center space-y-3">
           <p className="text-foreground font-medium">No team session found</p>
           <p className="text-sm text-muted-foreground">
-            Please log in with your Team GUID and PIN.
+            Please log in with your Team Code and PIN.
           </p>
           <Button onClick={() => refetch()} variant="outline">
             Refresh
@@ -42,10 +42,10 @@ export function MyTeamPage() {
 
   const completedCount = team.completedMissionIds?.length ?? 0;
 
-  const handleCopyGuid = async () => {
+  const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(team.teamGuid);
-      toast.success('Team GUID copied');
+      await navigator.clipboard.writeText(team.teamCode);
+      toast.success('Team Code copied');
     } catch {
       toast.error('Failed to copy');
     }
@@ -67,25 +67,27 @@ export function MyTeamPage() {
         <CardContent className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-4 flex-1">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Team Name
-            </span>
-            <span className="text-foreground font-semibold">{team.name}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Team GUID
-            </span>
-            <div className="flex items-center gap-2">
-              <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
-                {team.teamGuid}
-              </code>
-              <Button size="sm" variant="outline" onClick={handleCopyGuid}>
-                Copy
-              </Button>
-            </div>
-          </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Team Name
+                </span>
+                <span className="text-foreground font-semibold">
+                  {team.name}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Team Code
+                </span>
+                <div className="flex items-center gap-2">
+                  <code className="bg-muted px-2 py-1 rounded font-mono text-xs">
+                    {team.teamCode}
+                  </code>
+                  <Button size="sm" variant="outline" onClick={handleCopyCode}>
+                    Copy
+                  </Button>
+                </div>
+              </div>
             </div>
             <TeamBanner
               color={team.bannerColor}
@@ -122,4 +124,3 @@ export function MyTeamPage() {
     </div>
   );
 }
-

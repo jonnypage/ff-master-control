@@ -24,14 +24,14 @@ export function CreateTeamPage() {
             <TeamCreateForm
               cancelLabel="Back to Login"
               onCancel={() => navigate('/login')}
-              onCreated={async (teamGuid) => {
+              onCreated={async (teamCode) => {
                 try {
-                  await navigator.clipboard.writeText(teamGuid);
-                  toast.message('Team GUID copied to clipboard');
+                  await navigator.clipboard.writeText(teamCode);
+                  toast.message('Team Code copied to clipboard');
                 } catch {
                   // ignore clipboard failures
                 }
-                navigate('/login', { state: { teamGuid } });
+                navigate('/login', { state: { teamCode } });
               }}
             />
           </CardContent>

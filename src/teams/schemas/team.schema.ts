@@ -20,6 +20,10 @@ export class Team {
   @Field()
   teamGuid: string;
 
+  @Prop({ required: true, unique: true, index: true })
+  @Field()
+  teamCode: string;
+
   @Prop({ required: true })
   @Field()
   name: string;

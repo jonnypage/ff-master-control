@@ -11,7 +11,7 @@ interface TeamCreateFormProps {
   submitLabel?: string;
   cancelLabel?: string;
   onCancel?: () => void;
-  onCreated?: (teamGuid: string) => void;
+  onCreated?: (teamCode: string) => void;
 }
 
 export function TeamCreateForm({
@@ -56,14 +56,14 @@ export function TeamCreateForm({
       { input: { name: name.trim(), pin, bannerColor, bannerIcon } },
       {
         onSuccess: (data) => {
-          const teamGuid = data?.createTeam?.teamGuid;
-          if (!teamGuid) {
-            toast.error('Team created, but no Team GUID was returned');
+          const teamCode = data?.createTeam?.teamCode;
+          if (!teamCode) {
+            toast.error('Team created, but no Team Code was returned');
             return;
           }
           toast.success('Team created!');
           reset();
-          onCreated?.(teamGuid);
+          onCreated?.(teamCode);
         },
         onError: (error: unknown) => {
           const errorMessage =

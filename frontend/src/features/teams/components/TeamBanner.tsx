@@ -43,11 +43,11 @@ export function TeamBanner({
         }}
       />
 
-      {/* Icon plate */}
+      {/* Icon */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-background/75 backdrop-blur-sm rounded-full p-3 border border-border shadow">
-          {Icon ? <Icon className="w-8 h-8 text-foreground" /> : null}
-        </div>
+        {Icon ? (
+          <Icon className="w-10 h-10 text-foreground drop-shadow-sm" />
+        ) : null}
       </div>
 
       {/* Bottom notch shadow */}
@@ -55,4 +55,3 @@ export function TeamBanner({
     </div>
   );
 }
-

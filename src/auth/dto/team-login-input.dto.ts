@@ -6,7 +6,7 @@ export class TeamLoginInput {
   @Field()
   @IsString()
   @IsNotEmpty()
-  teamGuid: string;
+  teamCode: string;
 
   @Field()
   @IsString()

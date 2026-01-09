@@ -17,6 +17,7 @@ interface User {
 interface Team {
   _id: string;
   name: string;
+  teamCode: string;
   teamGuid: string;
   image?: { url?: string | null } | null;
 }

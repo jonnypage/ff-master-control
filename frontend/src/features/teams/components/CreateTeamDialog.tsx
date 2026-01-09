@@ -33,8 +33,8 @@ export function CreateTeamDialog({
             cancelLabel="Cancel"
             submitLabel="Create Team"
             onCancel={() => onOpenChange(false)}
-            onCreated={(teamGuid) => {
-              toast.message(`Team GUID: ${teamGuid}`);
+            onCreated={(teamCode) => {
+              toast.message(`Team Code: ${teamCode}`);
               onSuccess();
             }}
           />

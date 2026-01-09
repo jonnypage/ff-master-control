@@ -23,7 +23,7 @@ export class AuthResolver {
     @Args('input') teamLoginInput: TeamLoginInput,
   ): Promise<TeamAuthPayload> {
     const team = await this.authService.validateTeam(
-      teamLoginInput.teamGuid,
+      teamLoginInput.teamCode,
       teamLoginInput.pin,
     );
     return this.authService.teamLogin(team);

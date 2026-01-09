@@ -18,7 +18,10 @@ import { useEffect, useRef, useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
 import { TeamBanner } from '../components/TeamBanner';
-import { BANNER_ICON_OPTIONS, type BannerIconId } from '../components/banner-icons';
+import {
+  BANNER_ICON_OPTIONS,
+  type BannerIconId,
+} from '../components/banner-icons';
 import {
   useTeamById,
   useMissionsForTeamEdit,
@@ -77,7 +80,8 @@ export function TeamEditPage() {
       return;
     }
 
-    const input: { name?: string; bannerColor?: string; bannerIcon?: string } = {};
+    const input: { name?: string; bannerColor?: string; bannerIcon?: string } =
+      {};
     if (name !== data?.teamById?.name) {
       input.name = name;
     }
@@ -352,29 +356,17 @@ export function TeamEditPage() {
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                <div>
-                  <Label>Team GUID</Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                    {team.teamGuid}
-                  </div>
-                </div>
               </>
             ) : (
               <>
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-2">
-                <div>
-                  <Label>Team Name</Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {team.name}
-                  </div>
-                </div>
-                <div>
-                  <Label>Team GUID</Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                    {team.teamGuid}
-                  </div>
-                </div>
+                    <div>
+                      <Label>Team Name</Label>
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                        {team.name}
+                      </div>
+                    </div>
                   </div>
                   <TeamBanner
                     color={team.bannerColor}
