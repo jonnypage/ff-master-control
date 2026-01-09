@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": "20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "prebuild": "if test -f ../src/schema.gql; then npm run codegen; else echo \"Skipping codegen: ../src/schema.gql not found (expected on Railway when service root is /frontend)\"; fi",
