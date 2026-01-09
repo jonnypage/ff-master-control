@@ -18,6 +18,7 @@
     "seed:admin": "ts-node -r tsconfig-paths/register scripts/seed-admin.ts",
     "reset:teams": "ts-node -r tsconfig-paths/register scripts/reset-teams.ts",
     "migrate:legacy-teams": "ts-node -r tsconfig-paths/register scripts/migrate-legacy-teams.ts",
+    "drop:legacy-team-nfc-index": "ts-node -r tsconfig-paths/register scripts/drop-legacy-team-nfc-index.ts",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
