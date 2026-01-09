@@ -14,7 +14,7 @@ import {
   Users,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
 import { TeamBanner } from '../components/TeamBanner';
@@ -54,18 +54,18 @@ export function TeamEditPage() {
     () => (teamData?.bannerIcon as BannerIconId) ?? 'Shield',
   );
 
-  // Update state when data loads for the current team
-  // Component resets when id changes, so we only need to sync when data becomes available
-  if (
-    teamData &&
-    (name !== teamData.name ||
-      bannerColor !== teamData.bannerColor ||
-      bannerIcon !== (teamData.bannerIcon as BannerIconId))
-  ) {
-    setName(teamData.name);
-    setBannerColor(teamData.bannerColor);
-    setBannerIcon((teamData.bannerIcon as BannerIconId) ?? 'Shield');
-  }
+  // Sync state from server only when we switch teams (prevents overwriting edits on every render).
+  const lastLoadedTeamIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const currentId = teamData?._id ?? null;
+    if (!currentId) return;
+    if (lastLoadedTeamIdRef.current === currentId) return;
+    lastLoadedTeamIdRef.current = currentId;
+
+    setName(teamData?.name ?? '');
+    setBannerColor(teamData?.bannerColor ?? '#7c3aed');
+    setBannerIcon((teamData?.bannerIcon as BannerIconId) ?? 'Shield');
+  }, [teamData?._id]);
 
   const updateTeam = useUpdateTeam();
   const addCredits = useAddCredits();
