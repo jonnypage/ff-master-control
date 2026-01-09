@@ -5,7 +5,7 @@
     "buildCommand": "npm run build"
   },
   "deploy": {
-    "startCommand": "npm run preview -- --host 0.0.0.0 --port $PORT",
+    "startCommand": "caddy run --config /assets/Caddyfile --adapter caddyfile",
     "healthcheckPath": "/",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
