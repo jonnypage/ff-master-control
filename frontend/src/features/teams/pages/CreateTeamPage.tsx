@@ -91,7 +91,8 @@ export function CreateTeamPage() {
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="1234"
                   inputMode="numeric"
-                  pattern="\\d{4}"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   required
                 />
               </div>
@@ -104,7 +105,8 @@ export function CreateTeamPage() {
                   onChange={(e) => setConfirmPin(e.target.value)}
                   placeholder="1234"
                   inputMode="numeric"
-                  pattern="\\d{4}"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   required
                 />
               </div>

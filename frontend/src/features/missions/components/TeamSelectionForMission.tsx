@@ -50,9 +50,8 @@ export function TeamSelectionForMission({
     if (!searchTerm.trim()) return allTeams;
 
     const searchLower = searchTerm.toLowerCase();
-    return allTeams.filter(
-      (team: Team) =>
-        (team?.name || '').toLowerCase().includes(searchLower),
+    return allTeams.filter((team: Team) =>
+      (team?.name || '').toLowerCase().includes(searchLower),
     );
   }, [data, searchTerm]);
 

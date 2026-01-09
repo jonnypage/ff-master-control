@@ -166,7 +166,8 @@ export function LoginPage() {
                   name="pin"
                   type="password"
                   inputMode="numeric"
-                  pattern="\\d{4}"
+                  pattern="[0-9]{4}"
+                  maxLength={4}
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-input placeholder:text-muted-foreground text-foreground bg-background rounded-b-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring focus:z-10 sm:text-sm"
                   placeholder="4-digit PIN"
