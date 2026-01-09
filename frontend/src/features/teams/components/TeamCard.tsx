@@ -1,15 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import type { GetTeamsQuery } from '@/lib/graphql/generated';
 import { TeamBanner } from './TeamBanner';
 import { getBannerIconById } from './banner-icons';
 
-type TeamWithProgress = GetTeamsQuery['teams'][number] & {
-  completedMissionIds?: string[];
+export type TeamCardTeam = {
+  _id: string;
+  name: string;
+  credits: number;
+  teamCode: string;
+  bannerColor: string;
+  bannerIcon: string;
+  completedMissionIds?: string[] | null;
 };
 
 interface TeamCardProps {
-  team: TeamWithProgress;
+  team: TeamCardTeam;
   totalMissions: number;
   onClick: () => void;
 }

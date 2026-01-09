@@ -7,6 +7,8 @@ import { toast } from 'sonner';
 import { Numpad } from '@/components/ui/numpad';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
 import { useAdjustCredits } from '@/lib/api/useApi';
+import { TeamBanner } from '@/features/teams/components/TeamBanner';
+import { getBannerIconById } from '@/features/teams/components/banner-icons';
 
 interface CreditAdjustmentProps {
   team: GetTeamsForStoreQuery['teams'][number];
@@ -78,11 +80,23 @@ export function CreditAdjustment({
           <CardTitle>Team Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
-              Team Name
-            </span>
-            <span className="text-foreground font-semibold">{team.name}</span>
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-muted-foreground">
+                  Team Name
+                </span>
+                <span className="text-foreground font-semibold truncate">
+                  {team.name}
+                </span>
+              </div>
+            </div>
+            <TeamBanner
+              color={team.bannerColor}
+              icon={getBannerIconById(team.bannerIcon)}
+              size="sm"
+              className="w-12 shrink-0"
+            />
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-border">

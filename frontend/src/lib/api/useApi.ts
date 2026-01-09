@@ -57,7 +57,11 @@ export function useTeamsForStore() {
             teams {
               _id
               name
+              teamCode
+              bannerColor
+              bannerIcon
               credits
+              completedMissionIds
             }
           }
         `) as unknown as RequestDocument,
@@ -550,6 +554,8 @@ export function useTeamsForMissionCompletion() {
             teams {
               _id
               name
+              bannerColor
+              bannerIcon
               credits
               completedMissionIds
             }

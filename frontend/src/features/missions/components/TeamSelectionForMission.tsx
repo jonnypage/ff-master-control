@@ -8,6 +8,8 @@ import { Search, Users, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
+import { TeamBanner } from '@/features/teams/components/TeamBanner';
+import { getBannerIconById } from '@/features/teams/components/banner-icons';
 import {
   useTeamsForMissionCompletion,
   useCompleteMission,
@@ -41,6 +43,8 @@ export function TeamSelectionForMission({
   interface Team {
     _id: string;
     name: string;
+    bannerColor: string;
+    bannerIcon: string;
     credits: number;
     completedMissionIds: string[];
   }
@@ -171,16 +175,24 @@ export function TeamSelectionForMission({
               return (
                 <div
                   key={team?._id}
-                  className={`relative flex items-center justify-between px-4 h-[50px] transition-colors ${
+                  className={`relative flex items-center justify-between px-4 py-2 transition-colors ${
                     isCompleted && !isAdmin
                       ? ''
                       : `hover:bg-accent/50 cursor-pointer ${isSelected ? 'bg-accent' : ''}`
                   }`}
                   onClick={handleRowClick}
                 >
-                  <span className="text-foreground font-medium">
-                    {team?.name || 'Unnamed Team'}
-                  </span>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <TeamBanner
+                      color={team.bannerColor}
+                      icon={getBannerIconById(team.bannerIcon)}
+                      size="sm"
+                      className="w-10 shrink-0"
+                    />
+                    <span className="text-foreground font-medium truncate">
+                      {team?.name || 'Unnamed Team'}
+                    </span>
+                  </div>
                   <div className="flex items-center h-full">
                     {isCompleted ? (
                       isAdmin && isSelected ? (

@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Search, Users } from 'lucide-react';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
-import { useTeamsForStore } from '@/lib/api/useApi';
+import { useMissionsForTeams, useTeamsForStore } from '@/lib/api/useApi';
+import { TeamCard } from '@/features/teams/components/TeamCard';
 
 interface TeamSelectionProps {
   onTeamSelect: (team: GetTeamsForStoreQuery['teams'][number]) => void;
@@ -14,6 +14,8 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const { data, isLoading } = useTeamsForStore();
+  const { data: missionsData } = useMissionsForTeams();
+  const totalMissions = missionsData?.missions?.length ?? 0;
 
   const filteredTeams = useMemo(() => {
     const allTeams = (data?.teams ?? []) as GetTeamsForStoreQuery['teams'];
@@ -22,7 +24,8 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
     const searchLower = searchTerm.toLowerCase();
     return allTeams.filter(
       (team: GetTeamsForStoreQuery['teams'][number]) =>
-        team.name.toLowerCase().includes(searchLower),
+        team.name.toLowerCase().includes(searchLower) ||
+        team.teamCode.toLowerCase().includes(searchLower),
     );
   }, [data?.teams, searchTerm]);
 
@@ -57,7 +60,7 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
           <Input
-            placeholder="Search teams by name or team ID..."
+            placeholder="Search teams by name or team code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 h-11"
@@ -67,38 +70,12 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTeams.map((team: GetTeamsForStoreQuery['teams'][number]) => (
-          <Card
+          <TeamCard
             key={team._id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+            team={team}
+            totalMissions={totalMissions}
             onClick={() => onTeamSelect(team)}
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                {team.name}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-muted-foreground">
-                  Credits
-                </span>
-                <Badge
-                  variant="secondary"
-                  className="text-base font-semibold px-3 py-1"
-                >
-                  {(team.credits ?? 0).toLocaleString()}
-                </Badge>
-              </div>
-              <div className="pt-2 border-t">
-                <div className="text-xs text-muted-foreground">
-                  <span className="font-medium">Team ID:</span>{' '}
-                  <code className="bg-muted px-2 py-1 rounded font-mono">
-                    {team._id}
-                  </code>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          />
         ))}
       </div>
 

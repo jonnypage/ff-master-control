@@ -1,9 +1,9 @@
-import type { ComponentType } from 'react';
+import type { ComponentType, SVGProps } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TeamBannerProps {
   color: string;
-  icon?: ComponentType<{ className?: string }>;
+  icon?: ComponentType<SVGProps<SVGSVGElement>>;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -14,18 +14,16 @@ export function TeamBanner({
   className,
   size = 'md',
 }: TeamBannerProps) {
-  const dims =
-    size === 'sm'
-      ? 'w-[92px] h-[124px]'
-      : size === 'lg'
-        ? 'w-[160px] h-[220px]'
-        : 'w-[128px] h-[176px]';
+  // Use a fixed aspect ratio so the banner can scale cleanly just by changing width.
+  // (Callers can also override width/height via className.)
+  const widthClass =
+    size === 'sm' ? 'w-[92px]' : size === 'lg' ? 'w-[160px]' : 'w-[128px]';
 
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-md shadow-sm border border-border',
-        dims,
+        'relative overflow-hidden rounded-md shadow-sm border border-border aspect-[92/124]',
+        widthClass,
         className,
       )}
       style={{
@@ -46,12 +44,15 @@ export function TeamBanner({
       {/* Icon */}
       <div className="absolute inset-0 flex items-center justify-center">
         {Icon ? (
-          <Icon className="w-10 h-10 text-foreground drop-shadow-sm" />
+          <Icon
+            className="text-foreground drop-shadow-sm"
+            style={{ width: '45%', height: '45%' }}
+          />
         ) : null}
       </div>
 
       {/* Bottom notch shadow */}
-      <div className="absolute bottom-0 left-0 right-0 h-10 opacity-15 bg-black" />
+      <div className="absolute bottom-0 left-0 right-0 h-[18%] opacity-15 bg-black" />
     </div>
   );
 }
