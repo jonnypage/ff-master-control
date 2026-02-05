@@ -107,6 +107,11 @@ export class MissionsService {
       mission.creditsAwarded,
     );
 
+    // Award crystal if mission awards one
+    if (mission.awardsCrystal) {
+      await this.teamsService.addCrystals(team._id.toString(), 1);
+    }
+
     // Return without populate since GraphQL expects IDs, not full objects
     return completion as MissionCompletionDocument;
   }
@@ -184,6 +189,11 @@ export class MissionsService {
       team._id.toString(),
       -mission.creditsAwarded,
     );
+
+    // Remove crystal if mission awarded one
+    if (mission.awardsCrystal) {
+      await this.teamsService.addCrystals(team._id.toString(), -1);
+    }
   }
 
   async create(createMissionDto: {
@@ -202,6 +212,7 @@ export class MissionsService {
       name?: string;
       description?: string;
       creditsAwarded?: number;
+      awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
     },
   ): Promise<MissionDocument> {
@@ -218,6 +229,9 @@ export class MissionsService {
     }
     if (updateData.creditsAwarded !== undefined) {
       mission.creditsAwarded = updateData.creditsAwarded;
+    }
+    if (updateData.awardsCrystal !== undefined) {
+      mission.awardsCrystal = updateData.awardsCrystal;
     }
     if (updateData.isFinalChallenge !== undefined) {
       mission.isFinalChallenge = updateData.isFinalChallenge;

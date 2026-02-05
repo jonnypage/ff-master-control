@@ -110,6 +110,17 @@ export function MissionCompletion({
               {mission.creditsAwarded}
             </Badge>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Crystal Reward
+            </span>
+            <Badge
+              variant={mission.awardsCrystal ? 'default' : 'secondary'}
+              className="text-lg font-semibold px-4 py-2"
+            >
+              {mission.awardsCrystal ? '1 Crystal' : 'None'}
+            </Badge>
+          </div>
         </CardContent>
       </Card>
 
@@ -136,6 +147,17 @@ export function MissionCompletion({
               {team.credits.toLocaleString()}
             </Badge>
           </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Current Crystals
+            </span>
+            <Badge
+              variant="secondary"
+              className="text-lg font-semibold px-4 py-2"
+            >
+              {team.crystals.toLocaleString()}
+            </Badge>
+          </div>
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <span className="text-sm font-medium text-muted-foreground">
               New Credits After Completion
@@ -145,6 +167,17 @@ export function MissionCompletion({
               className="text-lg font-semibold px-4 py-2"
             >
               {(team.credits + mission.creditsAwarded).toLocaleString()}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              New Crystals After Completion
+            </span>
+            <Badge
+              variant="default"
+              className="text-lg font-semibold px-4 py-2"
+            >
+              {(team.crystals + (mission.awardsCrystal ? 1 : 0)).toLocaleString()}
             </Badge>
           </div>
         </CardContent>

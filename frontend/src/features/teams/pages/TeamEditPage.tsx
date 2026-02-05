@@ -467,6 +467,12 @@ export function TeamEditPage() {
               </Badge>
             </div>
             <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Crystals:</span>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                {typeof team.crystals === 'number' ? team.crystals : 0}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
                 Missions Completed:
               </span>

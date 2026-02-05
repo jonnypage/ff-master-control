@@ -61,6 +61,7 @@ export function useTeamsForStore() {
               bannerColor
               bannerIcon
               credits
+              crystals
               completedMissionIds
             }
           }
@@ -80,6 +81,7 @@ export function useAdjustCredits() {
               _id
               name
               credits
+              crystals
             }
           }
         `) as unknown as RequestDocument,
@@ -275,6 +277,7 @@ export function useTeams() {
                 url
               }
               credits
+              crystals
               completedMissionIds
             }
           }
@@ -301,6 +304,7 @@ export function useTeamById(id: string) {
                 url
               }
               credits
+              crystals
               completedMissionIds
             }
           }
@@ -388,6 +392,7 @@ export function useAddCredits() {
             addCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
+              crystals
             }
           }
         `) as unknown as RequestDocument,
@@ -407,6 +412,7 @@ export function useRemoveCredits() {
             removeCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
+              crystals
             }
           }
         `) as unknown as RequestDocument,
@@ -444,6 +450,7 @@ export function useMissions() {
               name
               description
               creditsAwarded
+              awardsCrystal
               isFinalChallenge
               createdAt
               updatedAt
@@ -484,6 +491,7 @@ export function useMission(id?: string) {
               name
               description
               creditsAwarded
+              awardsCrystal
               isFinalChallenge
             }
           }
@@ -503,6 +511,7 @@ export function useUpdateMission() {
         name?: string;
         description?: string;
         creditsAwarded?: number;
+        awardsCrystal?: boolean;
         isFinalChallenge?: boolean;
       };
     }) =>
@@ -514,6 +523,7 @@ export function useUpdateMission() {
               name
               description
               creditsAwarded
+              awardsCrystal
               isFinalChallenge
             }
           }
@@ -557,6 +567,7 @@ export function useTeamsForMissionCompletion() {
               bannerColor
               bannerIcon
               credits
+              crystals
               completedMissionIds
             }
           }
@@ -610,6 +621,7 @@ export function useMyTeam(options?: { enabled?: boolean }) {
                 url
               }
               credits
+              crystals
               completedMissionIds
             }
           }
@@ -669,6 +681,7 @@ export function useCreateMission() {
         name: string;
         description?: string;
         creditsAwarded: number;
+        awardsCrystal: boolean;
         isFinalChallenge: boolean;
       };
     }) =>
@@ -680,6 +693,7 @@ export function useCreateMission() {
               name
               description
               creditsAwarded
+              awardsCrystal
               isFinalChallenge
             }
           }

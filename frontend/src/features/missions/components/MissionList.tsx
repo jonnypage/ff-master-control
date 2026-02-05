@@ -148,17 +148,30 @@ export function MissionList() {
                     </p>
                   )}
                   {!isTeamSession && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Credits
-                      </span>
-                      <Badge
-                        variant="secondary"
-                        className="text-base font-semibold px-3 py-1"
-                      >
-                        {mission.creditsAwarded}
-                      </Badge>
-                    </div>
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Credits
+                        </span>
+                        <Badge
+                          variant="secondary"
+                          className="text-base font-semibold px-3 py-1"
+                        >
+                          {mission.creditsAwarded}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">
+                          Crystal
+                        </span>
+                        <Badge
+                          variant={mission.awardsCrystal ? 'default' : 'outline'}
+                          className="text-base font-semibold px-3 py-1"
+                        >
+                          {mission.awardsCrystal ? '1' : 'None'}
+                        </Badge>
+                      </div>
+                    </>
                   )}
                   {isTeamSession ? (
                     <div className="flex items-center justify-between pt-6 border-t">

@@ -19,6 +19,10 @@ export class CreateMissionDto {
 
   @Field({ defaultValue: false })
   @IsBoolean()
+  awardsCrystal: boolean;
+
+  @Field({ defaultValue: false })
+  @IsBoolean()
   isFinalChallenge: boolean;
 }
 

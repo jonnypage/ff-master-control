@@ -21,6 +21,11 @@ export class UpdateMissionDto {
   @Field({ nullable: true })
   @IsOptional()
   @IsBoolean()
+  awardsCrystal?: boolean;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsBoolean()
   isFinalChallenge?: boolean;
 }
 

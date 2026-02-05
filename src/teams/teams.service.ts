@@ -183,6 +183,16 @@ export class TeamsService {
     return team.save();
   }
 
+  async addCrystals(teamId: string, amount: number): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    team.crystals = Math.max(0, team.crystals + amount);
+    return team.save();
+  }
+
   async addCompletedMission(
     teamId: string,
     missionId: string,

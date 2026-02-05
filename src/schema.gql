@@ -13,6 +13,7 @@ type AuthPayload {
 }
 
 input CreateMissionDto {
+  awardsCrystal: Boolean!
   creditsAwarded: Int!
   description: String
   isFinalChallenge: Boolean!
@@ -44,6 +45,7 @@ input UpdateUserDto {
 }
 
 input UpdateMissionDto {
+  awardsCrystal: Boolean
   creditsAwarded: Int
   description: String
   isFinalChallenge: Boolean
@@ -73,6 +75,7 @@ input LoginInput {
 
 type Mission {
   _id: ID!
+  awardsCrystal: Boolean!
   createdAt: DateTime!
   creditsAwarded: Float!
   description: String
@@ -147,6 +150,7 @@ type Team {
   completedMissionIds: [ID!]!
   createdAt: DateTime!
   credits: Float!
+  crystals: Float!
   image: TeamImage
   name: String!
   pin: String

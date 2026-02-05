@@ -38,6 +38,7 @@ export function MissionEditPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditsAwarded, setCreditsAwarded] = useState(0);
+  const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
 
   const { data, isLoading } = useMission(id);
@@ -73,11 +74,13 @@ export function MissionEditPage() {
     const nextName = missionData.name;
     const nextDescription = missionData.description ?? '';
     const nextCredits = missionData.creditsAwarded;
+    const nextCrystal = missionData.awardsCrystal ?? false;
     const nextFinal = missionData.isFinalChallenge;
     queueMicrotask(() => {
       setName(nextName);
       setDescription(nextDescription);
       setCreditsAwarded(nextCredits);
+      setAwardsCrystal(nextCrystal);
       setIsFinalChallenge(nextFinal);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when mission id changes
@@ -95,6 +98,7 @@ export function MissionEditPage() {
       name?: string;
       description?: string;
       creditsAwarded?: number;
+      awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
     } = {};
 
@@ -106,6 +110,9 @@ export function MissionEditPage() {
     }
     if (creditsAwarded !== data?.mission?.creditsAwarded) {
       input.creditsAwarded = creditsAwarded;
+    }
+    if (awardsCrystal !== data?.mission?.awardsCrystal) {
+      input.awardsCrystal = awardsCrystal;
     }
     if (isFinalChallenge !== data?.mission?.isFinalChallenge) {
       input.isFinalChallenge = isFinalChallenge;
@@ -261,6 +268,18 @@ export function MissionEditPage() {
                     min="0"
                   />
                 </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="awards-crystal"
+                    checked={awardsCrystal}
+                    onChange={(e) => setAwardsCrystal(e.target.checked)}
+                    className="rounded border-input"
+                  />
+                  <Label htmlFor="awards-crystal" className="cursor-pointer">
+                    Awards Crystal
+                  </Label>
+                </div>
                 {isFinalChallenge && (
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                     <div className="flex items-center gap-2">
@@ -297,7 +316,7 @@ export function MissionEditPage() {
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="pt-4">
                       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -305,6 +324,16 @@ export function MissionEditPage() {
                       </div>
                       <div className="text-lg font-semibold mt-0.5">
                         {mission.creditsAwarded}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Crystal Reward
+                      </div>
+                      <div className="text-lg font-semibold mt-0.5">
+                        {mission.awardsCrystal ? '1 Crystal' : 'None'}
                       </div>
                     </CardContent>
                   </Card>

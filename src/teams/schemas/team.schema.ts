@@ -54,6 +54,10 @@ export class Team {
   @Field()
   credits: number;
 
+  @Prop({ default: 0 })
+  @Field()
+  crystals: number;
+
   @Prop({ type: [Types.ObjectId], ref: 'Mission', default: [] })
   @Field(() => [ID])
   completedMissionIds: ObjectId[];

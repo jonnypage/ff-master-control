@@ -140,6 +140,14 @@ export function MyTeamPage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-muted-foreground">
+              Crystals
+            </span>
+            <Badge variant="secondary" className="text-base font-semibold">
+              {team.crystals?.toLocaleString?.() ?? team.crystals}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
               Missions
             </span>
             <Badge className="text-base font-semibold">

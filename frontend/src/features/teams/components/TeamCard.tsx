@@ -7,6 +7,7 @@ export type TeamCardTeam = {
   _id: string;
   name: string;
   credits: number;
+  crystals: number;
   teamCode: string;
   bannerColor: string;
   bannerIcon: string;
@@ -45,6 +46,17 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
               className="text-base font-semibold px-3 py-1"
             >
               {team.credits}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">
+              Crystals
+            </span>
+            <Badge
+              variant="secondary"
+              className="text-base font-semibold px-3 py-1"
+            >
+              {team.crystals}
             </Badge>
           </div>
           <div className="flex items-center justify-between">

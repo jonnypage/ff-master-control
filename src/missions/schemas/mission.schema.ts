@@ -24,6 +24,10 @@ export class Mission {
 
   @Prop({ default: false })
   @Field()
+  awardsCrystal: boolean;
+
+  @Prop({ default: false })
+  @Field()
   isFinalChallenge: boolean;
 
   @Field()
