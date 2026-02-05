@@ -44,7 +44,7 @@ type Documents = {
     "\n          mutation RemoveMissionCompletion($missionId: ID!, $teamId: ID!) {\n            removeMissionCompletion(missionId: $missionId, teamId: $teamId)\n          }\n        ": typeof types.RemoveMissionCompletionDocument,
     "\n          mutation OverrideMissionCompletion($teamId: ID!, $missionId: ID!) {\n            overrideMissionCompletion(teamId: $teamId, missionId: $missionId) {\n              _id\n            }\n          }\n        ": typeof types.OverrideMissionCompletionDocument,
     "\n          mutation CreateMission($input: CreateMissionDto!) {\n            createMission(input: $input) {\n              _id\n              name\n              description\n              creditsAwarded\n              isFinalChallenge\n            }\n          }\n        ": typeof types.CreateMissionDocument,
-    "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n            }\n          }\n        ": typeof types.GetMissionsForTeamEditDocument,
+    "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n              isFinalChallenge\n            }\n          }\n        ": typeof types.GetMissionsForTeamEditDocument,
     "\n          query GetStats {\n            config {\n              requiredMissionsForFinal\n            }\n            teams {\n              _id\n            }\n            missions {\n              _id\n              isFinalChallenge\n            }\n          }\n        ": typeof types.GetStatsDocument,
 };
 const documents: Documents = {
@@ -78,7 +78,7 @@ const documents: Documents = {
     "\n          mutation RemoveMissionCompletion($missionId: ID!, $teamId: ID!) {\n            removeMissionCompletion(missionId: $missionId, teamId: $teamId)\n          }\n        ": types.RemoveMissionCompletionDocument,
     "\n          mutation OverrideMissionCompletion($teamId: ID!, $missionId: ID!) {\n            overrideMissionCompletion(teamId: $teamId, missionId: $missionId) {\n              _id\n            }\n          }\n        ": types.OverrideMissionCompletionDocument,
     "\n          mutation CreateMission($input: CreateMissionDto!) {\n            createMission(input: $input) {\n              _id\n              name\n              description\n              creditsAwarded\n              isFinalChallenge\n            }\n          }\n        ": types.CreateMissionDocument,
-    "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n            }\n          }\n        ": types.GetMissionsForTeamEditDocument,
+    "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n              isFinalChallenge\n            }\n          }\n        ": types.GetMissionsForTeamEditDocument,
     "\n          query GetStats {\n            config {\n              requiredMissionsForFinal\n            }\n            teams {\n              _id\n            }\n            missions {\n              _id\n              isFinalChallenge\n            }\n          }\n        ": types.GetStatsDocument,
 };
 
@@ -219,7 +219,7 @@ export function graphql(source: "\n          mutation CreateMission($input: Crea
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n            }\n          }\n        "): (typeof documents)["\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n            }\n          }\n        "];
+export function graphql(source: "\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n              isFinalChallenge\n            }\n          }\n        "): (typeof documents)["\n          query GetMissionsForTeamEdit {\n            missions {\n              _id\n              name\n              isFinalChallenge\n            }\n          }\n        "];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

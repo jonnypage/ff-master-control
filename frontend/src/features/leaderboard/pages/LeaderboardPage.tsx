@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Trophy } from 'lucide-react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
