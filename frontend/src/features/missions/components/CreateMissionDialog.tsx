@@ -29,6 +29,7 @@ export function CreateMissionDialog({
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [creditsAwarded, setCreditsAwarded] = useState(0);
+  const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
 
   const createMission = useCreateMission();
@@ -46,6 +47,7 @@ export function CreateMissionDialog({
           name: name.trim(),
           description: description.trim() || undefined,
           creditsAwarded,
+          awardsCrystal,
           isFinalChallenge,
         },
       },
@@ -55,6 +57,7 @@ export function CreateMissionDialog({
           setName('');
           setDescription('');
           setCreditsAwarded(0);
+          setAwardsCrystal(false);
           setIsFinalChallenge(false);
           queryClient.invalidateQueries({ queryKey: ['missions'] });
           onSuccess();
@@ -113,6 +116,18 @@ export function CreateMissionDialog({
                 min="0"
                 placeholder="0"
               />
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="awards-crystal"
+                checked={awardsCrystal}
+                onChange={(e) => setAwardsCrystal(e.target.checked)}
+                className="rounded border-input"
+              />
+              <Label htmlFor="awards-crystal" className="cursor-pointer">
+                Awards Crystal
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <input
