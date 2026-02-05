@@ -184,6 +184,26 @@ export function useCreateUser() {
   });
 }
 
+export function useStaffSignup() {
+  return useMutation({
+    mutationFn: (variables: {
+      input: { username: string; password: string; role: string };
+    }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation StaffSignup($input: CreateUserDto!) {
+            staffSignup(input: $input) {
+              _id
+              username
+              role
+            }
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
+  });
+}
+
 export function useUpdateUser() {
   const qc = useQueryClient();
   return useMutation({

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Target } from 'lucide-react';
+import { Coins, Gem, Search, Target } from 'lucide-react';
 import { useMissions, useMyTeam, useTeamsForMissions } from '@/lib/api/useApi';
 import type { GetMissionsQuery } from '@/lib/graphql/generated';
 import { useAuth } from '@/features/auth/lib/auth-context';
@@ -149,28 +149,33 @@ export function MissionList() {
                   )}
                   {!isTeamSession && (
                     <>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Credits
-                        </span>
-                        <Badge
-                          variant="secondary"
-                          className="text-base font-semibold px-3 py-1"
-                        >
-                          {mission.creditsAwarded}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-muted-foreground">
-                          Crystal
-                        </span>
-                        <Badge
-                          variant={mission.awardsCrystal ? 'default' : 'outline'}
-                          className="text-base font-semibold px-3 py-1"
-                        >
-                          {mission.awardsCrystal ? '1' : 'None'}
-                        </Badge>
-                      </div>
+                      {mission.creditsAwarded > 0 ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground flex justify-between">
+                            <Coins className="w-4 h-4 mr-2" />
+                            Credits awarded:
+                          </span>
+
+                          <Badge
+                            variant="secondary"
+                            className="text-base font-semibold px-3 py-1"
+                          >
+                            {mission.creditsAwarded}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between h-6"></div>
+                      )}
+                      {mission.awardsCrystal ? (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-muted-foreground flex items-center">
+                            <Gem className="w-4 h-4 mr-2" />
+                            Awards a Crystal
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-between h-6"></div>
+                      )}
                     </>
                   )}
                   {isTeamSession ? (

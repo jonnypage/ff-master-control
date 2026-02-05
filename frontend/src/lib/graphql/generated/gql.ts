@@ -22,6 +22,7 @@ type Documents = {
     "\n          mutation Login($input: LoginInput!) {\n            login(input: $input) {\n              access_token\n              user {\n                _id\n                username\n                role\n              }\n            }\n          }\n        ": typeof types.LoginDocument,
     "\n          query GetUsers {\n            users {\n              _id\n              username\n              role\n              createdAt\n            }\n          }\n        ": typeof types.GetUsersDocument,
     "\n          mutation CreateUser($input: CreateUserDto!) {\n            createUser(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": typeof types.CreateUserDocument,
+    "\n          mutation StaffSignup($input: CreateUserDto!) {\n            staffSignup(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": typeof types.StaffSignupDocument,
     "\n          mutation UpdateUser($id: ID!, $input: UpdateUserDto!) {\n            updateUser(id: $id, input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": typeof types.UpdateUserDocument,
     "\n          mutation DeleteUser($id: ID!) {\n            deleteUser(id: $id)\n          }\n        ": typeof types.DeleteUserDocument,
     "\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        ": typeof types.DeleteAllTeamsDocument,
@@ -56,6 +57,7 @@ const documents: Documents = {
     "\n          mutation Login($input: LoginInput!) {\n            login(input: $input) {\n              access_token\n              user {\n                _id\n                username\n                role\n              }\n            }\n          }\n        ": types.LoginDocument,
     "\n          query GetUsers {\n            users {\n              _id\n              username\n              role\n              createdAt\n            }\n          }\n        ": types.GetUsersDocument,
     "\n          mutation CreateUser($input: CreateUserDto!) {\n            createUser(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": types.CreateUserDocument,
+    "\n          mutation StaffSignup($input: CreateUserDto!) {\n            staffSignup(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": types.StaffSignupDocument,
     "\n          mutation UpdateUser($id: ID!, $input: UpdateUserDto!) {\n            updateUser(id: $id, input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": types.UpdateUserDocument,
     "\n          mutation DeleteUser($id: ID!) {\n            deleteUser(id: $id)\n          }\n        ": types.DeleteUserDocument,
     "\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        ": types.DeleteAllTeamsDocument,
@@ -128,6 +130,10 @@ export function graphql(source: "\n          query GetUsers {\n            users
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n          mutation CreateUser($input: CreateUserDto!) {\n            createUser(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        "): (typeof documents)["\n          mutation CreateUser($input: CreateUserDto!) {\n            createUser(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        "];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n          mutation StaffSignup($input: CreateUserDto!) {\n            staffSignup(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        "): (typeof documents)["\n          mutation StaffSignup($input: CreateUserDto!) {\n            staffSignup(input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        "];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

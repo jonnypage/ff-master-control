@@ -7,6 +7,7 @@ import {
 } from 'react-router-dom';
 import { useAuth } from './features/auth/lib/auth-context';
 import { LoginPage } from './features/auth/components/LoginPage';
+import { StaffSignupPage } from './features/auth/pages/StaffSignupPage';
 import { LeaderboardPage } from './features/leaderboard/pages/LeaderboardPage';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { TeamsPage } from './features/teams/pages/TeamsPage';
@@ -59,6 +60,7 @@ function App() {
         />
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/staffsignup" element={<StaffSignupPage />} />
         <Route path="/team/create" element={<CreateTeamPage />} />
         {/* Protected Routes with Layout */}
         <Route

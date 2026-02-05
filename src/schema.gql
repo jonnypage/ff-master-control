@@ -104,6 +104,7 @@ type Mutation {
   deleteAllTeams: Boolean!
   deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
+  staffSignup(input: CreateUserDto!): User!
   teamLogin(input: TeamLoginInput!): TeamAuthPayload!
   updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!

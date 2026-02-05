@@ -1,5 +1,11 @@
-import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  ID,
+} from '@nestjs/graphql';
+import { UseGuards, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -11,9 +17,29 @@ import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '../auth/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
+const STAFF_SIGNUP_ROLES: UserRole[] = [
+  UserRole.MISSION_LEADER,
+  UserRole.QUEST_GIVER,
+  UserRole.STORE,
+];
+
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private usersService: UsersService) {}
+
+  @Mutation(() => User)
+  async staffSignup(
+    @Args('input') createUserDto: CreateUserDto,
+  ): Promise<User> {
+    if (!STAFF_SIGNUP_ROLES.includes(createUserDto.role)) {
+      throw new BadRequestException(
+        'Role must be Mission Leader, Quest Giver, or Store',
+      );
+    }
+    const user = await this.usersService.create(createUserDto);
+    const { password: _, ...result } = user.toObject();
+    return result as User;
+  }
 
   @Mutation(() => User)
   @UseGuards(JwtAuthGuard, RolesGuard)
