@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Trophy } from 'lucide-react';
 import { useAuth } from '../lib/auth-context';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { Button } from '@/components/ui/button';
@@ -87,25 +87,17 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="login-page min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full space-y-8 p-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-foreground">
             Freedom Fighters
           </h2>
+
           <p className="mt-2 text-center text-sm text-muted-foreground">
             {mode === 'team' ? 'Join your team' : 'Staff sign in'}
           </p>
-          {mode === 'team' && (
-            <div className="mt-3 text-center text-sm">
-              <Link
-                to="/team/create"
-                className="text-primary hover:underline"
-              >
-                Create a new team
-              </Link>
-            </div>
-          )}
+
           <div className="mt-4 flex gap-2">
             <Button
               type="button"
@@ -130,18 +122,6 @@ export function LoginPage() {
               Staff
             </Button>
           </div>
-          {isInstallable && !isInstalled && (
-            <div className="mt-4">
-              <Button
-                onClick={handleInstall}
-                variant="outline"
-                className="w-full"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Install App
-              </Button>
-            </div>
-          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
@@ -220,7 +200,7 @@ export function LoginPage() {
             </div>
           )}
 
-          <div>
+          <div className="space-y-3">
             <button
               type="submit"
               disabled={isLoading}
@@ -228,7 +208,30 @@ export function LoginPage() {
             >
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
+            <Link to="/team/create" className="mt-2 block">
+              <Button type="button" variant="outline" className="w-full">
+                Create a new team
+              </Button>
+            </Link>
+            <Link to="/leaderboard" className="block">
+              <Button type="button" variant="outline" className="w-full">
+                <Trophy className="w-4 h-4 mr-2" />
+                View Leaderboard
+              </Button>
+            </Link>
           </div>
+          {isInstallable && !isInstalled && (
+            <div className="mt-4">
+              <Button
+                onClick={handleInstall}
+                variant="outline"
+                className="w-full"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Install App
+              </Button>
+            </div>
+          )}
         </form>
       </div>
     </div>

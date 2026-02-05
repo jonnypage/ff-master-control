@@ -45,7 +45,7 @@ export function TeamBanner({
       <div className="absolute inset-0 flex items-center justify-center">
         {Icon ? (
           <Icon
-            className="text-foreground drop-shadow-sm"
+            className="text-white drop-shadow-sm"
             style={{ width: '45%', height: '45%' }}
           />
         ) : null}

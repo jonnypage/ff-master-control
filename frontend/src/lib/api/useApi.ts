@@ -631,9 +631,10 @@ export function useRemoveMissionCompletion() {
         `) as unknown as RequestDocument,
         variables,
       ),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
       qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+      qc.invalidateQueries({ queryKey: ['team-by-id', variables.teamId] });
     },
   });
 }
@@ -652,9 +653,10 @@ export function useOverrideMissionCompletion() {
         `) as unknown as RequestDocument,
         variables,
       ),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: ['missions-for-team-edit'] });
       qc.invalidateQueries({ queryKey: ['teams'] });
+      qc.invalidateQueries({ queryKey: ['team-by-id', variables.teamId] });
     },
   });
 }
@@ -698,6 +700,7 @@ export function useMissionsForTeamEdit() {
             missions {
               _id
               name
+              isFinalChallenge
             }
           }
         `) as unknown as RequestDocument,

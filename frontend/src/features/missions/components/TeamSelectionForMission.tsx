@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Search, Users, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
@@ -176,9 +175,11 @@ export function TeamSelectionForMission({
                 <div
                   key={team?._id}
                   className={`relative flex items-center justify-between px-4 py-2 transition-colors ${
-                    isCompleted && !isAdmin
-                      ? ''
-                      : `hover:bg-accent/50 cursor-pointer ${isSelected ? 'bg-accent' : ''}`
+                    isCompleted
+                      ? 'bg-green-600 dark:bg-green-700 text-white'
+                      : isSelected
+                        ? 'bg-accent hover:bg-accent/50 cursor-pointer'
+                        : 'hover:bg-accent/50 cursor-pointer'
                   }`}
                   onClick={handleRowClick}
                 >
@@ -189,7 +190,9 @@ export function TeamSelectionForMission({
                       size="sm"
                       className="w-10 shrink-0"
                     />
-                    <span className="text-foreground font-medium truncate">
+                    <span
+                      className={`font-medium truncate ${isCompleted ? 'text-white' : 'text-foreground'}`}
+                    >
                       {team?.name || 'Unnamed Team'}
                     </span>
                   </div>
@@ -213,7 +216,10 @@ export function TeamSelectionForMission({
                             : 'Mark as incomplete'}
                         </Button>
                       ) : (
-                        <Badge variant="default">Completed</Badge>
+                        <span className="flex items-center gap-1.5 text-white shrink-0">
+                          <Check className="w-4 h-4" />
+                          Completed
+                        </span>
                       )
                     ) : isSelected ? (
                       <Button
@@ -232,7 +238,9 @@ export function TeamSelectionForMission({
                           : 'Complete Mission'}
                       </Button>
                     ) : (
-                      <Badge variant="outline">Incomplete</Badge>
+                      <span className="flex items-center gap-1.5 text-white shrink-0">
+                        Incomplete
+                      </span>
                     )}
                   </div>
                 </div>

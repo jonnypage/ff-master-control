@@ -31,12 +31,12 @@ function MissionEditPageWrapper() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function UserOnlyRoute({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  return user ? <>{children}</> : <Navigate to="/login" replace />;
+  return user ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function App() {
@@ -47,10 +47,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<LeaderboardPage />} />
-        <Route path="/team/create" element={<CreateTeamPage />} />
         <Route
-          path="/login"
+          path="/"
           element={
             isAuthenticated ? (
               <Navigate to={postLoginPath} replace />
@@ -59,6 +57,9 @@ function App() {
             )
           }
         />
+        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/team/create" element={<CreateTeamPage />} />
         {/* Protected Routes with Layout */}
         <Route
           element={

@@ -48,10 +48,10 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
   const navLinks = (
     <>
       <Link
-        to="/"
+        to="/leaderboard"
         onClick={() => setMobileMenuOpen(false)}
         className={`flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-          isActive('/')
+          isActive('/leaderboard')
             ? 'bg-accent text-accent-foreground'
             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
         }`}

@@ -51,7 +51,7 @@ export function TeamEditPage() {
   const teamData = data?.teamById;
   const [name, setName] = useState(() => teamData?.name ?? '');
   const [bannerColor, setBannerColor] = useState(
-    () => teamData?.bannerColor ?? '#7c3aed',
+    () => teamData?.bannerColor ?? '#020817',
   );
   const [bannerIcon, setBannerIcon] = useState<BannerIconId>(
     () => (teamData?.bannerIcon as BannerIconId) ?? 'Shield',
@@ -65,10 +65,15 @@ export function TeamEditPage() {
     if (lastLoadedTeamIdRef.current === currentId) return;
     lastLoadedTeamIdRef.current = currentId;
 
-    setName(teamData?.name ?? '');
-    setBannerColor(teamData?.bannerColor ?? '#7c3aed');
-    setBannerIcon((teamData?.bannerIcon as BannerIconId) ?? 'Shield');
-  }, [teamData?._id]);
+    const nextName = teamData?.name ?? '';
+    const nextColor = teamData?.bannerColor ?? '#020817';
+    const nextIcon = (teamData?.bannerIcon as BannerIconId) ?? 'Shield';
+    queueMicrotask(() => {
+      setName(nextName);
+      setBannerColor(nextColor);
+      setBannerIcon(nextIcon);
+    });
+  }, [teamData]);
 
   const updateTeam = useUpdateTeam();
   const addCredits = useAddCredits();
@@ -169,11 +174,35 @@ export function TeamEditPage() {
         { teamId: id!, missionId },
         {
           onSuccess: () => {
+            console.log('[Mission Toggle] Marking complete:', {
+              teamId: id,
+              missionId,
+            });
             toast.success('Mission completion updated');
-            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
-            // Back-compat: older code used this key
+            // Optimistically update the cache
+            queryClient.setQueryData(['team-by-id', id], (old: any) => {
+              console.log('[Mission Toggle] Old cache data:', old);
+              if (!old?.teamById) {
+                console.warn('[Mission Toggle] No teamById in cache');
+                return old;
+              }
+              const updated = {
+                ...old,
+                teamById: {
+                  ...old.teamById,
+                  completedMissionIds: [
+                    ...(old.teamById.completedMissionIds || []),
+                    missionId,
+                  ],
+                },
+              };
+              console.log('[Mission Toggle] Updated cache data:', updated);
+              return updated;
+            });
+            // Also invalidate to ensure consistency
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
+            queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
           },
           onError: (error: unknown) => {
             const message =
@@ -190,11 +219,34 @@ export function TeamEditPage() {
         { teamId: id!, missionId },
         {
           onSuccess: () => {
+            console.log('[Mission Toggle] Removing completion:', {
+              teamId: id,
+              missionId,
+            });
             toast.success('Mission completion removed');
-            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
-            // Back-compat: older code used this key
+            // Optimistically update the cache
+            queryClient.setQueryData(['team-by-id', id], (old: any) => {
+              console.log('[Mission Toggle] Old cache data:', old);
+              if (!old?.teamById) {
+                console.warn('[Mission Toggle] No teamById in cache');
+                return old;
+              }
+              const updated = {
+                ...old,
+                teamById: {
+                  ...old.teamById,
+                  completedMissionIds: (
+                    old.teamById.completedMissionIds || []
+                  ).filter((mid: string) => mid !== missionId),
+                },
+              };
+              console.log('[Mission Toggle] Updated cache data:', updated);
+              return updated;
+            });
+            // Also invalidate to ensure consistency
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
+            queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
           },
           onError: (error: unknown) => {
             const message =
@@ -287,7 +339,7 @@ export function TeamEditPage() {
         )}
       </div>
 
-      <div className="max-w-3xl space-y-6">
+      <div className="w-full space-y-6">
         <Card className="shadow-sm">
           <CardHeader className="bg-muted/50 border-b">
             <CardTitle className="text-xl">Team Information</CardTitle>
@@ -458,60 +510,50 @@ export function TeamEditPage() {
                 Check off missions as complete for this team
               </p>
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {missionsData.missions.map((mission: any) => {
-                  const isCompleted = team.completedMissionIds?.includes(
-                    mission._id,
-                  );
-                  return (
-                    <div
-                      key={mission._id}
-                      className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50"
-                    >
-                      <div className="flex items-center h-5 mt-0.5">
-                        <input
-                          type="checkbox"
-                          id={`mission-${mission._id}`}
-                          checked={isCompleted}
-                          onChange={() =>
-                            handleMissionToggle(mission._id, isCompleted)
-                          }
-                          disabled={
-                            overrideMissionCompletion.isPending ||
-                            removeMissionCompletion.isPending
-                          }
-                          className="w-4 h-4 rounded border-input text-primary focus:ring-ring"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <Label
-                          htmlFor={`mission-${mission._id}`}
-                          className="flex items-center gap-2 cursor-pointer"
-                        >
-                          <span className="font-medium">{mission.name}</span>
+                {[...missionsData.missions]
+                  .sort((a: any, b: any) => {
+                    if (a.isFinalChallenge && !b.isFinalChallenge) return 1;
+                    if (!a.isFinalChallenge && b.isFinalChallenge) return -1;
+                    return (a.name ?? '').localeCompare(b.name ?? '');
+                  })
+                  .map((mission: any) => {
+                    const isCompleted = team.completedMissionIds?.includes(
+                      mission._id,
+                    );
+                    const isPending =
+                      overrideMissionCompletion.isPending ||
+                      removeMissionCompletion.isPending;
+                    return (
+                      <button
+                        key={mission._id}
+                        type="button"
+                        onClick={() =>
+                          handleMissionToggle(mission._id, isCompleted)
+                        }
+                        disabled={isPending}
+                        className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg border text-left cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors hover:bg-accent hover:bg-muted/50 ${
+                          isCompleted
+                            ? 'bg-green-600 dark:bg-green-700 border-green-600 text-white'
+                            : ''
+                        }`}
+                      >
+                        <span className="font-medium truncate">
+                          {mission.name}
                           {mission.isFinalChallenge && (
-                            <Badge variant="default" className="text-xs">
+                            <Badge variant="default" className="text-xs ml-2">
                               Final
                             </Badge>
                           )}
-                        </Label>
-                        {mission.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {mission.description}
-                          </p>
+                        </span>
+                        {isCompleted && (
+                          <span className="flex items-center gap-1.5 text-white shrink-0">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Completed
+                          </span>
                         )}
-                        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                          <span>Credits: {mission.creditsAwarded}</span>
-                          {isCompleted && (
-                            <span className="flex items-center gap-1 text-green-600">
-                              <CheckCircle2 className="w-3 h-3" />
-                              Completed
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </button>
+                    );
+                  })}
               </div>
             </CardContent>
           </Card>

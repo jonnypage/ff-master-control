@@ -59,7 +59,8 @@ export function MissionEditPage() {
 
   const isCompletedByThisTeam = useMemo(() => {
     if (!isTeamSession || !id) return false;
-    const completedIds = (myTeamData?.myTeam?.completedMissionIds ?? []) as string[];
+    const completedIds = (myTeamData?.myTeam?.completedMissionIds ??
+      []) as string[];
     return completedIds.includes(id);
   }, [id, isTeamSession, myTeamData?.myTeam?.completedMissionIds]);
 
@@ -69,10 +70,17 @@ export function MissionEditPage() {
   // Important: do NOT setState during render; it will clobber user edits.
   useEffect(() => {
     if (!missionData) return;
-    setName(missionData.name);
-    setDescription(missionData.description ?? '');
-    setCreditsAwarded(missionData.creditsAwarded);
-    setIsFinalChallenge(missionData.isFinalChallenge);
+    const nextName = missionData.name;
+    const nextDescription = missionData.description ?? '';
+    const nextCredits = missionData.creditsAwarded;
+    const nextFinal = missionData.isFinalChallenge;
+    queueMicrotask(() => {
+      setName(nextName);
+      setDescription(nextDescription);
+      setCreditsAwarded(nextCredits);
+      setIsFinalChallenge(nextFinal);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when mission id changes
   }, [missionData?._id]);
 
   const updateMission = useUpdateMission();
@@ -175,7 +183,7 @@ export function MissionEditPage() {
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold text-foreground">
-                {isEditMode ? 'Edit Mission' : 'Mission Details'}
+                {mission.name}
               </h1>
               {mission.isFinalChallenge && (
                 <Badge variant="default">Final Challenge</Badge>
@@ -184,7 +192,7 @@ export function MissionEditPage() {
             <p className="text-sm text-muted-foreground mt-1">
               {isEditMode
                 ? 'Update mission information'
-                : 'View mission information'}
+                : 'Mission information'}
             </p>
           </div>
         </div>
@@ -203,23 +211,7 @@ export function MissionEditPage() {
       <div className="space-y-6">
         <Card className="shadow-sm">
           <CardHeader className="bg-muted/50 border-b">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl">Mission Information</CardTitle>
-              {isTeamSession ? (
-                <Badge variant={isCompletedByThisTeam ? 'default' : 'outline'}>
-                  {isCompletedByThisTeam ? 'Completed' : 'Not completed'}
-                </Badge>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
-                    Completed:
-                  </span>
-                  <Badge variant="outline">
-                    {completionCount.completed}/{completionCount.total}
-                  </Badge>
-                </div>
-              )}
-            </div>
+            <CardTitle className="text-xl">Mission Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
@@ -298,31 +290,38 @@ export function MissionEditPage() {
               </>
             ) : (
               <>
-                <div>
-                  <Label className="text-base font-semibold">
-                    Mission Name
-                  </Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {mission.name}
-                  </div>
+                <div className="px-3 py-3 bg-muted rounded-md text-sm">
+                  {mission.description || (
+                    <span className="text-muted-foreground">
+                      No description
+                    </span>
+                  )}
                 </div>
-                <div>
-                  <Label className="text-base font-semibold">Description</Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {mission.description || (
-                      <span className="text-muted-foreground">
-                        No description
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-base font-semibold">
-                    Credits Awarded
-                  </Label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {mission.creditsAwarded}
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Credits earned
+                      </div>
+                      <div className="text-lg font-semibold mt-0.5">
+                        {mission.creditsAwarded}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="pt-4">
+                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Teams Completed
+                      </div>
+                      <div className="text-lg font-semibold mt-0.5">
+                        {isTeamSession
+                          ? isCompletedByThisTeam
+                            ? 'Completed'
+                            : 'Not completed'
+                          : `${completionCount.completed}/${completionCount.total}`}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
                 {mission.isFinalChallenge && (
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">

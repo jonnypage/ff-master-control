@@ -20,7 +20,7 @@ export function MyTeamPage() {
   const inviteUrl = useMemo(() => {
     if (!team?.teamCode) return null;
     try {
-      const url = new URL('/login', window.location.origin);
+      const url = new URL('/', window.location.origin);
       url.searchParams.set('teamCode', team.teamCode);
       return url.toString();
     } catch {
@@ -90,7 +90,7 @@ export function MyTeamPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 w-full">
       <div>
         <h1 className="text-3xl font-bold text-foreground">{team.name}</h1>
       </div>

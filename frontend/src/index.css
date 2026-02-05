@@ -1,24 +1,64 @@
 @import 'tailwindcss';
 
 @layer base {
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
+  .font-heading {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
+  /* Navigation header - all text uses New Rocker */
+  nav {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
+  /* Leaderboard page - all text uses New Rocker (except inputs) */
+  .leaderboard-page {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+  
+  .leaderboard-page *:not(input):not(textarea):not(select):not(button) {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
+  /* Login page - buttons use New Rocker, inputs use system font */
+  .login-page button,
+  .login-page [role="button"] {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
+  /* Dialog titles and other large bold text */
+  [class*='text-3xl'][class*='font-bold'],
+  [class*='text-4xl'][class*='font-bold'],
+  [class*='text-5xl'][class*='font-bold'],
+  [class*='text-6xl'][class*='font-bold'] {
+    font-family: 'New Rocker', system-ui, sans-serif;
+  }
+
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 34 25% 80%;
+    --foreground: 27 32% 28%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 27 32% 28%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 27 32% 28%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 27 25% 45%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
+    --border: 27 32% 50%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
@@ -86,17 +126,45 @@
     border-color: hsl(var(--border));
   }
 
+  /* Inputs use default system font for readability */
+  input,
+  textarea,
+  select {
+    font-family:
+      system-ui,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Roboto,
+      sans-serif;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Override browser autofill/autocomplete blue text */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active,
+  input[type='text']:-webkit-autofill,
+  input[type='search']:-webkit-autofill,
+  input[type='email']:-webkit-autofill,
+  input[type='password']:-webkit-autofill {
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    color: hsl(var(--foreground)) !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
   /* Ensure placeholder colors respect theme */
   input::placeholder,
   textarea::placeholder {
-    color: hsl(var(--muted-foreground));
-    opacity: 1;
+    color: hsl(var(--muted-foreground)) !important;
+    opacity: 1 !important;
   }
 
   html.dark input::placeholder,
   html.dark textarea::placeholder {
-    color: hsl(var(--muted-foreground));
-    opacity: 1;
+    color: hsl(var(--muted-foreground)) !important;
+    opacity: 1 !important;
   }
 
   html {
@@ -120,4 +188,34 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+/* Force input text color - outside layer for higher specificity */
+input[type='text'],
+input[type='search'],
+input[type='email'],
+input[type='password'],
+input:not([type]),
+textarea {
+  color: hsl(var(--foreground)) !important;
+}
+
+input[type='text']:-webkit-autofill,
+input[type='search']:-webkit-autofill,
+input[type='email']:-webkit-autofill,
+input[type='password']:-webkit-autofill,
+input:not([type]):-webkit-autofill {
+  -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Force placeholder color - outside layer for higher specificity */
+input[type='text']::placeholder,
+input[type='search']::placeholder,
+input[type='email']::placeholder,
+input[type='password']::placeholder,
+input:not([type])::placeholder,
+textarea::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+  opacity: 1 !important;
 }

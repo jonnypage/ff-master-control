@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Trophy, LogIn } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
@@ -9,6 +7,7 @@ import type {
   GetLeaderboardTeamsQuery,
   GetMissionsForLeaderboardQuery,
 } from '@/lib/graphql/generated';
+
 type LeaderboardTeam = {
   _id: string;
   name: string;
@@ -17,10 +16,13 @@ type LeaderboardTeam = {
   completedMissionIds: string[];
 };
 
-export function LeaderboardPage() {
-  const navigate = useNavigate();
+type RankedTeam = LeaderboardTeam & {
+  completedCount: number;
+  totalMissions: number;
+  hasCompletedFinal: boolean;
+};
 
-  // Poll every 3 seconds for real-time updates
+export function LeaderboardPage() {
   const {
     data: teamsData,
     isLoading: teamsLoading,
@@ -36,7 +38,7 @@ export function LeaderboardPage() {
   const isLoading = teamsLoading || missionsLoading;
   const hasError = teamsError || missionsError;
 
-  const sortedTeams = useMemo(() => {
+  const sortedTeams = useMemo((): RankedTeam[] => {
     const teams = (teamsData?.leaderboardTeams ??
       []) as GetLeaderboardTeamsQuery['leaderboardTeams'];
     const missions = (missionsData?.leaderboardMissions ??
@@ -48,13 +50,7 @@ export function LeaderboardPage() {
 
     return teams
       .map(
-        (
-          team,
-        ): LeaderboardTeam & {
-          completedCount: number;
-          totalMissions: number;
-          hasCompletedFinal: boolean;
-        } => ({
+        (team): RankedTeam => ({
           ...team,
           completedCount: team.completedMissionIds?.length ?? 0,
           totalMissions,
@@ -64,7 +60,6 @@ export function LeaderboardPage() {
         }),
       )
       .sort((a, b) => {
-        // Sort by completed missions (descending), then by name
         if (b.completedCount !== a.completedCount) {
           return b.completedCount - a.completedCount;
         }
@@ -72,12 +67,8 @@ export function LeaderboardPage() {
       });
   }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions]);
 
-  const getRankIcon = (index: number) => {
-    if (index === 0) return '🥇';
-    if (index === 1) return '🥈';
-    if (index === 2) return '🥉';
-    return null;
-  };
+  const top3 = sortedTeams.slice(0, 3);
+  const rest = sortedTeams.slice(3);
 
   const getRankColor = (index: number) => {
     if (index === 0) return 'text-yellow-500';
@@ -86,148 +77,215 @@ export function LeaderboardPage() {
     return 'text-muted-foreground';
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      {/* Header with Login Button */}
-      <div className="absolute top-4 right-4 z-10">
-        <Button
-          onClick={() => navigate('/login')}
-          variant="outline"
-          size="lg"
-          className="shadow-lg"
-        >
-          <LogIn className="w-5 h-5 mr-2" />
-          Login
-        </Button>
+  if (isLoading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
+          <p className="text-xl text-muted-foreground">
+            Loading leaderboard...
+          </p>
+        </div>
       </div>
+    );
+  }
 
-      {/* Main Content */}
-      <div className="container mx-auto px-6 py-12">
-        {/* Title */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <Trophy className="w-16 h-16 text-primary" />
-            <h1 className="text-6xl md:text-7xl font-bold text-foreground">
-              Leaderboard
-            </h1>
-            <Trophy className="w-16 h-16 text-primary" />
+  if (hasError) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-destructive">Error loading leaderboard</p>
+          <p className="text-muted-foreground mt-2">Please refresh the page</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="leaderboard-page h-screen max-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden">
+      <div className="flex-1 flex flex-col container mx-auto px-6 py-4 min-h-0 w-full max-w-7xl">
+        {/* Title - compact */}
+        <div className="text-center shrink-0 py-2">
+          <h1 className="text-4xl font-bold text-foreground flex items-center justify-center gap-2 mb-4">
+            Freedom Fighters - Leaderboard
+          </h1>
+        </div>
+
+        {sortedTeams.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-xl text-muted-foreground">No teams yet</p>
           </div>
-          <p className="text-2xl md:text-3xl text-muted-foreground font-medium">
-            Mission Completion Rankings
-          </p>
-        </div>
-
-        {/* Teams List */}
-        <div className="max-w-5xl mx-auto space-y-4">
-          {isLoading ? (
-            <div className="text-center py-20">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-              <p className="text-2xl text-muted-foreground">
-                Loading leaderboard...
-              </p>
-            </div>
-          ) : hasError ? (
-            <div className="text-center py-20">
-              <p className="text-2xl text-destructive">
-                Error loading leaderboard
-              </p>
-              <p className="text-lg text-muted-foreground mt-2">
-                Please refresh the page
-              </p>
-            </div>
-          ) : sortedTeams.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-2xl text-muted-foreground">No teams yet</p>
-            </div>
-          ) : (
-            sortedTeams.map((team, index) => {
-              const rankIcon = getRankIcon(index);
-              const rankColor = getRankColor(index);
-              const percentage =
-                team.totalMissions > 0
-                  ? Math.round((team.completedCount / team.totalMissions) * 100)
-                  : 0;
-
-              return (
-                <div
-                  key={team._id}
-                  className={`bg-card border-2 rounded-lg p-6 md:p-8 shadow-lg transition-all duration-300 hover:shadow-xl ${
-                    index < 3
-                      ? 'border-primary scale-[1.02]'
-                      : 'border-border scale-100'
-                  } ${team.hasCompletedFinal ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-background' : ''}`}
-                >
-                  <div className="flex items-center justify-between gap-6">
-                    {/* Rank and Name */}
-                    <div className="flex items-center gap-6 flex-1 min-w-0">
-                      <div
-                        className={`text-4xl md:text-5xl font-bold flex-shrink-0 ${rankColor}`}
-                      >
-                        {rankIcon || `#${index + 1}`}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-4">
-                          <TeamBanner
-                            color={team.bannerColor}
-                            icon={getBannerIconById(team.bannerIcon)}
-                            size="sm"
-                            className="hidden sm:block"
-                          />
-                          <h2 className="text-3xl md:text-4xl font-bold text-foreground truncate">
-                            {team.name}
-                          </h2>
-                          {team.hasCompletedFinal && (
-                            <span className="inline-flex items-center rounded-full bg-yellow-500/20 text-yellow-700 px-3 py-1 text-sm font-semibold">
-                              Final Challenge
-                            </span>
-                          )}
-                        </div>
-                      </div>
+        ) : (
+          <>
+            {/* Top 3 - podium: 2nd | 1st (center, bigger) | 3rd */}
+            <section className="shrink-0 mb-4">
+              <div className="flex justify-center items-end gap-4">
+                {/* 2nd place - left */}
+                {top3[1] && (
+                  <div
+                    key={top3[1]._id}
+                    className={`flex flex-col items-center rounded-xl border-2 bg-card shadow-md p-3 w-[180px] shrink-0 ${
+                      top3[1].hasCompletedFinal
+                        ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-background border-primary'
+                        : 'border-primary/50'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-gray-400">🥈</span>
+                    <TeamBanner
+                      color={top3[1].bannerColor}
+                      icon={getBannerIconById(top3[1].bannerIcon)}
+                      size="sm"
+                      className="w-12 mt-1"
+                    />
+                    <h2 className="text-base font-bold text-foreground truncate w-full text-center mt-1.5">
+                      {top3[1].name}
+                    </h2>
+                    <div className="text-lg font-bold text-primary">
+                      {top3[1].completedCount}
+                      {top3[1].totalMissions > 0 && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          /{top3[1].totalMissions}
+                        </span>
+                      )}
                     </div>
-
-                    {/* Stats */}
-                    <div className="flex items-center gap-8 flex-shrink-0">
-                      <div className="text-right">
-                        <div className="text-4xl md:text-5xl font-bold text-primary">
-                          {team.completedCount}
-                        </div>
-                        <div className="text-lg md:text-xl text-muted-foreground font-medium">
-                          / {team.totalMissions} missions
-                        </div>
-                      </div>
-                      <div className="w-24 md:w-32">
-                        <div className="text-right text-2xl md:text-3xl font-bold text-foreground mb-1">
-                          {percentage}%
-                        </div>
-                        <div className="h-4 md:h-6 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 ${
-                              index === 0
-                                ? 'bg-yellow-500'
-                                : index === 1
-                                  ? 'bg-gray-400'
-                                  : index === 2
-                                    ? 'bg-amber-600'
-                                    : 'bg-primary'
-                            }`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+                    {top3[1].hasCompletedFinal && (
+                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                        Final ✓
+                      </span>
+                    )}
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
+                )}
+                {/* 1st place - center, slightly bigger */}
+                {top3[0] && (
+                  <div
+                    key={top3[0]._id}
+                    className={`flex flex-col items-center rounded-xl border-2 bg-card shadow-lg p-4 w-[220px] shrink-0 ${
+                      top3[0].hasCompletedFinal
+                        ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-background border-primary'
+                        : 'border-primary'
+                    }`}
+                  >
+                    <span className="text-3xl font-bold text-yellow-500">
+                      🥇
+                    </span>
+                    <TeamBanner
+                      color={top3[0].bannerColor}
+                      icon={getBannerIconById(top3[0].bannerIcon)}
+                      size="sm"
+                      className="w-16 mt-1.5"
+                    />
+                    <h2 className="text-lg font-bold text-foreground truncate w-full text-center mt-2">
+                      {top3[0].name}
+                    </h2>
+                    <div className="text-xl font-bold text-primary mt-1">
+                      {top3[0].completedCount}
+                      {top3[0].totalMissions > 0 && (
+                        <span className="text-sm font-normal text-muted-foreground">
+                          /{top3[0].totalMissions}
+                        </span>
+                      )}
+                    </div>
+                    {top3[0].hasCompletedFinal && (
+                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                        Final ✓
+                      </span>
+                    )}
+                  </div>
+                )}
+                {/* 3rd place - right */}
+                {top3[2] && (
+                  <div
+                    key={top3[2]._id}
+                    className={`flex flex-col items-center rounded-xl border-2 bg-card shadow-md p-3 w-[180px] shrink-0 ${
+                      top3[2].hasCompletedFinal
+                        ? 'ring-2 ring-yellow-400 ring-offset-2 ring-offset-background border-primary'
+                        : 'border-primary/50'
+                    }`}
+                  >
+                    <span className="text-2xl font-bold text-amber-600">
+                      🥉
+                    </span>
+                    <TeamBanner
+                      color={top3[2].bannerColor}
+                      icon={getBannerIconById(top3[2].bannerIcon)}
+                      size="sm"
+                      className="w-12 mt-1"
+                    />
+                    <h2 className="text-base font-bold text-foreground truncate w-full text-center mt-1.5">
+                      {top3[2].name}
+                    </h2>
+                    <div className="text-lg font-bold text-primary">
+                      {top3[2].completedCount}
+                      {top3[2].totalMissions > 0 && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          /{top3[2].totalMissions}
+                        </span>
+                      )}
+                    </div>
+                    {top3[2].hasCompletedFinal && (
+                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
+                        Final ✓
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            </section>
 
-        {/* Footer */}
-        <div className="text-center mt-12">
-          <p className="text-lg text-muted-foreground">
-            Updated every 3 seconds
-          </p>
-        </div>
+            {/* All other teams - scrollable list */}
+            <section className="flex-1 min-h-0 flex flex-col">
+              {rest.length > 0 && (
+                <h2 className="text-lg font-semibold text-muted-foreground shrink-0 mb-2 px-1">
+                  All teams
+                </h2>
+              )}
+              <ul className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-2">
+                {rest.map((team, index) => {
+                  const actualIndex = 3 + index;
+                  const rankColor = getRankColor(actualIndex);
+                  return (
+                    <li
+                      key={team._id}
+                      className={`flex items-center gap-4 bg-card border rounded-lg px-4 py-2.5 shadow-sm ${
+                        team.hasCompletedFinal
+                          ? 'border-yellow-500/50 ring-1 ring-yellow-400/30'
+                          : 'border-border'
+                      }`}
+                    >
+                      <span
+                        className={`w-8 text-lg font-bold shrink-0 ${rankColor}`}
+                      >
+                        #{actualIndex + 1}
+                      </span>
+                      <TeamBanner
+                        color={team.bannerColor}
+                        icon={getBannerIconById(team.bannerIcon)}
+                        size="sm"
+                        className="w-10 shrink-0"
+                      />
+                      <span className="flex-1 text-lg font-semibold text-foreground truncate">
+                        {team.name}
+                      </span>
+                      <span className="text-lg font-bold text-primary shrink-0">
+                        {team.completedCount}
+                        {team.totalMissions > 0 && (
+                          <span className="text-sm font-normal text-muted-foreground">
+                            /{team.totalMissions}
+                          </span>
+                        )}
+                      </span>
+                      {team.hasCompletedFinal && (
+                        <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 shrink-0">
+                          Final ✓
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          </>
+        )}
       </div>
     </div>
   );
