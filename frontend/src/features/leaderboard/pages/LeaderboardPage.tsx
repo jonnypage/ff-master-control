@@ -3,9 +3,7 @@ import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
 import { ScrollText } from 'lucide-react';
-import type {
-  GetMissionsForLeaderboardQuery,
-} from '@/lib/graphql/generated';
+import type { GetMissionsForLeaderboardQuery } from '@/lib/graphql/generated';
 
 type LeaderboardTeam = {
   _id: string;
@@ -55,17 +53,20 @@ export function LeaderboardPage() {
     return teams
       .map((team): RankedTeam => {
         // Only count missions with COMPLETE status
-        const completedMissions = team.missions?.filter(m => m.status === 'COMPLETE') ?? [];
+        const completedMissions =
+          team.missions?.filter((m) => m.status === 'COMPLETE') ?? [];
         const completedCount = completedMissions.length;
         const hasCompletedFinal = finalChallengeIds.some((id) =>
           completedMissions.some((cm) => cm.missionId === id),
         );
-        
+
         let completionTime: number | undefined;
         if (completedCount === totalMissions && totalMissions > 0) {
-            // Find the latest completedAt timestamp
-            const timestamps = completedMissions.map(cm => new Date(cm.completedAt).getTime());
-            completionTime = Math.max(...timestamps);
+          // Find the latest completedAt timestamp
+          const timestamps = completedMissions.map((cm) =>
+            new Date(cm.completedAt).getTime(),
+          );
+          completionTime = Math.max(...timestamps);
         }
 
         return {
@@ -78,17 +79,19 @@ export function LeaderboardPage() {
       })
       .sort((a, b) => {
         // 1. Teams that have completed all missions first
-        const aAll = a.completedCount === a.totalMissions && a.totalMissions > 0;
-        const bAll = b.completedCount === b.totalMissions && b.totalMissions > 0;
+        const aAll =
+          a.completedCount === a.totalMissions && a.totalMissions > 0;
+        const bAll =
+          b.completedCount === b.totalMissions && b.totalMissions > 0;
 
         if (aAll && !bAll) return -1;
         if (!aAll && bAll) return 1;
 
         // 2. If both completed all, sort by completion time (earlier is better)
         if (aAll && bAll) {
-            if (a.completionTime !== b.completionTime) {
-                return (a.completionTime || 0) - (b.completionTime || 0);
-            }
+          if (a.completionTime !== b.completionTime) {
+            return (a.completionTime || 0) - (b.completionTime || 0);
+          }
         }
 
         // 3. Sort by completed count (desc)
@@ -196,7 +199,9 @@ export function LeaderboardPage() {
 
         {sortedTeams.length === 0 ? (
           <div className="flex-1 flex items-center justify-center py-12">
-            <p className="text-xl text-muted-foreground">It is quiet here... </p>
+            <p className="text-xl text-muted-foreground">
+              It is quiet here...{' '}
+            </p>
           </div>
         ) : (
           <>

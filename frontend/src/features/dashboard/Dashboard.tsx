@@ -1,9 +1,9 @@
-import { useStats } from '@/lib/api/useApi'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, ScrollText, DollarSign } from 'lucide-react'
+import { useStats } from '@/lib/api/useApi';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Users, ScrollText, DollarSign } from 'lucide-react';
 
 export function Dashboard() {
-  const { data, isLoading } = useStats()
+  const { data, isLoading } = useStats();
 
   if (isLoading) {
     return (
@@ -13,7 +13,7 @@ export function Dashboard() {
           <p className="text-muted-foreground">Loading dashboard...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -37,26 +37,35 @@ export function Dashboard() {
         </Card>
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold">Total Missions</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Total Missions
+            </CardTitle>
             <ScrollText className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="text-3xl font-bold">{data?.missions.length || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">Available missions</p>
+            <div className="text-3xl font-bold">
+              {data?.missions.length || 0}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Available missions
+            </p>
           </CardContent>
         </Card>
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-semibold">Quick Actions</CardTitle>
+            <CardTitle className="text-sm font-semibold">
+              Quick Actions
+            </CardTitle>
             <DollarSign className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent className="pt-6">
             <div className="text-sm text-muted-foreground leading-relaxed">
-              Use the navigation menu to access teams, missions, and store features
+              Use the navigation menu to access teams, missions, and store
+              features
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }

@@ -68,7 +68,11 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
               Missions
             </span>
             <Badge className="text-base font-semibold px-3 py-1">
-              {(team.missions ?? []).filter(m => m.status === 'COMPLETE').length}/{totalMissions}
+              {
+                (team.missions ?? []).filter((m) => m.status === 'COMPLETE')
+                  .length
+              }
+              /{totalMissions}
             </Badge>
           </div>
           <div className="pt-2 border-t">

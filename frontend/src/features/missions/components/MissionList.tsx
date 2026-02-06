@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Gem, ScrollText, Search, Target } from 'lucide-react';
+import { Coins, Gem, Infinity, ScrollText, Search, Target, Timer } from 'lucide-react';
 import { useMissions, useMyTeam, useTeamsForMissions } from '@/lib/api/useApi';
 import type { GetMissionsQuery } from '@/lib/graphql/generated';
 import { useAuth } from '@/features/auth/lib/auth-context';
@@ -140,6 +140,17 @@ export function MissionList() {
                     </CardTitle>
                     {mission.isFinalChallenge && (
                       <Badge variant="default">Final</Badge>
+                    )}
+                    {mission.missionDuration > 0 ? (
+                      <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
+                        <Timer className="w-5 h-5" />
+                        {mission.missionDuration}m
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
+                        <Timer className="w-5 h-5" />
+                        <Infinity className="w-5 h-5" />
+                      </Badge>
                     )}
                   </div>
                 </CardHeader>

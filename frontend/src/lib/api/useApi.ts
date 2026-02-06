@@ -485,6 +485,7 @@ export function useMissions() {
               creditsAwarded
               awardsCrystal
               isFinalChallenge
+              missionDuration
               createdAt
               updatedAt
             }
@@ -549,6 +550,7 @@ export function useUpdateMission() {
         creditsAwarded?: number;
         awardsCrystal?: boolean;
         isFinalChallenge?: boolean;
+        missionDuration?: number;
       };
     }) =>
       graphqlClient.request(
@@ -732,6 +734,7 @@ export function useCreateMission() {
         creditsAwarded: number;
         awardsCrystal: boolean;
         isFinalChallenge: boolean;
+        missionDuration: number;
       };
     }) =>
       graphqlClient.request(

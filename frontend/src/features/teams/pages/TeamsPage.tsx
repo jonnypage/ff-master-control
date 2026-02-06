@@ -23,17 +23,18 @@ export function TeamsPage() {
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)} size="lg" className="sm:shrink-0">
+          <Button
+            onClick={() => setShowCreateDialog(true)}
+            size="lg"
+            className="sm:shrink-0"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Create Team
           </Button>
         )}
       </div>
 
-      <TeamList
-        teams={teams?.teams || []}
-        isLoading={isLoading}
-      />
+      <TeamList teams={teams?.teams || []} isLoading={isLoading} />
 
       {isAdmin && (
         <CreateTeamDialog

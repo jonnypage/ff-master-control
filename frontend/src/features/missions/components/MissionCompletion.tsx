@@ -185,7 +185,9 @@ export function MissionCompletion({
               variant="default"
               className="text-lg font-semibold px-4 py-2"
             >
-              {(team.crystals + (mission.awardsCrystal ? 1 : 0)).toLocaleString()}
+              {(
+                team.crystals + (mission.awardsCrystal ? 1 : 0)
+              ).toLocaleString()}
             </Badge>
           </div>
         </CardContent>

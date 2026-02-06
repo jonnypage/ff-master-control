@@ -32,6 +32,7 @@ export function CreateMissionDialog({
   const [creditsAwarded, setCreditsAwarded] = useState(0);
   const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
+  const [missionDuration, setMissionDuration] = useState(0);
 
   const createMission = useCreateMission();
 
@@ -50,6 +51,7 @@ export function CreateMissionDialog({
           creditsAwarded,
           awardsCrystal,
           isFinalChallenge,
+          missionDuration,
         },
       },
       {
@@ -60,6 +62,7 @@ export function CreateMissionDialog({
           setCreditsAwarded(0);
           setAwardsCrystal(false);
           setIsFinalChallenge(false);
+          setMissionDuration(0);
           queryClient.invalidateQueries({ queryKey: ['missions'] });
           onSuccess();
         },
@@ -105,21 +108,44 @@ export function CreateMissionDialog({
                 className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
-            <div>
-              <Label htmlFor="credits-awarded" className="flex items-center gap-2">
-                <Coins className="w-4 h-4 shrink-0" />
-                Credits Awarded
-              </Label>
-              <Input
-                id="credits-awarded"
-                type="number"
-                value={creditsAwarded}
-                onChange={(e) =>
-                  setCreditsAwarded(parseInt(e.target.value) || 0)
-                }
-                min="0"
-                placeholder="0"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label
+                  htmlFor="credits-awarded"
+                  className="flex items-center gap-2"
+                >
+                  <Coins className="w-4 h-4 shrink-0" />
+                  Credits
+                </Label>
+                <Input
+                  id="credits-awarded"
+                  type="number"
+                  value={creditsAwarded}
+                  onChange={(e) =>
+                    setCreditsAwarded(parseInt(e.target.value) || 0)
+                  }
+                  min="0"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label
+                  htmlFor="mission-duration"
+                  className="flex items-center gap-2"
+                >
+                  Time Limit (min)
+                </Label>
+                <Input
+                  id="mission-duration"
+                  type="number"
+                  value={missionDuration}
+                  onChange={(e) =>
+                    setMissionDuration(parseInt(e.target.value) || 0)
+                  }
+                  min="0"
+                  placeholder="0 (Unlimited)"
+                />
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <input
@@ -163,4 +189,3 @@ export function CreateMissionDialog({
     </Dialog>
   );
 }
-

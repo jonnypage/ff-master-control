@@ -195,7 +195,11 @@ export function TeamEditPage() {
                   ...old.teamById,
                   missions: [
                     ...(old.teamById.missions || []),
-                    { missionId, status: 'COMPLETE', completedAt: new Date().toISOString() },
+                    {
+                      missionId,
+                      status: 'COMPLETE',
+                      completedAt: new Date().toISOString(),
+                    },
                   ],
                 },
               };
@@ -239,9 +243,9 @@ export function TeamEditPage() {
                 ...old,
                 teamById: {
                   ...old.teamById,
-                  missions: (
-                    old.teamById.missions || []
-                  ).filter((m: any) => m.missionId !== missionId),
+                  missions: (old.teamById.missions || []).filter(
+                    (m: any) => m.missionId !== missionId,
+                  ),
                 },
               };
               console.log('[Mission Toggle] Updated cache data:', updated);
@@ -489,7 +493,11 @@ export function TeamEditPage() {
                 Missions Completed:
               </span>
               <Badge>
-                {(team.missions ?? []).filter((m: any) => m.status === 'COMPLETE').length}
+                {
+                  (team.missions ?? []).filter(
+                    (m: any) => m.status === 'COMPLETE',
+                  ).length
+                }
                 /{missionsData?.missions?.length ?? 0}
               </Badge>
             </div>
@@ -536,7 +544,8 @@ export function TeamEditPage() {
                   })
                   .map((mission: any) => {
                     const isCompleted = team.missions?.some(
-                      (m: any) => m.missionId === mission._id && m.status === 'COMPLETE',
+                      (m: any) =>
+                        m.missionId === mission._id && m.status === 'COMPLETE',
                     );
                     const isPending =
                       overrideMissionCompletion.isPending ||

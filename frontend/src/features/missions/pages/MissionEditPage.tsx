@@ -5,7 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, Edit, Target, Coins, Gem, ScrollText, Check, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Save,
+  Edit,
+  Target,
+  Coins,
+  Gem,
+  ScrollText,
+  Check,
+  X,
+  Timer,
+  Infinity,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -40,6 +52,7 @@ export function MissionEditPage() {
   const [creditsAwarded, setCreditsAwarded] = useState(0);
   const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
+  const [missionDuration, setMissionDuration] = useState(0);
 
   const { data, isLoading } = useMission(id);
 
@@ -50,8 +63,11 @@ export function MissionEditPage() {
     if (isTeamSession) return { completed: 0, total: 0 };
     if (!teamsData?.teams || !id) return { completed: 0, total: 0 };
     const teams =
-      (teamsData as { teams?: Array<{ missions: { missionId: string; status: string }[] }> })
-        ?.teams ?? [];
+      (
+        teamsData as {
+          teams?: Array<{ missions: { missionId: string; status: string }[] }>;
+        }
+      )?.teams ?? [];
     const completed = teams.filter((team) =>
       team.missions?.some((m) => m.missionId === id && m.status === 'COMPLETE'),
     ).length;
@@ -60,8 +76,10 @@ export function MissionEditPage() {
 
   const isCompletedByThisTeam = useMemo(() => {
     if (!isTeamSession || !id) return false;
-    const missions = (myTeamData?.myTeam?.missions ??
-      []) as Array<{ missionId: string; status: string }>;
+    const missions = (myTeamData?.myTeam?.missions ?? []) as Array<{
+      missionId: string;
+      status: string;
+    }>;
     return missions.some((m) => m.missionId === id && m.status === 'COMPLETE');
   }, [id, isTeamSession, myTeamData?.myTeam?.missions]);
 
@@ -76,12 +94,14 @@ export function MissionEditPage() {
     const nextCredits = missionData.creditsAwarded;
     const nextCrystal = missionData.awardsCrystal ?? false;
     const nextFinal = missionData.isFinalChallenge;
+    const nextDuration = missionData.missionDuration ?? 0;
     queueMicrotask(() => {
       setName(nextName);
       setDescription(nextDescription);
       setCreditsAwarded(nextCredits);
       setAwardsCrystal(nextCrystal);
       setIsFinalChallenge(nextFinal);
+      setMissionDuration(nextDuration);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when mission id changes
   }, [missionData?._id]);
@@ -100,6 +120,7 @@ export function MissionEditPage() {
       creditsAwarded?: number;
       awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
+      missionDuration?: number;
     } = {};
 
     if (name !== data?.mission?.name) {
@@ -116,6 +137,9 @@ export function MissionEditPage() {
     }
     if (isFinalChallenge !== data?.mission?.isFinalChallenge) {
       input.isFinalChallenge = isFinalChallenge;
+    }
+    if (missionDuration !== (data?.mission?.missionDuration ?? 0)) {
+      input.missionDuration = missionDuration;
     }
 
     if (Object.keys(input).length === 0) {
@@ -173,7 +197,10 @@ export function MissionEditPage() {
     );
   }
 
-  const mission = data.mission;
+  const mission = useMemo(() => {
+    console.log('[MissionEditPage] data',data);
+    return data?.mission;
+  }, [data]);
 
   return (
     <div className="space-y-6">
@@ -270,6 +297,25 @@ export function MissionEditPage() {
                     min="0"
                   />
                 </div>
+                <div>
+                  <Label
+                    htmlFor="mission-duration"
+                    className="text-base font-semibold flex items-center gap-2"
+                  >
+                    <Timer/>
+                    Time Limit (min)
+                  </Label>
+                  <Input
+                    id="mission-duration"
+                    type="number"
+                    value={missionDuration}
+                    onChange={(e) =>
+                      setMissionDuration(parseInt(e.target.value) || 0)
+                    }
+                    placeholder="0 (Unlimited)"
+                    min="0"
+                  />
+                </div>
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -278,7 +324,10 @@ export function MissionEditPage() {
                     onChange={(e) => setAwardsCrystal(e.target.checked)}
                     className="rounded border-input"
                   />
-                  <Label htmlFor="awards-crystal" className="cursor-pointer flex items-center gap-2">
+                  <Label
+                    htmlFor="awards-crystal"
+                    className="cursor-pointer flex items-center gap-2"
+                  >
                     <Gem className="w-4 h-4 shrink-0" />
                     Awards Crystal
                   </Label>
@@ -322,7 +371,10 @@ export function MissionEditPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <Card className="flex-1 min-w-0">
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
-                      <Coins className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Credits earned" />
+                      <Coins
+                        className="w-5 h-5 text-muted-foreground shrink-0"
+                        aria-label="Credits earned"
+                      />
                       <span className="text-lg font-semibold tabular-nums">
                         {mission.creditsAwarded}
                       </span>
@@ -330,9 +382,20 @@ export function MissionEditPage() {
                   </Card>
                   <Card className="flex-1 min-w-0">
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
-                      <Gem className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Crystal reward" />
+                      <Gem
+                        className="w-5 h-5 text-muted-foreground shrink-0"
+                        aria-label="Crystal reward"
+                      />
                       <span className="text-lg font-semibold">
                         {mission.awardsCrystal ? '1' : '0'}
+                      </span>
+                    </CardContent>
+                  </Card>
+                  <Card className="flex-1 min-w-0">
+                    <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
+                       <Timer/>
+                      <span className="text-lg font-semibold">
+                        {mission.missionDuration > 0 ? `${mission.missionDuration}m` : <Infinity className="w-5 h-5" />}
                       </span>
                     </CardContent>
                   </Card>
@@ -344,13 +407,26 @@ export function MissionEditPage() {
                     }
                   >
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
-                      <ScrollText className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Teams completed" />
+                      <ScrollText
+                        className="w-5 h-5 text-muted-foreground shrink-0"
+                        aria-label="Teams completed"
+                      />
                       <span className="text-lg font-semibold tabular-nums flex items-center">
-                        {isTeamSession
-                          ? isCompletedByThisTeam
-                            ? <Check className="w-5 h-5 text-green-600" aria-label="Completed" />
-                            : <X className="w-5 h-5 text-muted-foreground" aria-label="Not completed" />
-                          : `${completionCount.completed}/${completionCount.total}`}
+                        {isTeamSession ? (
+                          isCompletedByThisTeam ? (
+                            <Check
+                              className="w-5 h-5 text-green-600"
+                              aria-label="Completed"
+                            />
+                          ) : (
+                            <X
+                              className="w-5 h-5 text-muted-foreground"
+                              aria-label="Not completed"
+                            />
+                          )
+                        ) : (
+                          `${completionCount.completed}/${completionCount.total}`
+                        )}
                       </span>
                     </CardContent>
                   </Card>

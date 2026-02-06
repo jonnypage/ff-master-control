@@ -70,7 +70,9 @@ export function AdminPage() {
         queryClient.invalidateQueries({ queryKey: ['teams'] });
         queryClient.invalidateQueries({ queryKey: ['teams-for-store'] });
         queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
-        queryClient.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
+        queryClient.invalidateQueries({
+          queryKey: ['teams-for-mission-completion'],
+        });
         queryClient.invalidateQueries({ queryKey: ['my-team'] });
         setShowDeleteAllTeamsDialog(false);
       },
@@ -92,7 +94,11 @@ export function AdminPage() {
             Manage users and administrative settings
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)} size="lg" className="sm:shrink-0">
+        <Button
+          onClick={() => setShowCreateDialog(true)}
+          size="lg"
+          className="sm:shrink-0"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Create User
         </Button>
@@ -113,8 +119,8 @@ export function AdminPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  This will permanently delete all teams, including credits and mission
-                  completions. This action cannot be undone.
+                  This will permanently delete all teams, including credits and
+                  mission completions. This action cannot be undone.
                 </p>
                 <Button
                   variant="destructive"

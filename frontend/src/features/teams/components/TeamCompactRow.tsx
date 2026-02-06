@@ -18,8 +18,14 @@ interface TeamCompactRowProps {
   onClick: () => void;
 }
 
-export function TeamCompactRow({ team, totalMissions, onClick }: TeamCompactRowProps) {
-  const completed = (team.missions ?? []).filter(m => m.status === 'COMPLETE').length;
+export function TeamCompactRow({
+  team,
+  totalMissions,
+  onClick,
+}: TeamCompactRowProps) {
+  const completed = (team.missions ?? []).filter(
+    (m) => m.status === 'COMPLETE',
+  ).length;
 
   return (
     <li
@@ -38,7 +44,9 @@ export function TeamCompactRow({ team, totalMissions, onClick }: TeamCompactRowP
       <div className="flex items-center gap-3 shrink-0 text-xs">
         <span className="flex items-center gap-1" title="Credits">
           <Coins className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          <span className="font-semibold text-foreground tabular-nums">{team.credits}</span>
+          <span className="font-semibold text-foreground tabular-nums">
+            {team.credits}
+          </span>
         </span>
         <span className="flex items-center gap-1" title="Missions">
           <ScrollText className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -48,7 +56,9 @@ export function TeamCompactRow({ team, totalMissions, onClick }: TeamCompactRowP
         </span>
         <span className="flex items-center gap-1" title="Crystals">
           <Gem className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-          <span className="font-semibold text-foreground tabular-nums">{team.crystals}</span>
+          <span className="font-semibold text-foreground tabular-nums">
+            {team.crystals}
+          </span>
         </span>
       </div>
     </li>

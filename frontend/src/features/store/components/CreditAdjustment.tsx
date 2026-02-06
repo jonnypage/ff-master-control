@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, BanknoteArrowDown, BanknoteArrowUp, Check, Coins } from 'lucide-react';
+import {
+  ArrowLeft,
+  BanknoteArrowDown,
+  BanknoteArrowUp,
+  Check,
+  Coins,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Numpad } from '@/components/ui/numpad';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -166,16 +172,15 @@ export function CreditAdjustment({
             </div>
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground ">
-
                 {isAddMode ? (
                   <span className="flex items-center gap-2">
-                  <BanknoteArrowUp/> Refunding
+                    <BanknoteArrowUp /> Refunding
                   </span>
-                  ) : (
+                ) : (
                   <span className="flex items-center gap-2">
-                  <BanknoteArrowDown/> Spending
+                    <BanknoteArrowDown /> Spending
                   </span>
-                  )}
+                )}
               </span>
               <span
                 className={`font-semibold ${
@@ -184,7 +189,6 @@ export function CreditAdjustment({
                     : 'text-red-600 dark:text-red-400'
                 }`}
               >
-
                 {adjustmentAmount.toLocaleString()} credits
               </span>
             </div>
