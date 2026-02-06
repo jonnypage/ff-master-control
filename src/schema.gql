@@ -18,6 +18,7 @@ input CreateMissionDto {
   description: String
   isFinalChallenge: Boolean!
   missionDuration: Int! = 0
+  missionNumber: Int! = 0
   name: String!
 }
 
@@ -51,6 +52,7 @@ input UpdateMissionDto {
   description: String
   isFinalChallenge: Boolean
   missionDuration: Int
+  missionNumber: Int
   name: String
 }
 
@@ -83,6 +85,7 @@ type Mission {
   description: String
   isFinalChallenge: Boolean!
   missionDuration: Float!
+  missionNumber: Float!
   name: String!
   updatedAt: DateTime!
 }

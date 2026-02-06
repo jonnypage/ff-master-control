@@ -23,7 +23,7 @@ export class MissionsService {
   ) { }
 
   async findAll(): Promise<MissionDocument[]> {
-    return this.missionModel.find().exec();
+    return this.missionModel.find().sort({ missionNumber: 1 }).exec();
   }
 
   async findAllForLeaderboard(): Promise<
@@ -50,6 +50,7 @@ export class MissionsService {
           },
         },
       ])
+      .sort({ missionNumber: 1 })
       .exec();
   }
 
@@ -287,8 +288,12 @@ export class MissionsService {
     creditsAwarded: number;
     isFinalChallenge: boolean;
     missionDuration?: number;
+    missionNumber?: number;
   }): Promise<MissionDocument> {
-    const createdMission = new this.missionModel(createMissionDto);
+    const createdMission = new this.missionModel({
+      ...createMissionDto,
+      missionNumber: createMissionDto.missionNumber || 0,
+    });
     return createdMission.save();
   }
 
@@ -301,6 +306,7 @@ export class MissionsService {
       awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
       missionDuration?: number;
+      missionNumber?: number;
     },
   ): Promise<MissionDocument> {
     const mission = await this.missionModel.findById(id);
@@ -325,6 +331,9 @@ export class MissionsService {
     }
     if (updateData.missionDuration !== undefined) {
       mission.missionDuration = updateData.missionDuration;
+    }
+    if (updateData.missionNumber !== undefined) {
+      mission.missionNumber = updateData.missionNumber;
     }
 
     return mission.save();

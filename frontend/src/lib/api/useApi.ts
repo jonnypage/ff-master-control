@@ -486,6 +486,7 @@ export function useMissions() {
               awardsCrystal
               isFinalChallenge
               missionDuration
+              missionNumber
               createdAt
               updatedAt
             }
@@ -533,6 +534,7 @@ export function useMission(id?: string) {
               description
               awardsCrystal
               missionDuration
+              missionNumber
             }
           }
         `) as unknown as RequestDocument,
@@ -554,6 +556,7 @@ export function useUpdateMission() {
         awardsCrystal?: boolean;
         isFinalChallenge?: boolean;
         missionDuration?: number;
+        missionNumber?: number;
       };
     }) =>
       graphqlClient.request(
@@ -748,6 +751,8 @@ export function useMyTeam(options?: {
               missions {
                 missionId
                 status
+                startedAt
+                tries
               }
             }
           }
@@ -811,6 +816,7 @@ export function useCreateMission() {
         awardsCrystal: boolean;
         isFinalChallenge: boolean;
         missionDuration: number;
+        missionNumber: number;
       };
     }) =>
       graphqlClient.request(
@@ -823,6 +829,7 @@ export function useCreateMission() {
               creditsAwarded
               awardsCrystal
               isFinalChallenge
+              missionNumber
             }
           }
         `) as unknown as RequestDocument,

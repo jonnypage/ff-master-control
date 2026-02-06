@@ -29,6 +29,7 @@ import {
   useTeamsForMission,
   useUpdateMission,
 } from '@/lib/api/useApi';
+import { MissionTimer } from '../components/MissionTimer';
 
 export function MissionEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,7 +58,7 @@ export function MissionEditPage() {
   const { data, isLoading } = useMission(id);
 
   const { data: teamsData } = useTeamsForMission({ enabled: !isTeamSession });
-  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession });
+  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession, refetchInterval: 10000 });
 
   const completionCount = useMemo(() => {
     if (isTeamSession) return { completed: 0, total: 0 };
@@ -81,6 +82,14 @@ export function MissionEditPage() {
       status: string;
     }>;
     return missions.some((m) => m.missionId === id && m.status === 'COMPLETE');
+  }, [id, isTeamSession, myTeamData?.myTeam?.missions]);
+
+  const currentMissionStatus = useMemo(() => {
+    if (!isTeamSession || !id) return null;
+    return (myTeamData?.myTeam?.missions ?? [])?.find((m: any) => {
+      const mId = typeof m.missionId === 'object' && m.missionId !== null ? m.missionId._id : m.missionId;
+      return mId === id;
+    });
   }, [id, isTeamSession, myTeamData?.myTeam?.missions]);
 
   const missionData = data?.mission;
@@ -109,7 +118,6 @@ export function MissionEditPage() {
   const updateMission = useUpdateMission();
 
   const mission = useMemo(() => {
-    console.log('[MissionEditPage] data',data);
     return data?.mission;
   }, [data]);
 
@@ -394,7 +402,7 @@ export function MissionEditPage() {
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
                        <Timer/>
                       <span className="text-lg font-semibold">
-                        {mission.missionDuration > 0 ? `${mission.missionDuration}m` : <Infinity className="w-5 h-5" />}
+                        {mission.missionDuration > 0 ? `${mission.missionDuration}m` : <Infinity className="w-5 h-7" />}
                       </span>
                     </CardContent>
                   </Card>
@@ -402,6 +410,8 @@ export function MissionEditPage() {
                     className={
                       isTeamSession && isCompletedByThisTeam
                         ? 'flex-1 min-w-0 border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-500/5'
+                        : isTeamSession && currentMissionStatus?.status === 'FAILED'
+                        ? 'flex-1 min-w-0 border-red-500/60 ring-1 ring-red-500/25 bg-red-500/5'
                         : 'flex-1 min-w-0'
                     }
                   >
@@ -414,12 +424,19 @@ export function MissionEditPage() {
                         {isTeamSession ? (
                           isCompletedByThisTeam ? (
                             <Check
-                              className="w-5 h-5 text-green-600"
+                              className="w-5 h-7 text-green-600"
                               aria-label="Completed"
                             />
+                          ) : currentMissionStatus?.status === 'FAILED' ? (
+                            <span className="text-red-700 flex items-center gap-1">
+                              <X className="w-5 h-5" />
+                              {currentMissionStatus.tries > 1 && (
+                                <span className="text-lg  font-bold">{currentMissionStatus.tries}x</span>
+                              )}
+                            </span>
                           ) : (
                             <X
-                              className="w-5 h-5 text-muted-foreground"
+                              className="w-5 h-7 text-muted-foreground"
                               aria-label="Not completed"
                             />
                           )
@@ -443,6 +460,19 @@ export function MissionEditPage() {
             )}
           </CardContent>
         </Card>
+
+        {isTeamSession && currentMissionStatus?.status === 'IN_PROGRESS' && currentMissionStatus?.startedAt && mission.missionDuration > 0 && (
+          <Card className="shadow-lg border-blue-500/20 bg-blue-500/5">
+            <CardContent className="py-10 flex flex-col items-center justify-center space-y-4">
+              <span className="text-sm font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">Time Remaining</span>
+              <MissionTimer 
+                startedAt={currentMissionStatus.startedAt} 
+                duration={mission.missionDuration}
+                className="text-7xl font-bold tracking-tight font-heading"
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {canEdit && (
           <div className="flex justify-end gap-3 pt-6 border-t bg-card p-4 rounded-lg shadow-sm -mx-4 -mb-4">

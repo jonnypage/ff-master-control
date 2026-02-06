@@ -34,6 +34,10 @@ export class Mission {
   @Field()
   missionDuration: number;
 
+  @Prop({ default: 0 })
+  @Field()
+  missionNumber: number;
+
   @Field()
   createdAt: Date;
 

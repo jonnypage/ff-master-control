@@ -28,5 +28,9 @@ export class CreateMissionDto {
   @Field(() => Int, { defaultValue: 0 })
   @IsNumber()
   missionDuration: number;
+
+  @Field(() => Int, { defaultValue: 0 })
+  @IsNumber()
+  missionNumber: number;
 }
 

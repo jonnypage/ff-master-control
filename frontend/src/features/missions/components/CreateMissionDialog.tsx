@@ -33,6 +33,7 @@ export function CreateMissionDialog({
   const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
   const [missionDuration, setMissionDuration] = useState(0);
+  const [missionNumber, setMissionNumber] = useState(0);
 
   const createMission = useCreateMission();
 
@@ -52,6 +53,7 @@ export function CreateMissionDialog({
           awardsCrystal,
           isFinalChallenge,
           missionDuration,
+          missionNumber,
         },
       },
       {
@@ -63,6 +65,7 @@ export function CreateMissionDialog({
           setAwardsCrystal(false);
           setIsFinalChallenge(false);
           setMissionDuration(0);
+          setMissionNumber(0);
           queryClient.invalidateQueries({ queryKey: ['missions'] });
           onSuccess();
         },
@@ -146,6 +149,16 @@ export function CreateMissionDialog({
                   placeholder="0 (Unlimited)"
                 />
               </div>
+            </div>
+            <div>
+              <Label htmlFor="mission-number">Mission Number (Sort Order)</Label>
+              <Input
+                id="mission-number"
+                type="number"
+                value={missionNumber}
+                onChange={(e) => setMissionNumber(parseInt(e.target.value) || 0)}
+                placeholder="0"
+              />
             </div>
             <div className="flex items-center space-x-2">
               <input

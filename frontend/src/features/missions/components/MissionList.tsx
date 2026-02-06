@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Coins, Gem, Infinity, ScrollText, Search, Target, Timer } from 'lucide-react';
 import { useMissions, useMyTeam, useTeamsForMissions } from '@/lib/api/useApi';
+import { MissionTimer } from './MissionTimer';
 import type { GetMissionsQuery } from '@/lib/graphql/generated';
 import { useAuth } from '@/features/auth/lib/auth-context';
 
@@ -16,7 +17,7 @@ export function MissionList() {
 
   const { data, isLoading } = useMissions();
   const { data: teamsData } = useTeamsForMissions({ enabled: !isTeamSession });
-  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession });
+  const { data: myTeamData } = useMyTeam({ enabled: isTeamSession, refetchInterval: 10000 });
 
   const completionCounts = useMemo(() => {
     if (isTeamSession) {
@@ -121,6 +122,18 @@ export function MissionList() {
             const isCompletedByTeam = isTeamSession
               ? myCompletedMissionIds.includes(mission._id)
               : false;
+            
+            const myMissionEntry = isTeamSession
+              ? myTeamData?.myTeam?.missions?.find((m: any) => {
+                  const mId = typeof m.missionId === 'object' && m.missionId !== null ? m.missionId._id : m.missionId;
+                  return mId === mission._id;
+                })
+              : undefined;
+
+            const missionStatus = myMissionEntry?.status;
+            const missionStartedAt = myMissionEntry?.startedAt;
+            const missionTries = myMissionEntry?.tries || 0;
+
             return (
               <Card
                 key={mission._id}
@@ -128,7 +141,11 @@ export function MissionList() {
                   isTeamSession
                     ? isCompletedByTeam
                       ? 'border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-500/5 hover:bg-emerald-500/10'
-                      : 'border-border'
+                      : missionStatus === 'IN_PROGRESS' || missionStatus === 'INCOMPLETE'
+                        ? 'border-blue-500/60 ring-2 ring-blue-500/25 bg-blue-500/5 hover:bg-blue-500/10'
+                        : missionStatus === 'FAILED'
+                          ? 'border-red-500/60 ring-2 ring-red-500/25 bg-red-500/5 hover:bg-red-500/10'
+                          : 'border-border'
                     : ''
                 }`}
                 onClick={() => navigate(`/missions/${mission._id}`)}
@@ -198,8 +215,25 @@ export function MissionList() {
                       </span>
                       {isCompletedByTeam ? (
                         <Badge variant="default">Completed</Badge>
+                      ) : missionStatus === 'IN_PROGRESS' || missionStatus === 'INCOMPLETE' ? (
+                        <Badge variant="secondary" className="bg-blue-500/15 text-blue-600 hover:bg-blue-500/25 dark:text-blue-400 flex items-center gap-1.5">
+                          In Progress
+                          {missionStartedAt && mission.missionDuration && mission.missionDuration > 0 ? (
+                            <MissionTimer 
+                              startedAt={missionStartedAt} 
+                              duration={mission.missionDuration} 
+                              className="text-blue-600 dark:text-blue-400 font-medium ml-1"
+                            />
+                          ) : null}
+                        </Badge>
                       ) : (
-                        <Badge variant="outline">Not completed</Badge>
+                        <Badge variant={missionStatus === 'FAILED' ? 'destructive' : 'outline'}>
+                          {missionStatus === 'FAILED' && missionTries > 1
+                            ? `Failed ${missionTries}x`
+                            : missionStatus 
+                              ? missionStatus.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())
+                              : 'Not Attempted'}
+                        </Badge>
                       )}
                     </div>
                   ) : (

@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Check, X, Clock, Play, Square, Plus } from 'lucide-react';
+import { Search, Users, Check, X, Clock, Play, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -19,64 +19,7 @@ import {
   useMission,
 } from '@/lib/api/useApi';
 
-function MissionTimer({
-  startedAt,
-  duration,
-  onExpire,
-}: {
-  startedAt: string;
-  duration: number;
-  onExpire?: () => void;
-}) {
-  // duration is in minutes
-  const hasExpired = useRef(false);
-  
-  const calculateTimeLeft = () => {
-    const start = new Date(startedAt).getTime();
-    const now = new Date().getTime();
-    const end = start + duration * 60 * 1000;
-    return end - now;
-  };
-
-  const [timeLeft, setTimeLeft] = useState<number>(() => Math.max(0, calculateTimeLeft()));
-
-  // Update effect when props change or on interval
-  useEffect(() => {
-    // Immediate update on prop change
-    const time = calculateTimeLeft();
-    setTimeLeft(time);
-
-    // Reset expiry ref if time is positive (e.g. added time)
-    if (time > 0) {
-      hasExpired.current = false;
-    }
-
-    const interval = setInterval(() => {
-      const remaining = calculateTimeLeft();
-      setTimeLeft(remaining);
-      
-      if (remaining <= 0 && onExpire && !hasExpired.current) {
-         hasExpired.current = true;
-         onExpire();
-         clearInterval(interval);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [startedAt, duration, onExpire]);
-
-  const minutes = Math.floor(Math.abs(timeLeft) / 60000);
-  const seconds = Math.floor((Math.abs(timeLeft) % 60000) / 1000);
-  const isOverdue = timeLeft < 0;
-
-  return (
-    <span
-      className={`font-mono text-sm ${isOverdue ? 'text-destructive font-bold' : 'text-muted-foreground'}`}
-    >
-      {isOverdue && '-'}
-      {minutes}:{seconds.toString().padStart(2, '0')}
-    </span>
-  );
-}
+import { MissionTimer } from './MissionTimer';
 
 interface TeamSelectionForMissionProps {
   missionId: string;
@@ -333,6 +276,24 @@ export function TeamSelectionForMission({
                         const isNotStarted = status === 'NOT_ATTEMPTED' || status === 'NOT_STARTED' || status === 'FAILED';
 
                         if (isNotStarted) {
+                          if (missionData?.mission?.missionDuration === 0) {
+                            return (
+                              <Button
+                                size="sm"
+                                onClick={handleCompleteClick}
+                                disabled={
+                                  completingTeamId === team?._id ||
+                                  completeMission.isPending
+                                }
+                                className=" ml-auto"
+                              >
+                                {completingTeamId === team?._id && completeMission.isPending
+                                  ? 'Completing...'
+                                  : 'Mark as Complete'}
+                              </Button>
+                            );
+                          }
+
                           return (
                             <Button
                               size="sm"
@@ -359,9 +320,7 @@ export function TeamSelectionForMission({
                         if (isRunning) {
                            const handleFailClick = (e: React.MouseEvent) => {
                             e.stopPropagation();
-                            if (confirm('Are you sure you want to fail this team?')) {
                               failMission.mutate({ missionId, teamId: team?._id });
-                            }
                           };
 
                           const handleAddMinuteClick = (e: React.MouseEvent) => {
@@ -376,7 +335,7 @@ export function TeamSelectionForMission({
                           return (
                             <div className="flex items-center gap-2 ml-auto">
                                {missionEntry?.startedAt && missionData?.mission?.missionDuration ? (
-                                <div className="mr-2 px-2 py-1 bg-background/50 rounded border flex items-center gap-1.5">
+                                <div className="px-2 py-1 bg-background/50 rounded border flex items-center gap-1.5">
                                   <Clock className="w-3.5 h-3.5 text-muted-foreground" />
                                   <MissionTimer
                                     startedAt={missionEntry.startedAt}
@@ -392,16 +351,14 @@ export function TeamSelectionForMission({
                                 disabled={adjustMissionTime.isPending}
                                 title="Add 1 Minute"
                               >
-                                <Plus className="w-4 h-4" />
+                                <Plus className="w-4 h-4" /> 1 min
                               </Button>
                               <Button
                                 size="sm"
                                 variant="destructive"
                                 onClick={handleFailClick}
                                 disabled={failMission.isPending}
-                              >
-                                <Square className="w-4 h-4 mr-2" />
-                                Stop (Fail)
+                              >Fail
                               </Button>
                               <Button
                                 size="sm"
@@ -411,7 +368,6 @@ export function TeamSelectionForMission({
                                   completeMission.isPending
                                 }
                               >
-                                <Check className="w-4 h-4 mr-2" />
                                 {completingTeamId === team?._id ||
                                 completeMission.isPending
                                   ? 'Completing...'
@@ -445,8 +401,6 @@ export function TeamSelectionForMission({
                             const entry = (team?.missions || []).find((m) => m.missionId === missionId);
                             const status = entry?.status || 'NOT_ATTEMPTED';
                             const tries = entry?.tries || 0;
-
-                            console.log(entry)
                             
                             if (status === 'FAILED' && tries > 1) {
                               return `Failed ${tries}x`;

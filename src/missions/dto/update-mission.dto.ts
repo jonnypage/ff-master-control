@@ -32,5 +32,10 @@ export class UpdateMissionDto {
   @IsOptional()
   @IsNumber()
   missionDuration?: number;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  missionNumber?: number;
 }
 
