@@ -268,21 +268,21 @@ export class TeamsService implements OnModuleInit {
       // Create new entry
       team.missions.push({
         missionId: new Types.ObjectId(missionId) as any,
-        status: MissionStatus.INCOMPLETE,
+        status: MissionStatus.IN_PROGRESS,
         tries: 1,
         startedAt: new Date(),
         completedAt: undefined,
         creditsReceived: 0,
         crystalsReceived: 0,
       });
-    } else if (entry.status === MissionStatus.NOT_STARTED || entry.status === MissionStatus.FAILED) {
+    } else if (entry.status === MissionStatus.NOT_ATTEMPTED || entry.status === MissionStatus.FAILED) {
       // Restart mission
-      entry.status = MissionStatus.INCOMPLETE;
+      entry.status = MissionStatus.IN_PROGRESS;
       entry.tries += 1;
       entry.startedAt = new Date();
       entry.completedAt = undefined;
     }
-    // If already INCOMPLETE or COMPLETE, do nothing special
+
 
     team.markModified('missions');
     return team.save();
@@ -339,7 +339,7 @@ export class TeamsService implements OnModuleInit {
     }
 
     const entry = this.getMissionEntry(team, missionId);
-    if (entry && entry.status === MissionStatus.INCOMPLETE) {
+    if (entry && entry.status === MissionStatus.IN_PROGRESS) {
       entry.status = MissionStatus.FAILED;
     }
 
@@ -359,17 +359,26 @@ export class TeamsService implements OnModuleInit {
     }
 
     const entry = this.getMissionEntry(team, missionId);
-    if (entry && entry.startedAt) {
-      // Add minutes to startedAt (moving start time forward gives MORE remaining time)
-      const newTime = new Date(entry.startedAt.getTime() + minutes * 60000);
-      entry.startedAt = newTime;
-      team.markModified('missions');
-      await team.save();
-    } else {
+    if (!entry || !entry.startedAt) {
       throw new NotFoundException('Mission not started or not found for team');
     }
 
-    return team;
+    const newTime = new Date(entry.startedAt.getTime() + minutes * 60000);
+
+    // Use atomic update to ensure it persists
+    await this.teamModel.updateOne(
+      {
+        _id: teamId,
+        'missions.missionId': new Types.ObjectId(missionId)
+      },
+      {
+        $set: { 'missions.$.startedAt': newTime }
+      }
+    );
+
+    // Return updated team
+    const updatedTeam = await this.teamModel.findById(teamId);
+    return updatedTeam!;
   }
 
   // Reset a mission (remove completion, revert to NOT_STARTED)
@@ -429,14 +438,14 @@ export class TeamsService implements OnModuleInit {
   ): Promise<MissionStatus> {
     const team = await this.teamModel.findById(teamId);
     if (!team) {
-      return MissionStatus.NOT_STARTED;
+      return MissionStatus.NOT_ATTEMPTED;
     }
 
     const entry = team.missions?.find(
       (m) => m.missionId.toString() === missionId.toString(),
     );
 
-    return entry?.status || MissionStatus.NOT_STARTED;
+    return entry?.status || MissionStatus.NOT_ATTEMPTED;
   }
 
   async findByNameOrTeamGuid(

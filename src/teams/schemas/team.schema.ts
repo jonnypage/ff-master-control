@@ -6,8 +6,8 @@ export type TeamDocument = Team & Document;
 
 // Mission status enum
 export enum MissionStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  INCOMPLETE = 'INCOMPLETE',
+  NOT_ATTEMPTED = 'NOT_ATTEMPTED',
+  IN_PROGRESS = 'IN_PROGRESS',
   FAILED = 'FAILED',
   COMPLETE = 'COMPLETE',
 }
@@ -100,7 +100,7 @@ export class Team {
     type: [
       {
         missionId: { type: Types.ObjectId, ref: 'Mission' },
-        status: { type: String, enum: Object.values(MissionStatus), default: MissionStatus.NOT_STARTED },
+        status: { type: String, enum: Object.values(MissionStatus), default: MissionStatus.NOT_ATTEMPTED },
         tries: { type: Number, default: 0 },
         startedAt: { type: Date },
         completedAt: { type: Date },

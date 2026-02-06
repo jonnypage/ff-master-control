@@ -142,9 +142,10 @@ type Query {
   users: [User!]!
 }
 
+"""Status of a mission for a team"""
 enum MissionStatus {
-  NOT_STARTED
-  INCOMPLETE
+  NOT_ATTEMPTED
+  IN_PROGRESS
   FAILED
   COMPLETE
 }

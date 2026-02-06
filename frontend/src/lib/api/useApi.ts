@@ -616,6 +616,7 @@ export function useTeamsForMissionCompletion() {
                 missionId
                 status
                 startedAt
+                tries
               }
             }
           }

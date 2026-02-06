@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -22,31 +22,47 @@ import {
 function MissionTimer({
   startedAt,
   duration,
+  onExpire,
 }: {
   startedAt: string;
   duration: number;
+  onExpire?: () => void;
 }) {
   // duration is in minutes
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-
-  useMemo(() => {
-    // Initial calc
+  const hasExpired = useRef(false);
+  
+  const calculateTimeLeft = () => {
     const start = new Date(startedAt).getTime();
     const now = new Date().getTime();
     const end = start + duration * 60 * 1000;
-    setTimeLeft(Math.max(0, end - now));
-  }, [startedAt, duration]);
+    return end - now;
+  };
 
-  useState(() => {
+  const [timeLeft, setTimeLeft] = useState<number>(() => Math.max(0, calculateTimeLeft()));
+
+  // Update effect when props change or on interval
+  useEffect(() => {
+    // Immediate update on prop change
+    const time = calculateTimeLeft();
+    setTimeLeft(time);
+
+    // Reset expiry ref if time is positive (e.g. added time)
+    if (time > 0) {
+      hasExpired.current = false;
+    }
+
     const interval = setInterval(() => {
-      const start = new Date(startedAt).getTime();
-      const now = new Date().getTime();
-      const end = start + duration * 60 * 1000;
-      const remaining = end - now;
+      const remaining = calculateTimeLeft();
       setTimeLeft(remaining);
+      
+      if (remaining <= 0 && onExpire && !hasExpired.current) {
+         hasExpired.current = true;
+         onExpire();
+         clearInterval(interval);
+      }
     }, 1000);
     return () => clearInterval(interval);
-  });
+  }, [startedAt, duration, onExpire]);
 
   const minutes = Math.floor(Math.abs(timeLeft) / 60000);
   const seconds = Math.floor((Math.abs(timeLeft) % 60000) / 1000);
@@ -97,7 +113,7 @@ export function TeamSelectionForMission({
     bannerColor: string;
     bannerIcon: string;
     credits: number;
-    missions: { missionId: string; status: string; startedAt?: string }[];
+    missions: { missionId: string; status: string; startedAt?: string; tries: number }[];
   }
 
   const filteredTeams = useMemo(() => {
@@ -263,7 +279,7 @@ export function TeamSelectionForMission({
                       ? 'bg-green-600 dark:bg-green-700 text-white'
                       : isSelected
                         ? 'bg-accent hover:bg-accent/50 cursor-pointer border-l-4 border-l-primary'
-                        : (team?.missions || []).some(m => m.missionId === missionId && m.status === 'INCOMPLETE') 
+                        : (team?.missions || []).some(m => m.missionId === missionId && (m.status === 'IN_PROGRESS')) 
                           ? 'bg-blue-500/5 hover:bg-blue-500/10 cursor-pointer border-l-4 border-l-blue-500' // Running state
                           : 'hover:bg-accent/50 cursor-pointer'
                   }`}
@@ -312,9 +328,9 @@ export function TeamSelectionForMission({
                         const missionEntry = (team?.missions || []).find(
                           (m) => m.missionId === missionId,
                         );
-                        const status = missionEntry?.status || 'NOT_STARTED';
-                        const isRunning = status === 'INCOMPLETE'; // Assuming INCOMPLETE means In Progress
-                        const isNotStarted = status === 'NOT_STARTED' || status === 'FAILED'; // Allow restart if failed? Or just Not Started.
+                        const status = missionEntry?.status || 'NOT_ATTEMPTED';
+                        const isRunning = status === 'IN_PROGRESS'
+                        const isNotStarted = status === 'NOT_ATTEMPTED' || status === 'NOT_STARTED' || status === 'FAILED';
 
                         if (isNotStarted) {
                           return (
@@ -365,6 +381,7 @@ export function TeamSelectionForMission({
                                   <MissionTimer
                                     startedAt={missionEntry.startedAt}
                                     duration={missionData.mission.missionDuration}
+                                    onExpire={() => failMission.mutate({ missionId, teamId: team?._id })}
                                   />
                                 </div>
                               ) : null}
@@ -414,19 +431,31 @@ export function TeamSelectionForMission({
                       })()
                     ) : (
                       <div className="flex items-center gap-3">
-                        {((team?.missions || []).find((m) => m.missionId === missionId)?.status === 'INCOMPLETE') && missionData?.mission?.missionDuration && (team?.missions || []).find((m) => m.missionId === missionId)?.startedAt && (
+                        {((team?.missions || []).find((m) => m.missionId === missionId)?.status === 'IN_PROGRESS') && missionData?.mission?.missionDuration && (team?.missions || []).find((m) => m.missionId === missionId)?.startedAt && (
                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/50 rounded text-xs">
                               <MissionTimer
                                   startedAt={(team?.missions || []).find((m) => m.missionId === missionId)!.startedAt!}
                                   duration={missionData.mission.missionDuration}
+                                  onExpire={() => failMission.mutate({ missionId, teamId: team?._id })}
                               />
                            </div>
                         )}
                         <span className="flex items-center gap-1.5 text-muted-foreground shrink-0 text-sm font-medium">
-                          {((team?.missions || []).find((m) => m.missionId === missionId)?.status || 'NOT_STARTED')
-                            .toLowerCase()
-                            .replace(/_/g, ' ')
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          {(() => {
+                            const entry = (team?.missions || []).find((m) => m.missionId === missionId);
+                            const status = entry?.status || 'NOT_ATTEMPTED';
+                            const tries = entry?.tries || 0;
+
+                            console.log(entry)
+                            
+                            if (status === 'FAILED' && tries > 1) {
+                              return `Failed ${tries}x`;
+                            }
+                            
+                            return status.toLowerCase()
+                              .replace(/_/g, ' ')
+                              .replace(/\b\w/g, (l) => l.toUpperCase());
+                          })()}
                        </span>
                       </div>
                     )}
