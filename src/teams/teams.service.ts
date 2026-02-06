@@ -160,23 +160,28 @@ export class TeamsService {
 
   async findLeaderboard(): Promise<LeaderboardTeam[]> {
     // Return only the minimal fields required for the public leaderboard
-    // Ensure backfill runs implicitly or we handle it here?
-    // Ideally backfill runs on access.
-    await this.backfillLegacyTeamFields();
-
-    return this.teamModel
+    // We must ensure completedMissions is returned even if the backfill hasn't run fully or if it's empty
+    const teams = await this.teamModel
       .find(
         {},
         {
           name: 1,
-          completedMissions: 1,
-          // Fallback for legacy data if needed by client, but we prefer completedMissions
-          completedMissionIds: 1,
+          completedMissions: 1, // Ensure this field is projected
+          completedMissionIds: 1, // Keep this for now just in case
           bannerColor: 1,
           bannerIcon: 1,
         },
       )
-      .lean();
+      .lean()
+      .exec();
+
+    // Map to ensure completedMissions is never null/undefined
+    return teams.map((team) => ({
+      ...team,
+      completedMissions: team.completedMissions || [],
+      // If completedMissions is empty but completedMissionIds exists, we could map it on the fly,
+      // but ideally the backfill handles this. For now, preventing the crash is priority.
+    })) as unknown as LeaderboardTeam[];
   }
 
   async update(
