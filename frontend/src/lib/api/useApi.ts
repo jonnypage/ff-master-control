@@ -19,8 +19,9 @@ export function useLeaderboardTeams() {
               name
               bannerColor
               bannerIcon
-              completedMissions {
+              missions {
                 missionId
+                status
                 completedAt
               }
             }
@@ -65,8 +66,9 @@ export function useTeamsForStore() {
               bannerIcon
               credits
               crystals
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -303,8 +305,9 @@ export function useTeams() {
               }
               credits
               crystals
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -332,8 +335,9 @@ export function useTeamById(id: string) {
               }
               credits
               crystals
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -499,8 +503,9 @@ export function useTeamsForMissions(options?: { enabled?: boolean }) {
           query GetTeamsForMissions {
             teams {
               _id
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -576,8 +581,9 @@ export function useTeamsForMission(options?: { enabled?: boolean }) {
           query GetTeamsForMission {
             teams {
               _id
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -601,8 +607,9 @@ export function useTeamsForMissionCompletion() {
               bannerIcon
               credits
               crystals
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }
@@ -660,8 +667,9 @@ export function useMyTeam(options?: {
               }
               credits
               crystals
-              completedMissions {
+              missions {
                 missionId
+                status
               }
             }
           }

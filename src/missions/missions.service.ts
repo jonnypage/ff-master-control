@@ -11,6 +11,7 @@ import {
   MissionCompletionDocument,
 } from './schemas/mission-completion.schema';
 import { TeamsService } from '../teams/teams.service';
+import { MissionStatus } from '../teams/schemas/team.schema';
 
 @Injectable()
 export class MissionsService {
@@ -28,11 +29,6 @@ export class MissionsService {
   async findAllForLeaderboard(): Promise<
     Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>[]
   > {
-    // Public leaderboard needs mission metadata (id + name + final flag).
-    // IMPORTANT: GraphQL schema defines Mission.name as non-nullable.
-    // Some legacy/bad DB rows may have null/empty name; we must never return null here.
-    //
-    // Using an aggregation keeps the response shape stable and guarantees name/isFinalChallenge defaults.
     return this.missionModel
       .aggregate<Pick<Mission, '_id' | 'name' | 'isFinalChallenge'>>([
         {
@@ -100,10 +96,10 @@ export class MissionsService {
 
     await completion.save();
 
-    // Add to team's completed missions and award credits
+    // Update team's mission progress to COMPLETE
     const crystalsToAward = mission.awardsCrystal ? 1 : 0;
     
-    await this.teamsService.addCompletedMission(
+    await this.teamsService.completeMission(
       team._id.toString(),
       missionId,
       mission.creditsAwarded,
@@ -145,16 +141,14 @@ export class MissionsService {
     });
 
     if (existingCompletion) {
-      // Existing MissionCompletion record found - ensure team's completedMissions is also synced
-      // This handles cases where completion was created before the schema change
+      // Existing MissionCompletion record found - ensure team's missions is also synced
       const crystalsToAward = mission.awardsCrystal ? 1 : 0;
-      await this.teamsService.addCompletedMission(
+      await this.teamsService.completeMission(
         team._id.toString(),
         missionId,
         mission.creditsAwarded,
         crystalsToAward,
       );
-      // Return without populate since GraphQL expects IDs, not full objects
       return existingCompletion as MissionCompletionDocument;
     }
 
@@ -194,8 +188,8 @@ export class MissionsService {
       throw new NotFoundException('Mission completion not found');
     }
 
-    // Remove from team's completed missions and get the values to reverse
-    const removedValues = await this.teamsService.removeCompletedMission(
+    // Reset mission in team and get the values to reverse
+    const removedValues = await this.teamsService.resetMission(
       team._id.toString(),
       missionId,
     );
@@ -230,6 +224,7 @@ export class MissionsService {
     description?: string;
     creditsAwarded: number;
     isFinalChallenge: boolean;
+    missionDuration?: number;
   }): Promise<MissionDocument> {
     const createdMission = new this.missionModel(createMissionDto);
     return createdMission.save();
@@ -243,6 +238,7 @@ export class MissionsService {
       creditsAwarded?: number;
       awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
+      missionDuration?: number;
     },
   ): Promise<MissionDocument> {
     const mission = await this.missionModel.findById(id);
@@ -264,6 +260,9 @@ export class MissionsService {
     }
     if (updateData.isFinalChallenge !== undefined) {
       mission.isFinalChallenge = updateData.isFinalChallenge;
+    }
+    if (updateData.missionDuration !== undefined) {
+      mission.missionDuration = updateData.missionDuration;
     }
 
     return mission.save();

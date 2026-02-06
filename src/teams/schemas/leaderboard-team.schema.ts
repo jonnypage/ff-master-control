@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { ObjectId } from 'mongoose';
-import { CompletedMission } from './team.schema';
+import { TeamMission } from './team.schema';
 
 @ObjectType()
 export class LeaderboardTeam {
@@ -16,6 +16,6 @@ export class LeaderboardTeam {
   @Field()
   bannerIcon: string;
 
-  @Field(() => [CompletedMission])
-  completedMissions: CompletedMission[];
+  @Field(() => [TeamMission])
+  missions: TeamMission[];
 }

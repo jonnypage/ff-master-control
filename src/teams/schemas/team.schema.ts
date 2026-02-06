@@ -1,8 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, ObjectId, Types } from 'mongoose';
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 
 export type TeamDocument = Team & Document;
+
+// Mission status enum
+export enum MissionStatus {
+  NOT_STARTED = 'NOT_STARTED',
+  INCOMPLETE = 'INCOMPLETE',
+  FAILED = 'FAILED',
+  COMPLETE = 'COMPLETE',
+}
+
+registerEnumType(MissionStatus, {
+  name: 'MissionStatus',
+  description: 'Status of a mission for a team',
+});
 
 @ObjectType()
 export class TeamImage {
@@ -11,18 +24,27 @@ export class TeamImage {
 }
 
 @ObjectType()
-export class CompletedMission {
+export class TeamMission {
   @Field(() => ID)
   missionId: ObjectId;
 
+  @Field(() => MissionStatus)
+  status: MissionStatus;
+
   @Field()
-  completedAt: Date;
+  tries: number;
+
+  @Field({ nullable: true })
+  startedAt?: Date;
+
+  @Field({ nullable: true })
+  completedAt?: Date;
 
   @Field()
   creditsReceived: number;
 
-  @Field({ nullable: true })
-  crystalsReceived?: number;
+  @Field()
+  crystalsReceived: number;
 }
 
 @Schema({ timestamps: true })
@@ -73,24 +95,23 @@ export class Team {
   @Field()
   crystals: number;
 
-  // New field replacing completedMissionIds
+  // Mission progress tracking
   @Prop({
     type: [
       {
         missionId: { type: Types.ObjectId, ref: 'Mission' },
-        completedAt: { type: Date, default: Date.now },
+        status: { type: String, enum: Object.values(MissionStatus), default: MissionStatus.NOT_STARTED },
+        tries: { type: Number, default: 0 },
+        startedAt: { type: Date },
+        completedAt: { type: Date },
         creditsReceived: { type: Number, default: 0 },
         crystalsReceived: { type: Number, default: 0 },
       },
     ],
     default: [],
   })
-  @Field(() => [CompletedMission])
-  completedMissions: CompletedMission[];
-
-  // Legacy field support (will be migrated)
-  @Prop({ type: [Types.ObjectId], ref: 'Mission', select: true })
-  completedMissionIds?: ObjectId[];
+  @Field(() => [TeamMission])
+  missions: TeamMission[];
 
   @Field()
   createdAt: Date;
@@ -100,4 +121,3 @@ export class Team {
 }
 
 export const TeamSchema = SchemaFactory.createForClass(Team);
-

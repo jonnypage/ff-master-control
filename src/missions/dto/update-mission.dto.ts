@@ -27,5 +27,10 @@ export class UpdateMissionDto {
   @IsOptional()
   @IsBoolean()
   isFinalChallenge?: boolean;
+
+  @Field(() => Int, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  missionDuration?: number;
 }
 

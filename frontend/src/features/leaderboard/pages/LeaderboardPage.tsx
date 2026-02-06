@@ -12,8 +12,9 @@ type LeaderboardTeam = {
   name: string;
   bannerColor: string;
   bannerIcon: string;
-  completedMissions: {
+  missions: {
     missionId: string;
+    status: string;
     completedAt: string;
   }[];
 };
@@ -53,15 +54,17 @@ export function LeaderboardPage() {
 
     return teams
       .map((team): RankedTeam => {
-        const completedCount = team.completedMissions?.length ?? 0;
+        // Only count missions with COMPLETE status
+        const completedMissions = team.missions?.filter(m => m.status === 'COMPLETE') ?? [];
+        const completedCount = completedMissions.length;
         const hasCompletedFinal = finalChallengeIds.some((id) =>
-          team.completedMissions?.some((cm) => cm.missionId === id),
+          completedMissions.some((cm) => cm.missionId === id),
         );
         
         let completionTime: number | undefined;
         if (completedCount === totalMissions && totalMissions > 0) {
             // Find the latest completedAt timestamp
-            const timestamps = team.completedMissions.map(cm => new Date(cm.completedAt).getTime());
+            const timestamps = completedMissions.map(cm => new Date(cm.completedAt).getTime());
             completionTime = Math.max(...timestamps);
         }
 

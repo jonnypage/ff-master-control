@@ -24,5 +24,9 @@ export class CreateMissionDto {
   @Field({ defaultValue: false })
   @IsBoolean()
   isFinalChallenge: boolean;
+
+  @Field(() => Int, { defaultValue: 0 })
+  @IsNumber()
+  missionDuration: number;
 }
 

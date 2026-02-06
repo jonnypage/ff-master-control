@@ -24,7 +24,7 @@ export function MissionList() {
     }
     const counts: Record<string, number> = {};
     const teams =
-      (teamsData as { teams?: Array<{ completedMissions?: { missionId: string }[] }> })
+      (teamsData as { teams?: Array<{ missions?: { missionId: string; status: string }[] }> })
         ?.teams ?? [];
     const totalTeams = teams.length;
 
@@ -35,8 +35,8 @@ export function MissionList() {
     (data?.missions ?? []).forEach(
       (mission: GetMissionsQuery['missions'][number]) => {
         const completedCount = teams.filter(
-          (team: { completedMissions?: { missionId: string }[] }) =>
-            team.completedMissions?.some((cm) => cm.missionId === mission._id) ?? false,
+          (team: { missions?: { missionId: string; status: string }[] }) =>
+            team.missions?.some((m) => m.missionId === mission._id && m.status === 'COMPLETE') ?? false,
         ).length;
         counts[mission._id] = completedCount;
       },
@@ -47,10 +47,10 @@ export function MissionList() {
 
   const myCompletedMissionIds = useMemo(() => {
     if (!isTeamSession) return [];
-    const completedMissions = (myTeamData?.myTeam?.completedMissions ??
-      []) as Array<{ missionId: string }>;
-    return completedMissions.map((cm) => cm.missionId);
-  }, [isTeamSession, myTeamData?.myTeam?.completedMissions]);
+    const missions = (myTeamData?.myTeam?.missions ??
+      []) as Array<{ missionId: string; status: string }>;
+    return missions.filter(m => m.status === 'COMPLETE').map((m) => m.missionId);
+  }, [isTeamSession, myTeamData?.myTeam?.missions]);
 
   const filteredMissions = useMemo(() => {
     const missions = (data?.missions ?? []) as GetMissionsQuery['missions'];

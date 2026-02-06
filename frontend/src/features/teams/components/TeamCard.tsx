@@ -12,7 +12,7 @@ export type TeamCardTeam = {
   teamCode: string;
   bannerColor: string;
   bannerIcon: string;
-  completedMissions?: { missionId: string }[] | null;
+  missions?: { missionId: string; status: string }[] | null;
 };
 
 interface TeamCardProps {
@@ -68,7 +68,7 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
               Missions
             </span>
             <Badge className="text-base font-semibold px-3 py-1">
-              {(team.completedMissions ?? []).length}/{totalMissions}
+              {(team.missions ?? []).filter(m => m.status === 'COMPLETE').length}/{totalMissions}
             </Badge>
           </div>
           <div className="pt-2 border-t">

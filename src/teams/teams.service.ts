@@ -6,7 +6,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
-import { Team, TeamDocument } from './schemas/team.schema';
+import { Team, TeamDocument, MissionStatus } from './schemas/team.schema';
 import { LeaderboardTeam } from './schemas/leaderboard-team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
 
@@ -22,7 +22,6 @@ export class TeamsService {
 
   private async backfillLegacyTeamFields(): Promise<void> {
     // Only backfill teams that truly lack the new fields.
-    // Important: pinHash is `select:false`, so never assume `undefined` means missing.
     const legacyTeams = await this.teamModel
       .find({
         $or: [
@@ -67,7 +66,6 @@ export class TeamsService {
       }
 
       if (!team.pinHash) {
-        // If we have a plaintext pin, prefer hashing that; otherwise fall back.
         team.pinHash = await bcrypt.hash(team.pin ?? defaultPin, 10);
         changed = true;
       }
@@ -77,25 +75,26 @@ export class TeamsService {
       }
     }
 
-    // Secondary backfill: Migrate completedMissionIds -> completedMissions
-    // We do this separately or as part of the loop. Let's do a targeted query.
+    // Secondary backfill: Migrate old completedMissions -> missions
     const teamsWithLegacyMissions = await this.teamModel
       .find({
-        completedMissionIds: { $exists: true, $not: { $size: 0 } },
-        completedMissions: { $size: 0 },
+        completedMissions: { $exists: true, $not: { $size: 0 } },
+        missions: { $size: 0 },
       })
       .exec();
 
     for (const team of teamsWithLegacyMissions) {
-      if (team.completedMissionIds && team.completedMissionIds.length > 0) {
-        team.completedMissions = team.completedMissionIds.map((missionId) => ({
-          missionId: missionId,
-          completedAt: new Date(), // Approximate
-          creditsReceived: 0, // Unknown, will fallback to current value on reversal
-          crystalsReceived: 0,
+      if ((team as any).completedMissions && (team as any).completedMissions.length > 0) {
+        team.missions = (team as any).completedMissions.map((cm: any) => ({
+          missionId: cm.missionId,
+          status: MissionStatus.COMPLETE,
+          tries: 1,
+          startedAt: cm.completedAt,
+          completedAt: cm.completedAt,
+          creditsReceived: cm.creditsReceived || 0,
+          crystalsReceived: cm.crystalsReceived || 0,
         }));
-        // Clean up legacy field? Maybe keep for safety until confirmed.
-        // team.completedMissionIds = [];
+        team.markModified('missions');
         await team.save();
       }
     }
@@ -105,9 +104,7 @@ export class TeamsService {
     let teamGuid = randomUUID();
     let teamCode = this.deriveTeamCode(teamGuid);
 
-    // Ensure teamCode uniqueness (rare collisions, but handle safely).
-    // If collision occurs, regenerate GUID until unique.
-    // Note: for an annual event, this is more than sufficient.
+    // Ensure teamCode uniqueness
     // eslint-disable-next-line no-constant-condition
     while (true) {
       const existing = await this.teamModel.findOne({ teamCode }).lean();
@@ -136,52 +133,45 @@ export class TeamsService {
   }
 
   async findByTeamCodeForAuth(teamCode: string): Promise<TeamDocument | null> {
-    // pinHash is excluded by default (`select: false`), so opt-in here.
     return this.teamModel.findOne({ teamCode }).select('+pinHash').exec();
   }
 
   async findOne(id: string): Promise<TeamDocument | null> {
-    // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
     const team = await this.teamModel.findById(id).exec();
-    if (team && !team.completedMissions) {
-      team.completedMissions = [];
+    if (team && !team.missions) {
+      team.missions = [];
     }
     return team;
   }
 
   async findOneForTeamSession(id: string): Promise<TeamDocument | null> {
-    // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
     const team = await this.teamModel.findById(id).select('+pin').exec();
-    if (team && !team.completedMissions) {
-      team.completedMissions = [];
+    if (team && !team.missions) {
+      team.missions = [];
     }
     return team;
   }
 
   async findAll(): Promise<TeamDocument[]> {
-    // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
     const teams = await this.teamModel.find().exec();
     return teams.map(team => {
-        if (team && !team.completedMissions) {
-            team.completedMissions = [];
+        if (team && !team.missions) {
+            team.missions = [];
         }
         return team;
     });
   }
 
   async findLeaderboard(): Promise<LeaderboardTeam[]> {
-    // Return only the minimal fields required for the public leaderboard
-    // We must ensure completedMissions is returned even if the backfill hasn't run fully or if it's empty
     const teams = await this.teamModel
       .find(
         {},
         {
           name: 1,
-          completedMissions: 1, // Ensure this field is projected
-          completedMissionIds: 1, // Keep this for now just in case
+          missions: 1,
           bannerColor: 1,
           bannerIcon: 1,
         },
@@ -189,12 +179,9 @@ export class TeamsService {
       .lean()
       .exec();
 
-    // Map to ensure completedMissions is never null/undefined
     return teams.map((team) => ({
       ...team,
-      completedMissions: team.completedMissions || [],
-      // If completedMissions is empty but completedMissionIds exists, we could map it on the fly,
-      // but ideally the backfill handles this. For now, preventing the crash is priority.
+      missions: team.missions || [],
     })) as unknown as LeaderboardTeam[];
   }
 
@@ -246,7 +233,58 @@ export class TeamsService {
     return team.save();
   }
 
-  async addCompletedMission(
+  // Find or create a mission entry for a team
+  private getMissionEntry(team: TeamDocument, missionId: string) {
+    if (!team.missions) {
+      team.missions = [];
+    }
+    return team.missions.find(
+      (m) => m.missionId.toString() === missionId.toString(),
+    );
+  }
+
+  // Start a mission for a team
+  async startMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    if (!team.missions) {
+      team.missions = [];
+    }
+
+    let entry = this.getMissionEntry(team, missionId);
+
+    if (!entry) {
+      // Create new entry
+      team.missions.push({
+        missionId: new Types.ObjectId(missionId) as any,
+        status: MissionStatus.INCOMPLETE,
+        tries: 1,
+        startedAt: new Date(),
+        completedAt: undefined,
+        creditsReceived: 0,
+        crystalsReceived: 0,
+      });
+    } else if (entry.status === MissionStatus.NOT_STARTED || entry.status === MissionStatus.FAILED) {
+      // Restart mission
+      entry.status = MissionStatus.INCOMPLETE;
+      entry.tries += 1;
+      entry.startedAt = new Date();
+      entry.completedAt = undefined;
+    }
+    // If already INCOMPLETE or COMPLETE, do nothing special
+
+    team.markModified('missions');
+    return team.save();
+  }
+
+  // Complete a mission for a team
+  async completeMission(
     teamId: string,
     missionId: string,
     creditsReceived: number,
@@ -257,31 +295,55 @@ export class TeamsService {
       throw new NotFoundException('Team not found');
     }
 
-    // Ensure array exists
-    if (!team.completedMissions) {
-      team.completedMissions = [];
+    if (!team.missions) {
+      team.missions = [];
     }
 
-    // Check if already completed to avoid duplicates
-    const exists = team.completedMissions.some(
-      (cm) => cm.missionId.toString() === missionId.toString(),
-    );
+    let entry = this.getMissionEntry(team, missionId);
 
-    if (!exists) {
-      team.completedMissions.push({
+    if (!entry) {
+      // Direct completion without starting (admin override)
+      team.missions.push({
         missionId: new Types.ObjectId(missionId) as any,
+        status: MissionStatus.COMPLETE,
+        tries: 1,
+        startedAt: new Date(),
         completedAt: new Date(),
         creditsReceived,
         crystalsReceived,
       });
-      team.markModified('completedMissions');
-      return team.save();
+    } else {
+      entry.status = MissionStatus.COMPLETE;
+      entry.completedAt = new Date();
+      entry.creditsReceived = creditsReceived;
+      entry.crystalsReceived = crystalsReceived;
     }
 
-    return team;
+    team.markModified('missions');
+    return team.save();
   }
 
-  async removeCompletedMission(
+  // Fail a mission for a team
+  async failMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const entry = this.getMissionEntry(team, missionId);
+    if (entry && entry.status === MissionStatus.INCOMPLETE) {
+      entry.status = MissionStatus.FAILED;
+    }
+
+    team.markModified('missions');
+    return team.save();
+  }
+
+  // Reset a mission (remove completion, revert to NOT_STARTED)
+  async resetMission(
     teamId: string,
     missionId: string,
   ): Promise<{ creditsReceived: number; crystalsReceived: number } | null> {
@@ -290,32 +352,21 @@ export class TeamsService {
       throw new NotFoundException('Team not found');
     }
 
-    if (!team.completedMissions) {
+    if (!team.missions) {
       return null;
     }
 
-    const index = team.completedMissions.findIndex(
-      (cm) => cm.missionId.toString() === missionId.toString(),
+    const index = team.missions.findIndex(
+      (m) => m.missionId.toString() === missionId.toString(),
     );
 
     if (index === -1) {
-      // Check legacy field just in case
-      if (
-        team.completedMissionIds &&
-        team.completedMissionIds.some((id) => id.toString() === missionId.toString())
-      ) {
-        team.completedMissionIds = team.completedMissionIds.filter(
-          (id) => id.toString() !== missionId.toString(),
-        );
-        await team.save();
-        // Return 0s so caller knows to use current mission values as fallback
-        return { creditsReceived: 0, crystalsReceived: 0 };
-      }
       return null;
     }
 
-    const removed = team.completedMissions[index];
-    team.completedMissions.splice(index, 1);
+    const removed = team.missions[index];
+    team.missions.splice(index, 1);
+    team.markModified('missions');
     await team.save();
 
     return {
@@ -324,7 +375,8 @@ export class TeamsService {
     };
   }
 
-  async hasCompletedMission(
+  // Check if mission is completed
+  async hasMissionCompleted(
     teamId: string,
     missionId: string,
   ): Promise<boolean> {
@@ -333,25 +385,36 @@ export class TeamsService {
       return false;
     }
 
-    const inNew = team.completedMissions?.some(
-      (cm) => cm.missionId.toString() === missionId.toString(),
-    );
-    const inOld = team.completedMissionIds?.some(
-      (id) => id.toString() === missionId.toString(),
+    const entry = team.missions?.find(
+      (m) => m.missionId.toString() === missionId.toString(),
     );
 
-    return !!(inNew || inOld);
+    return entry?.status === MissionStatus.COMPLETE;
+  }
+
+  // Get mission status
+  async getMissionStatus(
+    teamId: string,
+    missionId: string,
+  ): Promise<MissionStatus> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      return MissionStatus.NOT_STARTED;
+    }
+
+    const entry = team.missions?.find(
+      (m) => m.missionId.toString() === missionId.toString(),
+    );
+
+    return entry?.status || MissionStatus.NOT_STARTED;
   }
 
   async findByNameOrTeamGuid(
     searchTerm: string,
   ): Promise<TeamDocument | null> {
-    // Try team GUID first (exact match)
     const byTeamGuid = await this.teamModel.findOne({ teamGuid: searchTerm }).exec();
     if (byTeamGuid) return byTeamGuid;
 
-    // Then try team name (partial match, case-insensitive)
-    // This will match if the search term appears anywhere in the team name
     const byName = await this.teamModel
       .findOne({
         name: { $regex: new RegExp(searchTerm, 'i') },

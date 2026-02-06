@@ -30,6 +30,10 @@ export class Mission {
   @Field()
   isFinalChallenge: boolean;
 
+  @Prop({ default: 0 })
+  @Field()
+  missionDuration: number;
+
   @Field()
   createdAt: Date;
 
