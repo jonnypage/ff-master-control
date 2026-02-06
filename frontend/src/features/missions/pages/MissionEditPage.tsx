@@ -50,20 +50,20 @@ export function MissionEditPage() {
     if (isTeamSession) return { completed: 0, total: 0 };
     if (!teamsData?.teams || !id) return { completed: 0, total: 0 };
     const teams =
-      (teamsData as { teams?: Array<{ completedMissionIds: string[] }> })
+      (teamsData as { teams?: Array<{ completedMissions: { missionId: string }[] }> })
         ?.teams ?? [];
     const completed = teams.filter((team) =>
-      team.completedMissionIds.includes(id),
+      team.completedMissions?.some((cm) => cm.missionId === id),
     ).length;
     return { completed, total: teams.length };
   }, [teamsData, id, isTeamSession]);
 
   const isCompletedByThisTeam = useMemo(() => {
     if (!isTeamSession || !id) return false;
-    const completedIds = (myTeamData?.myTeam?.completedMissionIds ??
-      []) as string[];
-    return completedIds.includes(id);
-  }, [id, isTeamSession, myTeamData?.myTeam?.completedMissionIds]);
+    const completedMissions = (myTeamData?.myTeam?.completedMissions ??
+      []) as Array<{ missionId: string }>;
+    return completedMissions.some((cm) => cm.missionId === id);
+  }, [id, isTeamSession, myTeamData?.myTeam?.completedMissions]);
 
   const missionData = data?.mission;
 
