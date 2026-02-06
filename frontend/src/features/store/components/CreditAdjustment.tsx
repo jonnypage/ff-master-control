@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Check, Coins } from 'lucide-react';
+import { ArrowLeft, BanknoteArrowDown, BanknoteArrowUp, Check, Coins } from 'lucide-react';
 import { toast } from 'sonner';
 import { Numpad } from '@/components/ui/numpad';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -120,7 +120,6 @@ export function CreditAdjustment({
           <CardTitle>Enter Amount</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Numpad value={amount} onChange={setAmount} />
           <div className="flex gap-3 pt-2">
             <Button
               type="button"
@@ -133,14 +132,19 @@ export function CreditAdjustment({
             </Button>
             <Button
               type="button"
-              variant={isAddMode ? 'default' : 'outline'}
+              variant="outline"
               size="lg"
-              className="w-1/4"
+              className={`w-1/4 ${
+                isAddMode
+                  ? 'bg-green-600 hover:bg-green-700 text-white border-transparent'
+                  : ''
+              }`}
               onClick={() => setIsAddMode(true)}
             >
               Refund
             </Button>
           </div>
+          <Numpad value={amount} onChange={setAmount} />
         </CardContent>
       </Card>
 
@@ -161,8 +165,17 @@ export function CreditAdjustment({
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">
-                {isAddMode ? 'Adding' : 'Removing'}
+              <span className="text-muted-foreground ">
+
+                {isAddMode ? (
+                  <span className="flex items-center gap-2">
+                  <BanknoteArrowUp/> Refunding
+                  </span>
+                  ) : (
+                  <span className="flex items-center gap-2">
+                  <BanknoteArrowDown/> Spending
+                  </span>
+                  )}
               </span>
               <span
                 className={`font-semibold ${
@@ -171,7 +184,7 @@ export function CreditAdjustment({
                     : 'text-red-600 dark:text-red-400'
                 }`}
               >
-                {isAddMode ? '+' : '-'}
+
                 {adjustmentAmount.toLocaleString()} credits
               </span>
             </div>
@@ -182,7 +195,7 @@ export function CreditAdjustment({
               </span>
               <Badge
                 variant="default"
-                className="text-lg font-semibold px-4 py-2"
+                className="text-lg font-semibold pl-4 pr-0 py-2"
               >
                 {newBalance.toLocaleString()} credits
               </Badge>

@@ -11,7 +11,7 @@ import QRCode from 'qrcode';
 import { ChevronDown, Coins, Gem, ScrollText } from 'lucide-react';
 
 export function MyTeamPage() {
-  const { data, isLoading, refetch } = useMyTeam();
+  const { data, isLoading, refetch } = useMyTeam({ refetchInterval: 30000 });
   const { data: missionsData } = useMissionsForTeams();
 
   const team = data?.myTeam;

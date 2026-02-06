@@ -76,7 +76,7 @@ export function useAdjustCredits() {
     mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation AdjustCredits($teamId: ID!, $amount: Int!) {
+          mutation AdjustCredits($teamId: String!, $amount: Int!) {
             adjustCredits(teamId: $teamId, amount: $amount) {
               _id
               name
@@ -408,7 +408,7 @@ export function useAddCredits() {
     mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation AddCredits($teamId: ID!, $amount: Int!) {
+          mutation AddCredits($teamId: String!, $amount: Int!) {
             addCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
@@ -428,7 +428,7 @@ export function useRemoveCredits() {
     mutationFn: (variables: { teamId: string; amount: number }) =>
       graphqlClient.request(
         graphql(`
-          mutation RemoveCredits($teamId: ID!, $amount: Int!) {
+          mutation RemoveCredits($teamId: String!, $amount: Int!) {
             removeCredits(teamId: $teamId, amount: $amount) {
               _id
               credits
@@ -622,7 +622,10 @@ export function useCompleteMission() {
   });
 }
 
-export function useMyTeam(options?: { enabled?: boolean }) {
+export function useMyTeam(options?: {
+  enabled?: boolean;
+  refetchInterval?: number;
+}) {
   return useQuery({
     queryKey: ['my-team'],
     queryFn: () =>
@@ -648,6 +651,7 @@ export function useMyTeam(options?: { enabled?: boolean }) {
         `) as unknown as RequestDocument,
       ),
     enabled: options?.enabled ?? true,
+    refetchInterval: options?.refetchInterval,
   });
 }
 

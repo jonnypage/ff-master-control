@@ -94,8 +94,8 @@ type MissionCompletion {
 }
 
 type Mutation {
-  addCredits(amount: Int!, teamId: ID!): Team!
-  adjustCredits(amount: Int!, teamId: ID!): Team!
+  addCredits(amount: Int!, teamId: String!): Team!
+  adjustCredits(amount: Int!, teamId: String!): Team!
   changePassword(id: ID!, input: ChangePasswordDto!): Boolean!
   completeMission(missionId: ID!, teamId: ID!): MissionCompletion!
   createMission(input: CreateMissionDto!): Mission!
@@ -108,7 +108,7 @@ type Mutation {
   teamLogin(input: TeamLoginInput!): TeamAuthPayload!
   updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
-  removeCredits(amount: Int!, teamId: ID!): Team!
+  removeCredits(amount: Int!, teamId: String!): Team!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!
   updateMission(id: ID!, input: UpdateMissionDto!): Mission!
