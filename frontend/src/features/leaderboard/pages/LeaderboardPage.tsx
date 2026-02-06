@@ -4,7 +4,6 @@ import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
 import { ScrollText } from 'lucide-react';
 import type {
-  GetLeaderboardTeamsQuery,
   GetMissionsForLeaderboardQuery,
 } from '@/lib/graphql/generated';
 
@@ -13,13 +12,17 @@ type LeaderboardTeam = {
   name: string;
   bannerColor: string;
   bannerIcon: string;
-  completedMissionIds: string[];
+  completedMissions: {
+    missionId: string;
+    completedAt: string;
+  }[];
 };
 
 type RankedTeam = LeaderboardTeam & {
   completedCount: number;
   totalMissions: number;
   hasCompletedFinal: boolean;
+  completionTime?: number; // timestamp for sorting
 };
 
 export function LeaderboardPage() {
@@ -40,7 +43,7 @@ export function LeaderboardPage() {
 
   const sortedTeams = useMemo((): RankedTeam[] => {
     const teams = (teamsData?.leaderboardTeams ??
-      []) as GetLeaderboardTeamsQuery['leaderboardTeams'];
+      []) as unknown as LeaderboardTeam[];
     const missions = (missionsData?.leaderboardMissions ??
       []) as GetMissionsForLeaderboardQuery['leaderboardMissions'];
     const totalMissions = missions.length;
@@ -49,20 +52,48 @@ export function LeaderboardPage() {
       .map((m) => m._id);
 
     return teams
-      .map(
-        (team): RankedTeam => ({
+      .map((team): RankedTeam => {
+        const completedCount = team.completedMissions?.length ?? 0;
+        const hasCompletedFinal = finalChallengeIds.some((id) =>
+          team.completedMissions?.some((cm) => cm.missionId === id),
+        );
+        
+        let completionTime: number | undefined;
+        if (completedCount === totalMissions && totalMissions > 0) {
+            // Find the latest completedAt timestamp
+            const timestamps = team.completedMissions.map(cm => new Date(cm.completedAt).getTime());
+            completionTime = Math.max(...timestamps);
+        }
+
+        return {
           ...team,
-          completedCount: team.completedMissionIds?.length ?? 0,
+          completedCount,
           totalMissions,
-          hasCompletedFinal: finalChallengeIds.some((id) =>
-            team.completedMissionIds?.includes(id),
-          ),
-        }),
-      )
+          hasCompletedFinal,
+          completionTime,
+        };
+      })
       .sort((a, b) => {
+        // 1. Teams that have completed all missions first
+        const aAll = a.completedCount === a.totalMissions && a.totalMissions > 0;
+        const bAll = b.completedCount === b.totalMissions && b.totalMissions > 0;
+
+        if (aAll && !bAll) return -1;
+        if (!aAll && bAll) return 1;
+
+        // 2. If both completed all, sort by completion time (earlier is better)
+        if (aAll && bAll) {
+            if (a.completionTime !== b.completionTime) {
+                return (a.completionTime || 0) - (b.completionTime || 0);
+            }
+        }
+
+        // 3. Sort by completed count (desc)
         if (b.completedCount !== a.completedCount) {
           return b.completedCount - a.completedCount;
         }
+
+        // 4. Name (asc)
         return a.name.localeCompare(b.name);
       });
   }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions]);

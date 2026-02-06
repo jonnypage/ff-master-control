@@ -76,6 +76,29 @@ export class TeamsService {
         await team.save();
       }
     }
+
+    // Secondary backfill: Migrate completedMissionIds -> completedMissions
+    // We do this separately or as part of the loop. Let's do a targeted query.
+    const teamsWithLegacyMissions = await this.teamModel
+      .find({
+        completedMissionIds: { $exists: true, $not: { $size: 0 } },
+        completedMissions: { $size: 0 },
+      })
+      .exec();
+
+    for (const team of teamsWithLegacyMissions) {
+      if (team.completedMissionIds && team.completedMissionIds.length > 0) {
+        team.completedMissions = team.completedMissionIds.map((missionId) => ({
+          missionId: missionId,
+          completedAt: new Date(), // Approximate
+          creditsReceived: 0, // Unknown, will fallback to current value on reversal
+          crystalsReceived: 0,
+        }));
+        // Clean up legacy field? Maybe keep for safety until confirmed.
+        // team.completedMissionIds = [];
+        await team.save();
+      }
+    }
   }
 
   async create(createTeamDto: CreateTeamDto): Promise<TeamDocument> {
@@ -137,10 +160,21 @@ export class TeamsService {
 
   async findLeaderboard(): Promise<LeaderboardTeam[]> {
     // Return only the minimal fields required for the public leaderboard
+    // Ensure backfill runs implicitly or we handle it here?
+    // Ideally backfill runs on access.
+    await this.backfillLegacyTeamFields();
+
     return this.teamModel
       .find(
         {},
-        { name: 1, completedMissionIds: 1, bannerColor: 1, bannerIcon: 1 },
+        {
+          name: 1,
+          completedMissions: 1,
+          // Fallback for legacy data if needed by client, but we prefer completedMissions
+          completedMissionIds: 1,
+          bannerColor: 1,
+          bannerIcon: 1,
+        },
       )
       .lean();
   }
@@ -196,14 +230,31 @@ export class TeamsService {
   async addCompletedMission(
     teamId: string,
     missionId: string,
+    creditsReceived: number,
+    crystalsReceived: number = 0,
   ): Promise<TeamDocument> {
     const team = await this.teamModel.findById(teamId);
     if (!team) {
       throw new NotFoundException('Team not found');
     }
 
-    if (!team.completedMissionIds.includes(missionId as any)) {
-      team.completedMissionIds.push(missionId as any);
+    // Ensure array exists
+    if (!team.completedMissions) {
+      team.completedMissions = [];
+    }
+
+    // Check if already completed to avoid duplicates
+    const exists = team.completedMissions.some(
+      (cm) => cm.missionId.toString() === missionId.toString(),
+    );
+
+    if (!exists) {
+      team.completedMissions.push({
+        missionId: missionId as any,
+        completedAt: new Date(),
+        creditsReceived,
+        crystalsReceived,
+      });
       return team.save();
     }
 
@@ -213,16 +264,44 @@ export class TeamsService {
   async removeCompletedMission(
     teamId: string,
     missionId: string,
-  ): Promise<TeamDocument> {
+  ): Promise<{ creditsReceived: number; crystalsReceived: number } | null> {
     const team = await this.teamModel.findById(teamId);
     if (!team) {
       throw new NotFoundException('Team not found');
     }
 
-    team.completedMissionIds = team.completedMissionIds.filter(
-      (id) => id.toString() !== missionId.toString(),
+    if (!team.completedMissions) {
+      return null;
+    }
+
+    const index = team.completedMissions.findIndex(
+      (cm) => cm.missionId.toString() === missionId.toString(),
     );
-    return team.save();
+
+    if (index === -1) {
+      // Check legacy field just in case
+      if (
+        team.completedMissionIds &&
+        team.completedMissionIds.some((id) => id.toString() === missionId.toString())
+      ) {
+        team.completedMissionIds = team.completedMissionIds.filter(
+          (id) => id.toString() !== missionId.toString(),
+        );
+        await team.save();
+        // Return 0s so caller knows to use current mission values as fallback
+        return { creditsReceived: 0, crystalsReceived: 0 };
+      }
+      return null;
+    }
+
+    const removed = team.completedMissions[index];
+    team.completedMissions.splice(index, 1);
+    await team.save();
+
+    return {
+      creditsReceived: removed.creditsReceived,
+      crystalsReceived: removed.crystalsReceived || 0,
+    };
   }
 
   async hasCompletedMission(
@@ -234,9 +313,14 @@ export class TeamsService {
       return false;
     }
 
-    return team.completedMissionIds.some(
+    const inNew = team.completedMissions?.some(
+      (cm) => cm.missionId.toString() === missionId.toString(),
+    );
+    const inOld = team.completedMissionIds?.some(
       (id) => id.toString() === missionId.toString(),
     );
+
+    return !!(inNew || inOld);
   }
 
   async findByNameOrTeamGuid(

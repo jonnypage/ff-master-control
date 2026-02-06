@@ -193,9 +193,9 @@ export function TeamEditPage() {
                 ...old,
                 teamById: {
                   ...old.teamById,
-                  completedMissionIds: [
-                    ...(old.teamById.completedMissionIds || []),
-                    missionId,
+                  completedMissions: [
+                    ...(old.teamById.completedMissions || []),
+                    { missionId, completedAt: new Date().toISOString() },
                   ],
                 },
               };
@@ -238,9 +238,9 @@ export function TeamEditPage() {
                 ...old,
                 teamById: {
                   ...old.teamById,
-                  completedMissionIds: (
-                    old.teamById.completedMissionIds || []
-                  ).filter((mid: string) => mid !== missionId),
+                  completedMissions: (
+                    old.teamById.completedMissions || []
+                  ).filter((cm: any) => cm.missionId !== missionId),
                 },
               };
               console.log('[Mission Toggle] Updated cache data:', updated);
@@ -487,7 +487,7 @@ export function TeamEditPage() {
                 Missions Completed:
               </span>
               <Badge>
-                {team.completedMissionIds ? team.completedMissionIds.length : 0}
+                {team.completedMissions ? team.completedMissions.length : 0}
                 /{missionsData?.missions?.length ?? 0}
               </Badge>
             </div>
@@ -533,8 +533,8 @@ export function TeamEditPage() {
                     return (a.name ?? '').localeCompare(b.name ?? '');
                   })
                   .map((mission: any) => {
-                    const isCompleted = team.completedMissionIds?.includes(
-                      mission._id,
+                    const isCompleted = team.completedMissions?.some(
+                      (cm: any) => cm.missionId === mission._id,
                     );
                     const isPending =
                       overrideMissionCompletion.isPending ||

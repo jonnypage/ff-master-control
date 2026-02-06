@@ -101,7 +101,14 @@ export class MissionsService {
     await completion.save();
 
     // Add to team's completed missions and award credits
-    await this.teamsService.addCompletedMission(team._id.toString(), missionId);
+    const crystalsToAward = mission.awardsCrystal ? 1 : 0;
+    
+    await this.teamsService.addCompletedMission(
+      team._id.toString(),
+      missionId,
+      mission.creditsAwarded,
+      crystalsToAward,
+    );
     await this.teamsService.addCredits(
       team._id.toString(),
       mission.creditsAwarded,
@@ -178,21 +185,34 @@ export class MissionsService {
       throw new NotFoundException('Mission completion not found');
     }
 
-    // Remove from team's completed missions
-    await this.teamsService.removeCompletedMission(
+    // Remove from team's completed missions and get the values to reverse
+    const removedValues = await this.teamsService.removeCompletedMission(
       team._id.toString(),
       missionId,
     );
 
-    // Remove credits that were awarded for this mission
+    // If removedValues is null or has 0 credits (legacy backfill), fall back to current mission values
+    const creditsToDeduct =
+      removedValues && removedValues.creditsReceived > 0
+        ? removedValues.creditsReceived
+        : mission.creditsAwarded;
+
+    const crystalsToDeduct =
+      removedValues && (removedValues.crystalsReceived || 0) > 0
+        ? removedValues.crystalsReceived
+        : mission.awardsCrystal
+          ? 1
+          : 0;
+
+    // Remove credits that were awarded
     await this.teamsService.addCredits(
       team._id.toString(),
-      -mission.creditsAwarded,
+      -creditsToDeduct,
     );
 
     // Remove crystal if mission awarded one
-    if (mission.awardsCrystal) {
-      await this.teamsService.addCrystals(team._id.toString(), -1);
+    if (crystalsToDeduct) {
+      await this.teamsService.addCrystals(team._id.toString(), -crystalsToDeduct);
     }
   }
 

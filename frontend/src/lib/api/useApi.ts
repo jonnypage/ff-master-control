@@ -2,24 +2,27 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { RequestDocument } from 'graphql-request';
 import { graphql } from '@/lib/graphql/generated';
 import type {
-  GetLeaderboardTeamsQuery,
+  LeaderboardTeamsQuery,
   GetMissionsForLeaderboardQuery,
 } from '@/lib/graphql/generated';
 import { graphqlClient } from '@/lib/graphql/client';
 
 export function useLeaderboardTeams() {
-  return useQuery<GetLeaderboardTeamsQuery>({
+  return useQuery<LeaderboardTeamsQuery>({
     queryKey: ['leaderboard-teams'],
     queryFn: () =>
       graphqlClient.request(
         graphql(`
-          query GetLeaderboardTeams {
+          query LeaderboardTeams {
             leaderboardTeams {
               _id
               name
               bannerColor
               bannerIcon
-              completedMissionIds
+              completedMissions {
+                missionId
+                completedAt
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -62,7 +65,9 @@ export function useTeamsForStore() {
               bannerIcon
               credits
               crystals
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -298,7 +303,9 @@ export function useTeams() {
               }
               credits
               crystals
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -325,7 +332,9 @@ export function useTeamById(id: string) {
               }
               credits
               crystals
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -490,7 +499,9 @@ export function useTeamsForMissions(options?: { enabled?: boolean }) {
           query GetTeamsForMissions {
             teams {
               _id
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -565,7 +576,9 @@ export function useTeamsForMission(options?: { enabled?: boolean }) {
           query GetTeamsForMission {
             teams {
               _id
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -588,7 +601,9 @@ export function useTeamsForMissionCompletion() {
               bannerIcon
               credits
               crystals
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,
@@ -645,7 +660,9 @@ export function useMyTeam(options?: {
               }
               credits
               crystals
-              completedMissionIds
+              completedMissions {
+                missionId
+              }
             }
           }
         `) as unknown as RequestDocument,

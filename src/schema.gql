@@ -136,19 +136,26 @@ type Query {
   users: [User!]!
 }
 
+type CompletedMission {
+  missionId: ID!
+  completedAt: DateTime!
+  creditsReceived: Float!
+  crystalsReceived: Float
+}
+
 type LeaderboardTeam {
   _id: ID!
   bannerColor: String!
   bannerIcon: String!
   name: String!
-  completedMissionIds: [ID!]!
+  completedMissions: [CompletedMission!]!
 }
 
 type Team {
   _id: ID!
   bannerColor: String!
   bannerIcon: String!
-  completedMissionIds: [ID!]!
+  completedMissions: [CompletedMission!]!
   createdAt: DateTime!
   credits: Float!
   crystals: Float!

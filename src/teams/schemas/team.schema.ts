@@ -10,6 +10,21 @@ export class TeamImage {
   url?: string;
 }
 
+@ObjectType()
+export class CompletedMission {
+  @Field(() => ID)
+  missionId: ObjectId;
+
+  @Field()
+  completedAt: Date;
+
+  @Field()
+  creditsReceived: number;
+
+  @Field({ nullable: true })
+  crystalsReceived?: number;
+}
+
 @Schema({ timestamps: true })
 @ObjectType()
 export class Team {
@@ -58,9 +73,24 @@ export class Team {
   @Field()
   crystals: number;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Mission', default: [] })
-  @Field(() => [ID])
-  completedMissionIds: ObjectId[];
+  // New field replacing completedMissionIds
+  @Prop({
+    type: [
+      {
+        missionId: { type: Types.ObjectId, ref: 'Mission' },
+        completedAt: { type: Date, default: Date.now },
+        creditsReceived: { type: Number, default: 0 },
+        crystalsReceived: { type: Number, default: 0 },
+      },
+    ],
+    default: [],
+  })
+  @Field(() => [CompletedMission])
+  completedMissions: CompletedMission[];
+
+  // Legacy field support (will be migrated)
+  @Prop({ type: [Types.ObjectId], ref: 'Mission', select: true })
+  completedMissionIds?: ObjectId[];
 
   @Field()
   createdAt: Date;
