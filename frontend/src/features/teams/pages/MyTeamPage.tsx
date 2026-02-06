@@ -8,7 +8,7 @@ import { useMyTeam, useMissionsForTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '../components/TeamBanner';
 import { getBannerIconById } from '../components/banner-icons';
 import QRCode from 'qrcode';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Coins, Gem, ScrollText } from 'lucide-react';
 
 export function MyTeamPage() {
   const { data, isLoading, refetch } = useMyTeam();
@@ -131,7 +131,8 @@ export function MyTeamPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               Credits
             </span>
             <Badge variant="secondary" className="text-base font-semibold">
@@ -139,7 +140,8 @@ export function MyTeamPage() {
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Gem className="w-4 h-4 shrink-0" />
               Crystals
             </span>
             <Badge variant="secondary" className="text-base font-semibold">
@@ -147,7 +149,8 @@ export function MyTeamPage() {
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <ScrollText className="w-4 h-4 shrink-0" />
               Missions
             </span>
             <Badge className="text-base font-semibold">

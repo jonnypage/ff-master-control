@@ -11,6 +11,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Coins } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCreateMission } from '@/lib/api/useApi';
 
@@ -105,7 +106,10 @@ export function CreateMissionDialog({
               />
             </div>
             <div>
-              <Label htmlFor="credits-awarded">Credits Awarded</Label>
+              <Label htmlFor="credits-awarded" className="flex items-center gap-2">
+                <Coins className="w-4 h-4 shrink-0" />
+                Credits Awarded
+              </Label>
               <Input
                 id="credits-awarded"
                 type="number"

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Coins } from 'lucide-react';
 import { toast } from 'sonner';
 import { Numpad } from '@/components/ui/numpad';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -100,7 +100,8 @@ export function CreditAdjustment({
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               Current Credits
             </span>
             <Badge
@@ -151,7 +152,10 @@ export function CreditAdjustment({
         <CardContent className="space-y-4">
           <div className="bg-muted/50 rounded-lg p-4 space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Current Balance</span>
+              <span className="text-muted-foreground flex items-center gap-2">
+                <Coins className="w-4 h-4 shrink-0" />
+                Current Balance
+              </span>
               <span className="text-foreground font-semibold">
                 {currentCredits.toLocaleString()} credits
               </span>
@@ -172,7 +176,10 @@ export function CreditAdjustment({
               </span>
             </div>
             <div className="pt-2 border-t border-border flex items-center justify-between">
-              <span className="text-foreground font-semibold">New Balance</span>
+              <span className="text-foreground font-semibold flex items-center gap-2">
+                <Coins className="w-4 h-4 shrink-0" />
+                New Balance
+              </span>
               <Badge
                 variant="default"
                 className="text-lg font-semibold px-4 py-2"

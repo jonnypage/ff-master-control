@@ -15,7 +15,7 @@ export function TeamsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Teams</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -23,7 +23,7 @@ export function TeamsPage() {
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)} size="lg">
+          <Button onClick={() => setShowCreateDialog(true)} size="lg" className="sm:shrink-0">
             <Plus className="w-4 h-4 mr-2" />
             Create Team
           </Button>

@@ -59,7 +59,18 @@ function App() {
           }
         />
         <Route path="/login" element={<Navigate to="/" replace />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route
+          path="/leaderboard"
+          element={
+            isAuthenticated ? (
+              <Layout>
+                <LeaderboardPage />
+              </Layout>
+            ) : (
+              <LeaderboardPage />
+            )
+          }
+        />
         <Route path="/staffsignup" element={<StaffSignupPage />} />
         <Route path="/team/create" element={<CreateTeamPage />} />
         {/* Protected Routes with Layout */}

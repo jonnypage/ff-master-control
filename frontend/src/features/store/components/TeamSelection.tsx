@@ -5,6 +5,7 @@ import { Search, Users } from 'lucide-react';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
 import { useMissionsForTeams, useTeamsForStore } from '@/lib/api/useApi';
 import { TeamCard } from '@/features/teams/components/TeamCard';
+import { TeamCompactRow } from '@/features/teams/components/TeamCompactRow';
 
 interface TeamSelectionProps {
   onTeamSelect: (team: GetTeamsForStoreQuery['teams'][number]) => void;
@@ -68,7 +69,20 @@ export function TeamSelection({ onTeamSelect }: TeamSelectionProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Mobile: compact rows (shared with teams page) */}
+      <ul className="md:hidden space-y-1.5">
+        {filteredTeams.map((team: GetTeamsForStoreQuery['teams'][number]) => (
+          <TeamCompactRow
+            key={team._id}
+            team={team}
+            totalMissions={totalMissions}
+            onClick={() => onTeamSelect(team)}
+          />
+        ))}
+      </ul>
+
+      {/* Desktop: grid of full team cards */}
+      <div className="hidden md:grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTeams.map((team: GetTeamsForStoreQuery['teams'][number]) => (
           <TeamCard
             key={team._id}

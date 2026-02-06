@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
+import { ScrollText } from 'lucide-react';
 import type {
   GetLeaderboardTeamsQuery,
   GetMissionsForLeaderboardQuery,
@@ -129,7 +130,8 @@ export function LeaderboardPage() {
         <span className="flex-1 text-lg font-semibold text-foreground truncate">
           {team.name}
         </span>
-        <span className="text-lg font-bold text-primary shrink-0">
+        <span className="text-lg font-bold text-primary shrink-0 flex items-center gap-1">
+          <ScrollText className="w-4 h-4 text-muted-foreground shrink-0" />
           {team.completedCount}
           {team.totalMissions > 0 && (
             <span className="text-sm font-normal text-muted-foreground">
@@ -186,7 +188,8 @@ export function LeaderboardPage() {
                     <h2 className="text-base font-bold text-foreground truncate w-full text-center mt-1.5">
                       {top3[1].name}
                     </h2>
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-lg font-bold text-primary flex items-center justify-center gap-1">
+                      <ScrollText className="w-4 h-4 text-muted-foreground shrink-0" />
                       {top3[1].completedCount}
                       {top3[1].totalMissions > 0 && (
                         <span className="text-xs font-normal text-muted-foreground">
@@ -222,7 +225,8 @@ export function LeaderboardPage() {
                     <h2 className="text-lg font-bold text-foreground truncate w-full text-center mt-2">
                       {top3[0].name}
                     </h2>
-                    <div className="text-xl font-bold text-primary mt-1">
+                    <div className="text-xl font-bold text-primary mt-1 flex items-center justify-center gap-1">
+                      <ScrollText className="w-5 h-5 text-muted-foreground shrink-0" />
                       {top3[0].completedCount}
                       {top3[0].totalMissions > 0 && (
                         <span className="text-sm font-normal text-muted-foreground">
@@ -258,7 +262,8 @@ export function LeaderboardPage() {
                     <h2 className="text-base font-bold text-foreground truncate w-full text-center mt-1.5">
                       {top3[2].name}
                     </h2>
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-lg font-bold text-primary flex items-center justify-center gap-1">
+                      <ScrollText className="w-4 h-4 text-muted-foreground shrink-0" />
                       {top3[2].completedCount}
                       {top3[2].totalMissions > 0 && (
                         <span className="text-xs font-normal text-muted-foreground">

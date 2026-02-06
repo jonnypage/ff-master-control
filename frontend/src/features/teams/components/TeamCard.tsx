@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Coins, Gem, ScrollText } from 'lucide-react';
 import { TeamBanner } from './TeamBanner';
 import { getBannerIconById } from './banner-icons';
 
@@ -38,7 +39,8 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               Credits
             </span>
             <Badge
@@ -49,7 +51,8 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Gem className="w-4 h-4 shrink-0" />
               Crystals
             </span>
             <Badge
@@ -60,7 +63,8 @@ export function TeamCard({ team, totalMissions, onClick }: TeamCardProps) {
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <ScrollText className="w-4 h-4 shrink-0" />
               Missions
             </span>
             <Badge className="text-base font-semibold px-3 py-1">

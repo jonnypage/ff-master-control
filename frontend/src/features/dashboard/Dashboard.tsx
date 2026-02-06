@@ -1,6 +1,6 @@
 import { useStats } from '@/lib/api/useApi'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Target, DollarSign } from 'lucide-react'
+import { Users, ScrollText, DollarSign } from 'lucide-react'
 
 export function Dashboard() {
   const { data, isLoading } = useStats()
@@ -38,7 +38,7 @@ export function Dashboard() {
         <Card className="hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold">Total Missions</CardTitle>
-            <Target className="h-5 w-5 text-primary" />
+            <ScrollText className="h-5 w-5 text-primary" />
           </CardHeader>
           <CardContent className="pt-6">
             <div className="text-3xl font-bold">{data?.missions.length || 0}</div>

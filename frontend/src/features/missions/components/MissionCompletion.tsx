@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Coins, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import type {
   GetMissionsQuery,
@@ -100,7 +100,8 @@ export function MissionCompletion({
             </div>
           )}
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               Credits Awarded
             </span>
             <Badge
@@ -111,7 +112,8 @@ export function MissionCompletion({
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Gem className="w-4 h-4 shrink-0" />
               Crystal Reward
             </span>
             <Badge
@@ -137,7 +139,8 @@ export function MissionCompletion({
             <span className="text-foreground font-semibold">{team.name}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               Current Credits
             </span>
             <Badge
@@ -148,7 +151,8 @@ export function MissionCompletion({
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Gem className="w-4 h-4 shrink-0" />
               Current Crystals
             </span>
             <Badge
@@ -159,7 +163,8 @@ export function MissionCompletion({
             </Badge>
           </div>
           <div className="flex items-center justify-between pt-2 border-t border-border">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Coins className="w-4 h-4 shrink-0" />
               New Credits After Completion
             </span>
             <Badge
@@ -170,7 +175,8 @@ export function MissionCompletion({
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-muted-foreground">
+            <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <Gem className="w-4 h-4 shrink-0" />
               New Crystals After Completion
             </span>
             <Badge

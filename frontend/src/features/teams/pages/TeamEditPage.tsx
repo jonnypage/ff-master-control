@@ -12,6 +12,9 @@ import {
   Minus,
   CheckCircle2,
   Users,
+  Coins,
+  Gem,
+  ScrollText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useRef, useState } from 'react';
@@ -308,7 +311,7 @@ export function TeamEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <Button
             onClick={() => navigate('/teams')}
@@ -331,7 +334,7 @@ export function TeamEditPage() {
           <Button
             onClick={() => navigate(`/teams/${id}/edit`)}
             size="lg"
-            className="shadow-md"
+            className="shadow-md sm:shrink-0"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit
@@ -461,19 +464,26 @@ export function TeamEditPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Credits:</span>
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <Coins className="w-4 h-4 shrink-0" />
+                Credits:
+              </span>
               <Badge variant="secondary" className="text-lg font-semibold">
                 {typeof team.credits === 'number' ? team.credits : 0}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Crystals:</span>
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <Gem className="w-4 h-4 shrink-0" />
+                Crystals:
+              </span>
               <Badge variant="secondary" className="text-lg font-semibold">
                 {typeof team.crystals === 'number' ? team.crystals : 0}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <ScrollText className="w-4 h-4 shrink-0" />
                 Missions Completed:
               </span>
               <Badge>

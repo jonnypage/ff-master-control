@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Coins, Gem, Search, Target } from 'lucide-react';
+import { Coins, Gem, ScrollText, Search, Target } from 'lucide-react';
 import { useMissions, useMyTeam, useTeamsForMissions } from '@/lib/api/useApi';
 import type { GetMissionsQuery } from '@/lib/graphql/generated';
 import { useAuth } from '@/features/auth/lib/auth-context';
@@ -191,7 +191,8 @@ export function MissionList() {
                     </div>
                   ) : (
                     <div className="flex items-center justify-between pt-2 border-t">
-                      <span className="text-sm font-medium text-muted-foreground">
+                      <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                        <ScrollText className="w-4 h-4 shrink-0" />
                         Completed
                       </span>
                       <Badge

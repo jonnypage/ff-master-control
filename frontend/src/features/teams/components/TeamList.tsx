@@ -6,6 +6,7 @@ import { Search, Users } from 'lucide-react';
 import type { GetTeamsQuery } from '@/lib/graphql/generated';
 import { useMissionsForTeams } from '@/lib/api/useApi';
 import { TeamCard } from './TeamCard';
+import { TeamCompactRow } from './TeamCompactRow';
 
 type TeamWithProgress = GetTeamsQuery['teams'][number] & {
   completedMissionIds?: string[];
@@ -75,7 +76,20 @@ export function TeamList({ teams, isLoading }: TeamListProps) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Mobile: compact rows (shared with store) */}
+      <ul className="md:hidden space-y-1.5">
+        {filteredTeams.map((team: TeamWithProgress) => (
+          <TeamCompactRow
+            key={team._id}
+            team={team}
+            totalMissions={totalMissions}
+            onClick={() => navigate(`/teams/${team._id}`)}
+          />
+        ))}
+      </ul>
+
+      {/* Desktop: grid of full team cards */}
+      <div className="hidden md:grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTeams.map((team: TeamWithProgress) => (
           <TeamCard
             key={team._id}

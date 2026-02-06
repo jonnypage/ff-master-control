@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, Edit, Target } from 'lucide-react';
+import { ArrowLeft, Save, Edit, Target, Coins, Gem, ScrollText, Check, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -177,19 +177,20 @@ export function MissionEditPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-4">
           <Button
             onClick={() => navigate('/missions')}
             variant="outline"
             size="lg"
+            className="w-fit"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-foreground">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
                 {mission.name}
               </h1>
               {mission.isFinalChallenge && (
@@ -207,7 +208,7 @@ export function MissionEditPage() {
           <Button
             onClick={() => navigate(`/missions/${id}/edit`)}
             size="lg"
-            className="shadow-md"
+            className="shadow-md w-fit"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit
@@ -254,8 +255,9 @@ export function MissionEditPage() {
                 <div>
                   <Label
                     htmlFor="credits-awarded"
-                    className="text-base font-semibold"
+                    className="text-base font-semibold flex items-center gap-2"
                   >
+                    <Coins className="w-4 h-4 shrink-0" />
                     Credits Awarded
                   </Label>
                   <Input
@@ -276,7 +278,8 @@ export function MissionEditPage() {
                     onChange={(e) => setAwardsCrystal(e.target.checked)}
                     className="rounded border-input"
                   />
-                  <Label htmlFor="awards-crystal" className="cursor-pointer">
+                  <Label htmlFor="awards-crystal" className="cursor-pointer flex items-center gap-2">
+                    <Gem className="w-4 h-4 shrink-0" />
                     Awards Crystal
                   </Label>
                 </div>
@@ -316,39 +319,39 @@ export function MissionEditPage() {
                     </span>
                   )}
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <Card>
-                    <CardContent className="pt-4">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Credits earned
-                      </div>
-                      <div className="text-lg font-semibold mt-0.5">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Card className="flex-1 min-w-0">
+                    <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
+                      <Coins className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Credits earned" />
+                      <span className="text-lg font-semibold tabular-nums">
                         {mission.creditsAwarded}
-                      </div>
+                      </span>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="pt-4">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Crystal Reward
-                      </div>
-                      <div className="text-lg font-semibold mt-0.5">
-                        {mission.awardsCrystal ? '1 Crystal' : 'None'}
-                      </div>
+                  <Card className="flex-1 min-w-0">
+                    <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
+                      <Gem className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Crystal reward" />
+                      <span className="text-lg font-semibold">
+                        {mission.awardsCrystal ? '1' : '0'}
+                      </span>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="pt-4">
-                      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                        Teams Completed
-                      </div>
-                      <div className="text-lg font-semibold mt-0.5">
+                  <Card
+                    className={
+                      isTeamSession && isCompletedByThisTeam
+                        ? 'flex-1 min-w-0 border-emerald-500/60 ring-2 ring-emerald-500/25 bg-emerald-500/5'
+                        : 'flex-1 min-w-0'
+                    }
+                  >
+                    <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
+                      <ScrollText className="w-5 h-5 text-muted-foreground shrink-0" aria-label="Teams completed" />
+                      <span className="text-lg font-semibold tabular-nums flex items-center">
                         {isTeamSession
                           ? isCompletedByThisTeam
-                            ? 'Completed'
-                            : 'Not completed'
+                            ? <Check className="w-5 h-5 text-green-600" aria-label="Completed" />
+                            : <X className="w-5 h-5 text-muted-foreground" aria-label="Not completed" />
                           : `${completionCount.completed}/${completionCount.total}`}
-                      </div>
+                      </span>
                     </CardContent>
                   </Card>
                 </div>
