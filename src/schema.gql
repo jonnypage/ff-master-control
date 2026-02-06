@@ -17,6 +17,7 @@ input CreateMissionDto {
   creditsAwarded: Int!
   description: String
   isFinalChallenge: Boolean!
+  missionDuration: Int! = 0
   name: String!
 }
 
@@ -49,6 +50,7 @@ input UpdateMissionDto {
   creditsAwarded: Int
   description: String
   isFinalChallenge: Boolean
+  missionDuration: Int
   name: String
 }
 
@@ -80,6 +82,7 @@ type Mission {
   creditsAwarded: Float!
   description: String
   isFinalChallenge: Boolean!
+  missionDuration: Float!
   name: String!
   updatedAt: DateTime!
 }
@@ -136,11 +139,21 @@ type Query {
   users: [User!]!
 }
 
-type CompletedMission {
+enum MissionStatus {
+  NOT_STARTED
+  INCOMPLETE
+  FAILED
+  COMPLETE
+}
+
+type TeamMission {
   missionId: ID!
-  completedAt: DateTime!
+  status: MissionStatus!
+  tries: Float!
+  startedAt: DateTime
+  completedAt: DateTime
   creditsReceived: Float!
-  crystalsReceived: Float
+  crystalsReceived: Float!
 }
 
 type LeaderboardTeam {
@@ -148,14 +161,14 @@ type LeaderboardTeam {
   bannerColor: String!
   bannerIcon: String!
   name: String!
-  completedMissions: [CompletedMission!]!
+  missions: [TeamMission!]!
 }
 
 type Team {
   _id: ID!
   bannerColor: String!
   bannerIcon: String!
-  completedMissions: [CompletedMission!]!
+  missions: [TeamMission!]!
   createdAt: DateTime!
   credits: Float!
   crystals: Float!
