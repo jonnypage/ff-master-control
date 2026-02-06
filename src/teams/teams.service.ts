@@ -274,6 +274,7 @@ export class TeamsService {
         creditsReceived,
         crystalsReceived,
       });
+      team.markModified('completedMissions');
       return team.save();
     }
 
