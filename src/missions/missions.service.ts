@@ -145,6 +145,15 @@ export class MissionsService {
     });
 
     if (existingCompletion) {
+      // Existing MissionCompletion record found - ensure team's completedMissions is also synced
+      // This handles cases where completion was created before the schema change
+      const crystalsToAward = mission.awardsCrystal ? 1 : 0;
+      await this.teamsService.addCompletedMission(
+        team._id.toString(),
+        missionId,
+        mission.creditsAwarded,
+        crystalsToAward,
+      );
       // Return without populate since GraphQL expects IDs, not full objects
       return existingCompletion as MissionCompletionDocument;
     }
