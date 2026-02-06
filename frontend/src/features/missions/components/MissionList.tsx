@@ -143,13 +143,13 @@ export function MissionList() {
                     )}
                     {mission.missionDuration > 0 ? (
                       <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
-                        <Timer className="w-5 h-5" />
+                        <Timer className="w-4 h-4 mr-2" />
                         {mission.missionDuration}m
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="flex items-center gap-1 px-2 py-1">
-                        <Timer className="w-5 h-5" />
-                        <Infinity className="w-5 h-5" />
+                        <Timer className="w-4 h-4 mr-2" />
+                        <Infinity className="w-4 h-4 mr-2" />
                       </Badge>
                     )}
                   </div>

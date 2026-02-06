@@ -112,6 +112,9 @@ type Mutation {
   updateUser(id: ID!, input: UpdateUserDto!): User!
   overrideMissionCompletion(teamId: ID!, missionId: ID!): MissionCompletion!
   removeCredits(amount: Int!, teamId: String!): Team!
+  startMission(missionId: ID!, teamId: ID!): Mission!
+  failMission(missionId: ID!, teamId: ID!): Mission!
+  adjustMissionTime(missionId: ID!, teamId: ID!, minutes: Float!): Mission!
   removeMissionCompletion(missionId: ID!, teamId: ID!): Boolean!
   updateConfig(requiredMissionsForFinal: Int!): AppConfig!
   updateMission(id: ID!, input: UpdateMissionDto!): Mission!

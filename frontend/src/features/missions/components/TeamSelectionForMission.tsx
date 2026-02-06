@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Check, X } from 'lucide-react';
+import { Search, Users, Check, X, Clock, Play, Square, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -13,7 +13,54 @@ import {
   useTeamsForMissionCompletion,
   useCompleteMission,
   useRemoveMissionCompletion,
+  useStartMission,
+  useFailMission,
+  useAdjustMissionTime,
+  useMission,
 } from '@/lib/api/useApi';
+
+function MissionTimer({
+  startedAt,
+  duration,
+}: {
+  startedAt: string;
+  duration: number;
+}) {
+  // duration is in minutes
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+
+  useMemo(() => {
+    // Initial calc
+    const start = new Date(startedAt).getTime();
+    const now = new Date().getTime();
+    const end = start + duration * 60 * 1000;
+    setTimeLeft(Math.max(0, end - now));
+  }, [startedAt, duration]);
+
+  useState(() => {
+    const interval = setInterval(() => {
+      const start = new Date(startedAt).getTime();
+      const now = new Date().getTime();
+      const end = start + duration * 60 * 1000;
+      const remaining = end - now;
+      setTimeLeft(remaining);
+    }, 1000);
+    return () => clearInterval(interval);
+  });
+
+  const minutes = Math.floor(Math.abs(timeLeft) / 60000);
+  const seconds = Math.floor((Math.abs(timeLeft) % 60000) / 1000);
+  const isOverdue = timeLeft < 0;
+
+  return (
+    <span
+      className={`font-mono text-sm ${isOverdue ? 'text-destructive font-bold' : 'text-muted-foreground'}`}
+    >
+      {isOverdue && '-'}
+      {minutes}:{seconds.toString().padStart(2, '0')}
+    </span>
+  );
+}
 
 interface TeamSelectionForMissionProps {
   missionId: string;
@@ -27,6 +74,7 @@ export function TeamSelectionForMission({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [completingTeamId, setCompletingTeamId] = useState<string | null>(null);
+  const [startingTeamId, setStartingTeamId] = useState<string | null>(null);
   const [uncompletingTeamId, setUncompletingTeamId] = useState<string | null>(
     null,
   );
@@ -36,7 +84,11 @@ export function TeamSelectionForMission({
 
   const { data, isLoading } = useTeamsForMissionCompletion();
 
+  const { data: missionData } = useMission(missionId);
   const completeMission = useCompleteMission();
+  const startMission = useStartMission();
+  const failMission = useFailMission();
+  const adjustMissionTime = useAdjustMissionTime();
   const removeMissionCompletion = useRemoveMissionCompletion();
 
   interface Team {
@@ -45,7 +97,7 @@ export function TeamSelectionForMission({
     bannerColor: string;
     bannerIcon: string;
     credits: number;
-    missions: { missionId: string; status: string }[];
+    missions: { missionId: string; status: string; startedAt?: string }[];
   }
 
   const filteredTeams = useMemo(() => {
@@ -171,6 +223,38 @@ export function TeamSelectionForMission({
                 );
               };
 
+              const handleStartClick = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                setStartingTeamId(team?._id);
+                startMission.mutate(
+                  { missionId, teamId: team?._id },
+                  {
+                    onSuccess: () => {
+                      toast.success('Mission started');
+                      setStartingTeamId(null);
+                      setSelectedTeamId(null);
+                      queryClient.invalidateQueries({
+                        queryKey: ['mission', missionId],
+                      });
+                      queryClient.invalidateQueries({
+                        queryKey: ['teams-for-mission-completion'],
+                      });
+                    },
+                    onError: (error: unknown) => {
+                      setStartingTeamId(null);
+                      const errorMessage =
+                        (
+                          error as {
+                            response?: { errors?: Array<{ message?: string }> };
+                          }
+                        )?.response?.errors?.[0]?.message ||
+                        'Failed to start mission';
+                      toast.error(errorMessage);
+                    },
+                  },
+                );
+              };
+
               return (
                 <div
                   key={team?._id}
@@ -178,8 +262,10 @@ export function TeamSelectionForMission({
                     isCompleted
                       ? 'bg-green-600 dark:bg-green-700 text-white'
                       : isSelected
-                        ? 'bg-accent hover:bg-accent/50 cursor-pointer'
-                        : 'hover:bg-accent/50 cursor-pointer'
+                        ? 'bg-accent hover:bg-accent/50 cursor-pointer border-l-4 border-l-primary'
+                        : (team?.missions || []).some(m => m.missionId === missionId && m.status === 'INCOMPLETE') 
+                          ? 'bg-blue-500/5 hover:bg-blue-500/10 cursor-pointer border-l-4 border-l-blue-500' // Running state
+                          : 'hover:bg-accent/50 cursor-pointer'
                   }`}
                   onClick={handleRowClick}
                 >
@@ -222,25 +308,127 @@ export function TeamSelectionForMission({
                         </span>
                       )
                     ) : isSelected ? (
-                      <Button
-                        size="sm"
-                        onClick={handleCompleteClick}
-                        disabled={
-                          completingTeamId === team?._id ||
-                          completeMission.isPending
+                      (() => {
+                        const missionEntry = (team?.missions || []).find(
+                          (m) => m.missionId === missionId,
+                        );
+                        const status = missionEntry?.status || 'NOT_STARTED';
+                        const isRunning = status === 'INCOMPLETE'; // Assuming INCOMPLETE means In Progress
+                        const isNotStarted = status === 'NOT_STARTED' || status === 'FAILED'; // Allow restart if failed? Or just Not Started.
+
+                        if (isNotStarted) {
+                          return (
+                            <Button
+                              size="sm"
+                              onClick={handleStartClick}
+                              disabled={
+                                startingTeamId === team?._id ||
+                                startMission.isPending
+                              }
+                              className="ml-auto"
+                            >
+                              {startingTeamId === team?._id ||
+                              startMission.isPending ? (
+                                'Starting...'
+                              ) : (
+                                <>
+                                  <Play className="w-4 h-4 mr-2" />
+                                  Start Mission
+                                </>
+                              )}
+                            </Button>
+                          );
                         }
-                        className="ml-auto"
-                      >
-                        <Check className="w-4 h-4 mr-2" />
-                        {completingTeamId === team?._id ||
-                        completeMission.isPending
-                          ? 'Completing...'
-                          : 'Complete Mission'}
-                      </Button>
+
+                        if (isRunning) {
+                           const handleFailClick = (e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            if (confirm('Are you sure you want to fail this team?')) {
+                              failMission.mutate({ missionId, teamId: team?._id });
+                            }
+                          };
+
+                          const handleAddMinuteClick = (e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            adjustMissionTime.mutate({
+                              missionId,
+                              teamId: team?._id,
+                              minutes: 1,
+                            });
+                          };
+
+                          return (
+                            <div className="flex items-center gap-2 ml-auto">
+                               {missionEntry?.startedAt && missionData?.mission?.missionDuration ? (
+                                <div className="mr-2 px-2 py-1 bg-background/50 rounded border flex items-center gap-1.5">
+                                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <MissionTimer
+                                    startedAt={missionEntry.startedAt}
+                                    duration={missionData.mission.missionDuration}
+                                  />
+                                </div>
+                              ) : null}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={handleAddMinuteClick}
+                                disabled={adjustMissionTime.isPending}
+                                title="Add 1 Minute"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={handleFailClick}
+                                disabled={failMission.isPending}
+                              >
+                                <Square className="w-4 h-4 mr-2" />
+                                Stop (Fail)
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={handleCompleteClick}
+                                disabled={
+                                  completingTeamId === team?._id ||
+                                  completeMission.isPending
+                                }
+                              >
+                                <Check className="w-4 h-4 mr-2" />
+                                {completingTeamId === team?._id ||
+                                completeMission.isPending
+                                  ? 'Completing...'
+                                  : 'Complete'}
+                              </Button>
+                            </div>
+                          );
+                        }
+                        
+                         // Fallback for weird states
+                        return (
+                           <span className="text-sm text-muted-foreground">
+                             Status: {status}
+                           </span>
+                        );
+
+                      })()
                     ) : (
-                      <span className="flex items-center gap-1.5 text-white shrink-0">
-                        Incomplete
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {((team?.missions || []).find((m) => m.missionId === missionId)?.status === 'INCOMPLETE') && missionData?.mission?.missionDuration && (team?.missions || []).find((m) => m.missionId === missionId)?.startedAt && (
+                           <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/50 rounded text-xs">
+                              <MissionTimer
+                                  startedAt={(team?.missions || []).find((m) => m.missionId === missionId)!.startedAt!}
+                                  duration={missionData.mission.missionDuration}
+                              />
+                           </div>
+                        )}
+                        <span className="flex items-center gap-1.5 text-muted-foreground shrink-0 text-sm font-medium">
+                          {((team?.missions || []).find((m) => m.missionId === missionId)?.status || 'NOT_STARTED')
+                            .toLowerCase()
+                            .replace(/_/g, ' ')
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                       </span>
+                      </div>
                     )}
                   </div>
                 </div>

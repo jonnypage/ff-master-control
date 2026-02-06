@@ -108,6 +108,11 @@ export function MissionEditPage() {
 
   const updateMission = useUpdateMission();
 
+  const mission = useMemo(() => {
+    console.log('[MissionEditPage] data',data);
+    return data?.mission;
+  }, [data]);
+
   const handleSave = () => {
     if (!name.trim()) {
       toast.error('Mission name is required');
@@ -197,10 +202,7 @@ export function MissionEditPage() {
     );
   }
 
-  const mission = useMemo(() => {
-    console.log('[MissionEditPage] data',data);
-    return data?.mission;
-  }, [data]);
+
 
   return (
     <div className="space-y-6">
@@ -242,12 +244,9 @@ export function MissionEditPage() {
           </Button>
         )}
       </div>
-
       <div className="space-y-6">
         <Card className="shadow-sm">
-          <CardHeader className="bg-muted/50 border-b">
-            <CardTitle className="text-xl">Mission Information</CardTitle>
-          </CardHeader>
+          
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
@@ -473,10 +472,10 @@ export function MissionEditPage() {
         <div className="space-y-6 mt-8">
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              Mark Mission Complete
+              Mission Management
             </h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Select a team to mark this mission as complete
+              Select a team to start this mission
             </p>
           </div>
           <TeamSelectionForMission

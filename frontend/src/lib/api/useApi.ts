@@ -526,10 +526,13 @@ export function useMission(id?: string) {
             mission(id: $id) {
               _id
               name
-              description
-              creditsAwarded
-              awardsCrystal
               isFinalChallenge
+              createdAt
+              updatedAt
+              creditsAwarded
+              description
+              awardsCrystal
+              missionDuration
             }
           }
         `) as unknown as RequestDocument,
@@ -612,11 +615,60 @@ export function useTeamsForMissionCompletion() {
               missions {
                 missionId
                 status
+                startedAt
               }
             }
           }
         `) as unknown as RequestDocument,
       ),
+    refetchInterval: 10000,
+  });
+}
+
+export function useFailMission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: { missionId: string; teamId: string }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation FailMission($missionId: ID!, $teamId: ID!) {
+            failMission(missionId: $missionId, teamId: $teamId) {
+              _id
+              name
+            }
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
+      qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+    },
+  });
+}
+
+export function useAdjustMissionTime() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: {
+      missionId: string;
+      teamId: string;
+      minutes: number;
+    }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation AdjustMissionTime($missionId: ID!, $teamId: ID!, $minutes: Float!) {
+            adjustMissionTime(missionId: $missionId, teamId: $teamId, minutes: $minutes) {
+              _id
+              name
+            }
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
+    },
   });
 }
 
@@ -642,6 +694,29 @@ export function useCompleteMission() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
       qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+    },
+  });
+}
+
+export function useStartMission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: { missionId: string; teamId: string }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation StartMission($missionId: ID!, $teamId: ID!) {
+            startMission(missionId: $missionId, teamId: $teamId) {
+              _id
+              name
+            }
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teams-for-mission-completion'] });
+      qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+      qc.invalidateQueries({ queryKey: ['teams'] });
     },
   });
 }

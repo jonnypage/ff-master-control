@@ -14,7 +14,7 @@ import { User } from '../users/schemas/user.schema';
 
 @Resolver(() => Mission)
 export class MissionsResolver {
-  constructor(private missionsService: MissionsService) {}
+  constructor(private missionsService: MissionsService) { }
 
   @Query(() => [Mission])
   async leaderboardMissions(): Promise<Mission[]> {
@@ -57,6 +57,37 @@ export class MissionsResolver {
       user._id.toString(),
       false,
     );
+  }
+
+  @Mutation(() => Mission)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MISSION_LEADER, UserRole.ADMIN)
+  async startMission(
+    @Args('teamId', { type: () => ID }) teamId: string,
+    @Args('missionId', { type: () => ID }) missionId: string,
+  ): Promise<Mission> {
+    return this.missionsService.startMission(teamId, missionId);
+  }
+
+  @Mutation(() => Mission)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MISSION_LEADER, UserRole.ADMIN)
+  async failMission(
+    @Args('teamId', { type: () => ID }) teamId: string,
+    @Args('missionId', { type: () => ID }) missionId: string,
+  ): Promise<Mission> {
+    return this.missionsService.failMission(teamId, missionId);
+  }
+
+  @Mutation(() => Mission)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.MISSION_LEADER, UserRole.ADMIN)
+  async adjustMissionTime(
+    @Args('teamId', { type: () => ID }) teamId: string,
+    @Args('missionId', { type: () => ID }) missionId: string,
+    @Args('minutes') minutes: number,
+  ): Promise<Mission> {
+    return this.missionsService.adjustMissionTime(teamId, missionId, minutes);
   }
 
   @Mutation(() => MissionCompletion)

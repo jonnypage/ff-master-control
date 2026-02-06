@@ -20,7 +20,7 @@ export class MissionsService {
     @InjectModel(MissionCompletion.name)
     private missionCompletionModel: Model<MissionCompletionDocument>,
     private teamsService: TeamsService,
-  ) {}
+  ) { }
 
   async findAll(): Promise<MissionDocument[]> {
     return this.missionModel.find().exec();
@@ -98,7 +98,7 @@ export class MissionsService {
 
     // Update team's mission progress to COMPLETE
     const crystalsToAward = mission.awardsCrystal ? 1 : 0;
-    
+
     await this.teamsService.completeMission(
       team._id.toString(),
       missionId,
@@ -117,6 +117,68 @@ export class MissionsService {
 
     // Return without populate since GraphQL expects IDs, not full objects
     return completion as MissionCompletionDocument;
+  }
+
+  async startMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<MissionDocument> {
+    const team = await this.teamsService.findOne(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const mission = await this.missionModel.findById(missionId);
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+
+    await this.teamsService.startMission(team._id.toString(), missionId);
+
+    return mission;
+  }
+
+  async failMission(
+    teamId: string,
+    missionId: string,
+  ): Promise<MissionDocument> {
+    const team = await this.teamsService.findOne(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const mission = await this.missionModel.findById(missionId);
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+
+    await this.teamsService.failMission(team._id.toString(), missionId);
+
+    return mission;
+  }
+
+  async adjustMissionTime(
+    teamId: string,
+    missionId: string,
+    minutes: number,
+  ): Promise<MissionDocument> {
+    const team = await this.teamsService.findOne(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const mission = await this.missionModel.findById(missionId);
+    if (!mission) {
+      throw new NotFoundException('Mission not found');
+    }
+
+    await this.teamsService.adjustMissionStartTime(
+      team._id.toString(),
+      missionId,
+      minutes,
+    );
+
+    return mission;
   }
 
   async overrideMissionCompletion(

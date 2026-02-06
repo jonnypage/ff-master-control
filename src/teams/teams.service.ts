@@ -13,7 +13,7 @@ import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
 export class TeamsService implements OnModuleInit {
-  constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
+  constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) { }
 
   async onModuleInit() {
     await this.backfillLegacyTeamFields();
@@ -163,10 +163,10 @@ export class TeamsService implements OnModuleInit {
     await this.backfillLegacyTeamFields();
     const teams = await this.teamModel.find().exec();
     return teams.map(team => {
-        if (team && !team.missions) {
-            team.missions = [];
-        }
-        return team;
+      if (team && !team.missions) {
+        team.missions = [];
+      }
+      return team;
     });
   }
 
@@ -345,6 +345,31 @@ export class TeamsService implements OnModuleInit {
 
     team.markModified('missions');
     return team.save();
+  }
+
+  // Adjust mission start time (to give more time or reduce time)
+  async adjustMissionStartTime(
+    teamId: string,
+    missionId: string,
+    minutes: number,
+  ): Promise<TeamDocument> {
+    const team = await this.teamModel.findById(teamId);
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    const entry = this.getMissionEntry(team, missionId);
+    if (entry && entry.startedAt) {
+      // Add minutes to startedAt (moving start time forward gives MORE remaining time)
+      const newTime = new Date(entry.startedAt.getTime() + minutes * 60000);
+      entry.startedAt = newTime;
+      team.markModified('missions');
+      await team.save();
+    } else {
+      throw new NotFoundException('Mission not started or not found for team');
+    }
+
+    return team;
   }
 
   // Reset a mission (remove completion, revert to NOT_STARTED)
