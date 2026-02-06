@@ -203,6 +203,7 @@ export function TeamEditPage() {
               return updated;
             });
             // Also invalidate to ensure consistency
+            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
             queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
@@ -247,6 +248,7 @@ export function TeamEditPage() {
               return updated;
             });
             // Also invalidate to ensure consistency
+            queryClient.invalidateQueries({ queryKey: ['team-by-id', id] });
             queryClient.invalidateQueries({ queryKey: ['team', id] });
             queryClient.invalidateQueries({ queryKey: ['teams'] });
             queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });

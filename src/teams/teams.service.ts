@@ -143,19 +143,33 @@ export class TeamsService {
   async findOne(id: string): Promise<TeamDocument | null> {
     // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
-    return this.teamModel.findById(id).exec();
+    const team = await this.teamModel.findById(id).exec();
+    if (team && !team.completedMissions) {
+      team.completedMissions = [];
+    }
+    return team;
   }
 
   async findOneForTeamSession(id: string): Promise<TeamDocument | null> {
     // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
-    return this.teamModel.findById(id).select('+pin').exec();
+    const team = await this.teamModel.findById(id).select('+pin').exec();
+    if (team && !team.completedMissions) {
+      team.completedMissions = [];
+    }
+    return team;
   }
 
   async findAll(): Promise<TeamDocument[]> {
     // Ensure legacy teams become schema-compatible before returning to GraphQL.
     await this.backfillLegacyTeamFields();
-    return this.teamModel.find().exec();
+    const teams = await this.teamModel.find().exec();
+    return teams.map(team => {
+        if (team && !team.completedMissions) {
+            team.completedMissions = [];
+        }
+        return team;
+    });
   }
 
   async findLeaderboard(): Promise<LeaderboardTeam[]> {
