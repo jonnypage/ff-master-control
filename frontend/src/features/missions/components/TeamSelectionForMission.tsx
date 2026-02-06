@@ -45,7 +45,7 @@ export function TeamSelectionForMission({
     bannerColor: string;
     bannerIcon: string;
     credits: number;
-    completedMissionIds: string[];
+    completedMissions: { missionId: string }[];
   }
 
   const filteredTeams = useMemo(() => {
@@ -101,8 +101,8 @@ export function TeamSelectionForMission({
         <CardContent className="p-0">
           <div className="divide-y divide-border">
             {filteredTeams.map((team: Team) => {
-              const isCompleted = (team?.completedMissionIds || []).includes(
-                missionId,
+              const isCompleted = (team?.completedMissions || []).some(
+                (cm) => cm.missionId === missionId,
               );
               const isSelected = selectedTeamId === team?._id;
               const handleRowClick = () => {

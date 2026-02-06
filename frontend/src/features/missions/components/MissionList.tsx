@@ -24,7 +24,7 @@ export function MissionList() {
     }
     const counts: Record<string, number> = {};
     const teams =
-      (teamsData as { teams?: Array<{ completedMissionIds?: string[] }> })
+      (teamsData as { teams?: Array<{ completedMissions?: { missionId: string }[] }> })
         ?.teams ?? [];
     const totalTeams = teams.length;
 
@@ -35,8 +35,8 @@ export function MissionList() {
     (data?.missions ?? []).forEach(
       (mission: GetMissionsQuery['missions'][number]) => {
         const completedCount = teams.filter(
-          (team: { completedMissionIds?: string[] }) =>
-            team.completedMissionIds?.includes(mission._id) ?? false,
+          (team: { completedMissions?: { missionId: string }[] }) =>
+            team.completedMissions?.some((cm) => cm.missionId === mission._id) ?? false,
         ).length;
         counts[mission._id] = completedCount;
       },
@@ -47,8 +47,10 @@ export function MissionList() {
 
   const myCompletedMissionIds = useMemo(() => {
     if (!isTeamSession) return [];
-    return (myTeamData?.myTeam?.completedMissionIds ?? []) as string[];
-  }, [isTeamSession, myTeamData?.myTeam?.completedMissionIds]);
+    const completedMissions = (myTeamData?.myTeam?.completedMissions ??
+      []) as Array<{ missionId: string }>;
+    return completedMissions.map((cm) => cm.missionId);
+  }, [isTeamSession, myTeamData?.myTeam?.completedMissions]);
 
   const filteredMissions = useMemo(() => {
     const missions = (data?.missions ?? []) as GetMissionsQuery['missions'];

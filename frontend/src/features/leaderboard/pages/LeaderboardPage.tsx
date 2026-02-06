@@ -193,7 +193,7 @@ export function LeaderboardPage() {
 
         {sortedTeams.length === 0 ? (
           <div className="flex-1 flex items-center justify-center py-12">
-            <p className="text-xl text-muted-foreground">No teams yet</p>
+            <p className="text-xl text-muted-foreground">It is quiet here... </p>
           </div>
         ) : (
           <>

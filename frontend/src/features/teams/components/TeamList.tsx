@@ -9,7 +9,7 @@ import { TeamCard } from './TeamCard';
 import { TeamCompactRow } from './TeamCompactRow';
 
 type TeamWithProgress = GetTeamsQuery['teams'][number] & {
-  completedMissionIds?: string[];
+  completedMissions?: { missionId: string }[];
 };
 
 interface TeamListProps {

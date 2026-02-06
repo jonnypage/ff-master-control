@@ -9,7 +9,7 @@ export type TeamCompactRowTeam = {
   bannerIcon: string;
   credits: number;
   crystals: number;
-  completedMissionIds?: string[] | null;
+  completedMissions?: { missionId: string }[] | null;
 };
 
 interface TeamCompactRowProps {
@@ -19,7 +19,7 @@ interface TeamCompactRowProps {
 }
 
 export function TeamCompactRow({ team, totalMissions, onClick }: TeamCompactRowProps) {
-  const completed = (team.completedMissionIds ?? []).length;
+  const completed = (team.completedMissions ?? []).length;
 
   return (
     <li
