@@ -356,6 +356,14 @@ export function TeamEditPage() {
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
+              <div>
+                  <Label htmlFor="team-name">Team Name</Label>
+                  <Input
+                    id="team-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
                 <div className="flex items-start gap-4">
                   <div className="shrink-0">
                     <Label>Banner Preview</Label>
@@ -370,6 +378,7 @@ export function TeamEditPage() {
                       />
                     </div>
                   </div>
+                  
                   <div className="flex-1 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="banner-color">Banner Color</Label>
@@ -417,14 +426,7 @@ export function TeamEditPage() {
                     </div>
                   </div>
                 </div>
-                <div>
-                  <Label htmlFor="team-name">Team Name</Label>
-                  <Input
-                    id="team-name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
+                
                 <div>
                   <Label>Team Code</Label>
                   <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">

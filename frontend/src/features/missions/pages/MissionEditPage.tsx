@@ -17,6 +17,7 @@ import {
   X,
   Timer,
   Infinity,
+  ArrowDownNarrowWide,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useState, useMemo } from 'react';
@@ -54,6 +55,7 @@ export function MissionEditPage() {
   const [awardsCrystal, setAwardsCrystal] = useState(false);
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
   const [missionDuration, setMissionDuration] = useState(0);
+  const [missionNumber, setMissionNumber] = useState(0);
 
   const { data, isLoading } = useMission(id);
 
@@ -104,6 +106,7 @@ export function MissionEditPage() {
     const nextCrystal = missionData.awardsCrystal ?? false;
     const nextFinal = missionData.isFinalChallenge;
     const nextDuration = missionData.missionDuration ?? 0;
+    const nextNumber = missionData.missionNumber ?? 0;
     queueMicrotask(() => {
       setName(nextName);
       setDescription(nextDescription);
@@ -111,6 +114,7 @@ export function MissionEditPage() {
       setAwardsCrystal(nextCrystal);
       setIsFinalChallenge(nextFinal);
       setMissionDuration(nextDuration);
+      setMissionNumber(nextNumber);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when mission id changes
   }, [missionData?._id]);
@@ -134,6 +138,7 @@ export function MissionEditPage() {
       awardsCrystal?: boolean;
       isFinalChallenge?: boolean;
       missionDuration?: number;
+      missionNumber?: number;
     } = {};
 
     if (name !== data?.mission?.name) {
@@ -153,6 +158,9 @@ export function MissionEditPage() {
     }
     if (missionDuration !== (data?.mission?.missionDuration ?? 0)) {
       input.missionDuration = missionDuration;
+    }
+    if (missionNumber !== (data?.mission?.missionNumber ?? 0)) {
+      input.missionNumber = missionNumber;
     }
 
     if (Object.keys(input).length === 0) {
@@ -258,7 +266,7 @@ export function MissionEditPage() {
           <CardContent className="space-y-5 pt-6">
             {canEdit ? (
               <>
-                <div>
+                <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="mission-name"
                     className="text-base font-semibold"
@@ -272,7 +280,7 @@ export function MissionEditPage() {
                     placeholder="Enter mission name"
                   />
                 </div>
-                <div>
+                <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="mission-description"
                     className="text-base font-semibold"
@@ -286,7 +294,25 @@ export function MissionEditPage() {
                     placeholder="Enter mission description (optional)"
                   />
                 </div>
-                <div>
+                <div className="flex flex-col gap-1">
+                  <Label
+                    htmlFor="mission-number"
+                    className="text-base font-semibold flex items-center gap-2"
+                  >
+                    <ArrowDownNarrowWide className="w-4 h-4 shrink-0" />
+                    Mission Number 
+                  </Label>
+                  <Input
+                    id="mission-number"
+                    type="number"
+                    value={missionNumber}
+                    onChange={(e) =>
+                      setMissionNumber(parseInt(e.target.value) || 0)
+                    }
+                    placeholder="0"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="credits-awarded"
                     className="text-base font-semibold flex items-center gap-2"
@@ -304,7 +330,7 @@ export function MissionEditPage() {
                     min="0"
                   />
                 </div>
-                <div>
+                <div className="flex flex-col gap-1">
                   <Label
                     htmlFor="mission-duration"
                     className="text-base font-semibold flex items-center gap-2"
@@ -323,6 +349,7 @@ export function MissionEditPage() {
                     min="0"
                   />
                 </div>
+                
                 <div className="flex items-center space-x-2">
                   <input
                     type="checkbox"

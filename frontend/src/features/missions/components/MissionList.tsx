@@ -65,10 +65,16 @@ export function MissionList() {
         );
 
     return [...filtered].sort((a, b) => {
-      // Final challenge is always last, regardless of name.
+      // Final challenge is always last, regardless of missionNumber
       if (a.isFinalChallenge && !b.isFinalChallenge) return 1;
       if (!a.isFinalChallenge && b.isFinalChallenge) return -1;
 
+      // Sort by missionNumber first (ascending)
+      const aNum = a.missionNumber ?? 0;
+      const bNum = b.missionNumber ?? 0;
+      if (aNum !== bNum) return aNum - bNum;
+
+      // Then by name as secondary sort
       const nameCmp = a.name.localeCompare(b.name, undefined, {
         sensitivity: 'base',
       });
