@@ -27,8 +27,8 @@ export function MissionCompletion({
   onSuccess,
 }: MissionCompletionProps) {
   const queryClient = useQueryClient();
-  const isAlreadyCompleted = team.completedMissions.some(
-    (cm) => cm.missionId === mission._id,
+  const isAlreadyCompleted = team.missions.some(
+    (m) => m.missionId === mission._id && m.status === 'COMPLETE',
   );
   const completeMission = useCompleteMission();
 

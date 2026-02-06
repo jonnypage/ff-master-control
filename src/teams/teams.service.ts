@@ -1,6 +1,7 @@
 import {
   Injectable,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -11,8 +12,12 @@ import { LeaderboardTeam } from './schemas/leaderboard-team.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
 
 @Injectable()
-export class TeamsService {
+export class TeamsService implements OnModuleInit {
   constructor(@InjectModel(Team.name) private teamModel: Model<TeamDocument>) {}
+
+  async onModuleInit() {
+    await this.backfillLegacyTeamFields();
+  }
 
   private deriveTeamCode(teamGuid: string): string {
     // Use last 8 hex chars of UUID (strip hyphens), uppercase for readability.

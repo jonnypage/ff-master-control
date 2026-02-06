@@ -68,7 +68,7 @@ export function MyTeamPage() {
     );
   }
 
-  const completedCount = team.completedMissions?.length ?? 0;
+  const completedCount = team.missions?.filter((m: any) => m.status === 'COMPLETE').length ?? 0;
 
   const handleCopyCode = async () => {
     try {

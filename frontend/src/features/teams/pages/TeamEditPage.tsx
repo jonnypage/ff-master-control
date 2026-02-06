@@ -193,9 +193,9 @@ export function TeamEditPage() {
                 ...old,
                 teamById: {
                   ...old.teamById,
-                  completedMissions: [
-                    ...(old.teamById.completedMissions || []),
-                    { missionId, completedAt: new Date().toISOString() },
+                  missions: [
+                    ...(old.teamById.missions || []),
+                    { missionId, status: 'COMPLETE', completedAt: new Date().toISOString() },
                   ],
                 },
               };
@@ -239,9 +239,9 @@ export function TeamEditPage() {
                 ...old,
                 teamById: {
                   ...old.teamById,
-                  completedMissions: (
-                    old.teamById.completedMissions || []
-                  ).filter((cm: any) => cm.missionId !== missionId),
+                  missions: (
+                    old.teamById.missions || []
+                  ).filter((m: any) => m.missionId !== missionId),
                 },
               };
               console.log('[Mission Toggle] Updated cache data:', updated);
@@ -489,7 +489,7 @@ export function TeamEditPage() {
                 Missions Completed:
               </span>
               <Badge>
-                {team.completedMissions ? team.completedMissions.length : 0}
+                {(team.missions ?? []).filter((m: any) => m.status === 'COMPLETE').length}
                 /{missionsData?.missions?.length ?? 0}
               </Badge>
             </div>
@@ -535,8 +535,8 @@ export function TeamEditPage() {
                     return (a.name ?? '').localeCompare(b.name ?? '');
                   })
                   .map((mission: any) => {
-                    const isCompleted = team.completedMissions?.some(
-                      (cm: any) => cm.missionId === mission._id,
+                    const isCompleted = team.missions?.some(
+                      (m: any) => m.missionId === mission._id && m.status === 'COMPLETE',
                     );
                     const isPending =
                       overrideMissionCompletion.isPending ||
