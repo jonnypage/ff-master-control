@@ -100,26 +100,73 @@ export function LeaderboardPage() {
     );
   }
 
+  const medalForRank = (index: number) =>
+    index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : null;
+
+  const renderTeamRow = (team: RankedTeam, actualIndex: number) => {
+    const rankColor = getRankColor(actualIndex);
+    const medal = medalForRank(actualIndex);
+    return (
+      <li
+        key={team._id}
+        className={`flex items-center gap-4 bg-card border rounded-lg px-4 py-2.5 shadow-sm ${
+          team.hasCompletedFinal
+            ? 'border-yellow-500/50 ring-1 ring-yellow-400/30'
+            : 'border-border'
+        }`}
+      >
+        <span
+          className={`w-8 text-lg font-bold shrink-0 flex items-center justify-center ${rankColor}`}
+        >
+          {medal ?? `#${actualIndex + 1}`}
+        </span>
+        <TeamBanner
+          color={team.bannerColor}
+          icon={getBannerIconById(team.bannerIcon)}
+          size="sm"
+          className="w-10 shrink-0"
+        />
+        <span className="flex-1 text-lg font-semibold text-foreground truncate">
+          {team.name}
+        </span>
+        <span className="text-lg font-bold text-primary shrink-0">
+          {team.completedCount}
+          {team.totalMissions > 0 && (
+            <span className="text-sm font-normal text-muted-foreground">
+              /{team.totalMissions}
+            </span>
+          )}
+        </span>
+        {team.hasCompletedFinal && (
+          <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 shrink-0">
+            Final ✓
+          </span>
+        )}
+      </li>
+    );
+  };
+
   return (
-    <div className="leaderboard-page h-screen max-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-hidden">
-      <div className="flex-1 flex flex-col container mx-auto px-6 py-4 min-h-0 w-full max-w-7xl">
-        {/* Title - compact */}
+    <div className="leaderboard-page min-h-screen md:h-screen md:max-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto md:overflow-hidden">
+      <div className="flex flex-col md:flex-1 container mx-auto px-6 py-4 md:min-h-0 w-full max-w-7xl">
+        {/* Title - mobile: two lines; desktop: one line with dash */}
         <div className="text-center shrink-0 py-2">
-          <h1 className="text-4xl font-bold text-foreground flex items-center justify-center gap-2 mb-4">
-            Freedom Fighters - Leaderboard
+          <h1 className="text-4xl font-bold text-foreground flex flex-col md:flex-row md:items-center md:justify-center gap-0 md:gap-2 mb-4">
+            <span>Freedom Fighters</span>
+            <span className="hidden md:inline"> - </span>
+            <span>Leaderboard</span>
           </h1>
         </div>
 
         {sortedTeams.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center py-12">
             <p className="text-xl text-muted-foreground">No teams yet</p>
           </div>
         ) : (
           <>
-            {/* Top 3 - podium: 2nd | 1st (center, bigger) | 3rd */}
-            <section className="shrink-0 mb-4">
+            {/* Desktop only: Top 3 podium row (2nd | 1st | 3rd) */}
+            <section className="hidden md:block shrink-0 mb-4">
               <div className="flex justify-center items-end gap-4">
-                {/* 2nd place - left */}
                 {top3[1] && (
                   <div
                     key={top3[1]._id}
@@ -154,7 +201,6 @@ export function LeaderboardPage() {
                     )}
                   </div>
                 )}
-                {/* 1st place - center, slightly bigger */}
                 {top3[0] && (
                   <div
                     key={top3[0]._id}
@@ -191,7 +237,6 @@ export function LeaderboardPage() {
                     )}
                   </div>
                 )}
-                {/* 3rd place - right */}
                 {top3[2] && (
                   <div
                     key={top3[2]._id}
@@ -231,56 +276,32 @@ export function LeaderboardPage() {
               </div>
             </section>
 
-            {/* All other teams - scrollable list */}
-            <section className="flex-1 min-h-0 flex flex-col">
+            {/* Mobile: top 3 with medals, then "All teams" heading, then the rest */}
+            <section className="md:hidden space-y-1.5 pb-6">
+              <ul className="space-y-1.5">
+                {top3.map((team, index) => renderTeamRow(team, index))}
+              </ul>
+              {rest.length > 0 && (
+                <>
+                  <h2 className="text-lg font-semibold text-muted-foreground pt-2 pb-1 px-1">
+                    All teams
+                  </h2>
+                  <ul className="space-y-1.5">
+                    {rest.map((team, index) => renderTeamRow(team, 3 + index))}
+                  </ul>
+                </>
+              )}
+            </section>
+
+            {/* Desktop: All other teams - scrollable list */}
+            <section className="hidden md:flex flex-1 min-h-0 flex-col">
               {rest.length > 0 && (
                 <h2 className="text-lg font-semibold text-muted-foreground shrink-0 mb-2 px-1">
                   All teams
                 </h2>
               )}
               <ul className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-2">
-                {rest.map((team, index) => {
-                  const actualIndex = 3 + index;
-                  const rankColor = getRankColor(actualIndex);
-                  return (
-                    <li
-                      key={team._id}
-                      className={`flex items-center gap-4 bg-card border rounded-lg px-4 py-2.5 shadow-sm ${
-                        team.hasCompletedFinal
-                          ? 'border-yellow-500/50 ring-1 ring-yellow-400/30'
-                          : 'border-border'
-                      }`}
-                    >
-                      <span
-                        className={`w-8 text-lg font-bold shrink-0 ${rankColor}`}
-                      >
-                        #{actualIndex + 1}
-                      </span>
-                      <TeamBanner
-                        color={team.bannerColor}
-                        icon={getBannerIconById(team.bannerIcon)}
-                        size="sm"
-                        className="w-10 shrink-0"
-                      />
-                      <span className="flex-1 text-lg font-semibold text-foreground truncate">
-                        {team.name}
-                      </span>
-                      <span className="text-lg font-bold text-primary shrink-0">
-                        {team.completedCount}
-                        {team.totalMissions > 0 && (
-                          <span className="text-sm font-normal text-muted-foreground">
-                            /{team.totalMissions}
-                          </span>
-                        )}
-                      </span>
-                      {team.hasCompletedFinal && (
-                        <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 shrink-0">
-                          Final ✓
-                        </span>
-                      )}
-                    </li>
-                  );
-                })}
+                {rest.map((team, index) => renderTeamRow(team, 3 + index))}
               </ul>
             </section>
           </>
