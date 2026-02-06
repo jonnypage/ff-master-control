@@ -213,11 +213,7 @@ export function LoginPage() {
                 Create a new team
               </Button>
             </Link>
-            <Link to="/staffsignup" className="block">
-              <Button type="button" variant="outline" className="w-full">
-                Staff sign up
-              </Button>
-            </Link>
+
             <Link to="/leaderboard" className="block">
               <Button type="button" variant="outline" className="w-full">
                 <Trophy className="w-4 h-4 mr-2" />
