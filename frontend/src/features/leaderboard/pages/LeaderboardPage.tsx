@@ -61,7 +61,7 @@ export function LeaderboardPage() {
         );
 
         let completionTime: number | undefined;
-        if (completedCount === totalMissions && totalMissions > 0) {
+        if (completedCount > 0) {
           // Find the latest completedAt timestamp
           const timestamps = completedMissions.map((cm) =>
             new Date(cm.completedAt).getTime(),
@@ -78,25 +78,27 @@ export function LeaderboardPage() {
         };
       })
       .sort((a, b) => {
-        // 1. Teams that have completed all missions first
-        const aAll =
-          a.completedCount === a.totalMissions && a.totalMissions > 0;
-        const bAll =
-          b.completedCount === b.totalMissions && b.totalMissions > 0;
+        // 1. Teams that have completed final mission first
+        if (a.hasCompletedFinal && !b.hasCompletedFinal) return -1;
+        if (!a.hasCompletedFinal && b.hasCompletedFinal) return 1;
 
-        if (aAll && !bAll) return -1;
-        if (!aAll && bAll) return 1;
-
-        // 2. If both completed all, sort by completion time (earlier is better)
-        if (aAll && bAll) {
+        // If both completed final, sort by completion time (earlier is better)
+        if (a.hasCompletedFinal && b.hasCompletedFinal) {
           if (a.completionTime !== b.completionTime) {
             return (a.completionTime || 0) - (b.completionTime || 0);
           }
         }
 
-        // 3. Sort by completed count (desc)
+        // 2. Sort by completed count (desc)
         if (b.completedCount !== a.completedCount) {
           return b.completedCount - a.completedCount;
+        }
+
+        // 3. If counts equal, sort by completion time (earlier is better)
+        // Note: completionTime is only undefined if completedCount is 0,
+        // in which case they are equal anyway.
+        if (a.completionTime !== b.completionTime) {
+          return (a.completionTime || 0) - (b.completionTime || 0);
         }
 
         // 4. Name (asc)
@@ -116,7 +118,7 @@ export function LeaderboardPage() {
 
   if (isLoading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
           <p className="text-xl text-muted-foreground">
@@ -129,7 +131,7 @@ export function LeaderboardPage() {
 
   if (hasError) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-destructive">Error loading leaderboard</p>
           <p className="text-muted-foreground mt-2">Please refresh the page</p>
@@ -186,13 +188,11 @@ export function LeaderboardPage() {
   };
 
   return (
-    <div className="leaderboard-page min-h-screen md:h-screen md:max-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto md:overflow-hidden">
+    <div className="leaderboard-page flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto md:overflow-hidden">
       <div className="flex flex-col md:flex-1 container mx-auto px-6 py-4 md:min-h-0 w-full max-w-7xl">
         {/* Title - mobile: two lines; desktop: one line with dash */}
         <div className="text-center shrink-0 py-2">
           <h1 className="text-4xl font-bold text-foreground flex flex-col md:flex-row md:items-center md:justify-center gap-0 md:gap-2 mb-4">
-            <span>Freedom Fighters</span>
-            <span className="hidden md:inline"> - </span>
             <span>Leaderboard</span>
           </h1>
         </div>
@@ -344,7 +344,7 @@ export function LeaderboardPage() {
                   All teams
                 </h2>
               )}
-              <ul className="flex-1 min-h-0 overflow-y-auto space-y-1.5 pr-2">
+              <ul className="flex-1 min-h-0 overflow-y-auto grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 pr-2 content-start">
                 {rest.map((team, index) => renderTeamRow(team, 3 + index))}
               </ul>
             </section>

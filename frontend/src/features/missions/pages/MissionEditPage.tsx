@@ -427,7 +427,10 @@ export function MissionEditPage() {
                   </Card>
                   <Card className="flex-1 min-w-0">
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
-                       <Timer/>
+                       <Timer
+                       className="w-5 h-5 text-muted-foreground shrink-0"
+                        aria-label="Mission duration"
+                        />
                       <span className="text-lg font-semibold">
                         {mission.missionDuration > 0 ? `${mission.missionDuration}m` : <Infinity className="w-5 h-7" />}
                       </span>

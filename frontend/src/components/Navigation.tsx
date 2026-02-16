@@ -179,7 +179,6 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
@@ -201,6 +200,10 @@ export function Navigation({ user, team, onLogout }: NavigationProps) {
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navLinks}
               <div className="pt-4 border-t border-border space-y-2">
+                <div className="flex items-center justify-between px-4 py-2">
+                  <span className="text-sm font-medium text-muted-foreground">Theme</span>
+                  <ThemeToggle />
+                </div>
                 {isStaff && (
                   <Button
                     variant="ghost"
