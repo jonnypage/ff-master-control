@@ -11,23 +11,27 @@ import {
   triggerUnauthorized,
 } from './lib/auth-error-handler'
 
+import { QueryCache, MutationCache } from '@tanstack/react-query'
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (isUnauthenticatedError(error)) {
+        triggerUnauthorized()
+      }
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (isUnauthenticatedError(error)) {
+        triggerUnauthorized()
+      }
+    },
+  }),
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      onError: (error) => {
-        if (isUnauthenticatedError(error)) {
-          triggerUnauthorized()
-        }
-      },
-    },
-    mutations: {
-      onError: (error) => {
-        if (isUnauthenticatedError(error)) {
-          triggerUnauthorized()
-        }
-      },
     },
   },
 })
