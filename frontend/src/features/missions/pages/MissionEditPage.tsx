@@ -321,6 +321,20 @@ export function MissionEditPage() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label
+                    htmlFor="poster-url"
+                    className="text-base font-semibold"
+                  >
+                    Poster URL
+                  </Label>
+                  <Input
+                    id="poster-url"
+                    value={posterURL}
+                    onChange={(e) => setPosterURL(e.target.value)}
+                    placeholder="https://example.com/poster.jpg"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label
                     htmlFor="credits-awarded"
                     className="text-base font-semibold flex items-center gap-2"
                   >
