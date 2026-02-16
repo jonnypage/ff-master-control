@@ -270,7 +270,7 @@ export function MissionEditPage() {
       <div className="space-y-6">
         <Card className="shadow-sm">
           
-          <CardContent className="space-y-5 pt-6">
+          <CardContent className="space-y-3 pt-3">
             {canEdit ? (
               <>
                 <div className="flex flex-col gap-1">
@@ -416,21 +416,36 @@ export function MissionEditPage() {
               </>
             ) : (
               <>
-                <div className="px-3 py-3 bg-muted rounded-md text-sm">
+                <div className="px-3 py-0 bg-muted rounded-md text-sm">
+                  {mission.posterURL && (
+                    <div className="flex items-center justify-center pb-3">
+
+                    <div className="h-60 w-43 overflow-hidden rounded-md border bg-muted flex justify-center">
+                      <img
+                        src={mission.posterURL}
+                        alt={`${mission.name} poster`}
+                        className="h-60 w-43 object-contain justify-center transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                        />
+                    </div>
+                        </div>
+                  )}
                   {mission.description || (
                     <span className="text-muted-foreground">
                       No description
                     </span>
                   )}
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-1">
                   <Card className="flex-1 min-w-0">
                     <CardContent className="py-3 px-4 flex items-center justify-center gap-2">
                       <Coins
                         className="w-5 h-5 text-muted-foreground shrink-0"
                         aria-label="Credits earned"
                       />
-                      <span className="text-lg font-semibold tabular-nums">
+                      <span className="text-sm font-semibold tabular-nums">
                         {mission.creditsAwarded}
                       </span>
                     </CardContent>
@@ -441,7 +456,7 @@ export function MissionEditPage() {
                         className="w-5 h-5 text-muted-foreground shrink-0"
                         aria-label="Crystal reward"
                       />
-                      <span className="text-lg font-semibold">
+                      <span className="text-sm font-semibold">
                         {mission.awardsCrystal ? '1' : '0'}
                       </span>
                     </CardContent>
@@ -452,7 +467,7 @@ export function MissionEditPage() {
                        className="w-5 h-5 text-muted-foreground shrink-0"
                         aria-label="Mission duration"
                         />
-                      <span className="text-lg font-semibold">
+                      <span className="text-sm font-semibold">
                         {mission.missionDuration > 0 ? `${mission.missionDuration}m` : <Infinity className="w-5 h-7" />}
                       </span>
                     </CardContent>
@@ -471,7 +486,7 @@ export function MissionEditPage() {
                         className="w-5 h-5 text-muted-foreground shrink-0"
                         aria-label="Teams completed"
                       />
-                      <span className="text-lg font-semibold tabular-nums flex items-center">
+                      <span className="text-sm font-semibold tabular-nums flex items-center">
                         {isTeamSession ? (
                           isCompletedByThisTeam ? (
                             <Check
@@ -482,7 +497,7 @@ export function MissionEditPage() {
                             <span className="text-red-700 flex items-center gap-1">
                               <X className="w-5 h-5" />
                               {currentMissionStatus.tries > 1 && (
-                                <span className="text-lg  font-bold">{currentMissionStatus.tries}x</span>
+                                <span className="text-sm  font-bold">{currentMissionStatus.tries}x</span>
                               )}
                             </span>
                           ) : (

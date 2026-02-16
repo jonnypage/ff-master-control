@@ -177,16 +177,19 @@ export function MissionList() {
                     )}
                   </div>
                   {mission.posterURL && (
-                    <div className="mt-3 aspect-video w-full overflow-hidden rounded-md border bg-muted">
+                    <div className="flex items-center justify-center">
+
+                    <div className="mt-3 h-60 w-43 overflow-hidden rounded-md border bg-muted flex justify-center">
                       <img
                         src={mission.posterURL}
                         alt={`${mission.name} poster`}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        className="h-60 w-43 object-contain justify-center transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).style.display = 'none';
                         }}
-                      />
+                        />
                     </div>
+                        </div>
                   )}
                 </CardHeader>
                 <CardContent className="space-y-3">
