@@ -3,9 +3,11 @@ import {
   useContext,
   useState,
   useEffect,
+  useCallback,
   type ReactNode,
 } from 'react';
 import { setAuthToken } from '@/lib/graphql/client';
+import { registerOnUnauthorized } from '@/lib/auth-error-handler';
 import type { UserRole } from '@/lib/graphql/generated';
 
 interface User {
@@ -93,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthToken(newToken);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
     setUser(null);
     setTeam(null);
@@ -102,7 +104,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TEAM_KEY);
     setAuthToken(null);
-  };
+  }, []);
+
+  useEffect(() => {
+    registerOnUnauthorized(logout);
+    return () => registerOnUnauthorized(null);
+  }, [logout]);
 
   return (
     <AuthContext.Provider
