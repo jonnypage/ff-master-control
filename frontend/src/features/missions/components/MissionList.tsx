@@ -158,7 +158,7 @@ export function MissionList() {
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors min-h-14">
                       {mission.name}
                     </CardTitle>
                     {mission.isFinalChallenge && (

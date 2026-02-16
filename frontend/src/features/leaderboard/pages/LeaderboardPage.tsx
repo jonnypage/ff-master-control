@@ -118,7 +118,7 @@ export function LeaderboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4" />
           <p className="text-xl text-muted-foreground">
@@ -178,11 +178,7 @@ export function LeaderboardPage() {
             </span>
           )}
         </span>
-        {team.hasCompletedFinal && (
-          <span className="text-xs font-semibold text-yellow-600 dark:text-yellow-400 shrink-0">
-            Final ✓
-          </span>
-        )}
+       
       </li>
     );
   };
@@ -236,11 +232,7 @@ export function LeaderboardPage() {
                         </span>
                       )}
                     </div>
-                    {top3[1].hasCompletedFinal && (
-                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
-                        Final ✓
-                      </span>
-                    )}
+                    
                   </div>
                 )}
                 {top3[0] && (
@@ -273,11 +265,7 @@ export function LeaderboardPage() {
                         </span>
                       )}
                     </div>
-                    {top3[0].hasCompletedFinal && (
-                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
-                        Final ✓
-                      </span>
-                    )}
+                    
                   </div>
                 )}
                 {top3[2] && (
@@ -310,11 +298,7 @@ export function LeaderboardPage() {
                         </span>
                       )}
                     </div>
-                    {top3[2].hasCompletedFinal && (
-                      <span className="mt-0.5 text-xs font-semibold text-yellow-600 dark:text-yellow-400">
-                        Final ✓
-                      </span>
-                    )}
+                   
                   </div>
                 )}
               </div>
