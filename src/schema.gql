@@ -20,6 +20,7 @@ input CreateMissionDto {
   missionDuration: Int! = 0
   missionNumber: Int! = 0
   name: String!
+  posterURL: String
 }
 
 input CreateTeamDto {
@@ -54,6 +55,7 @@ input UpdateMissionDto {
   missionDuration: Int
   missionNumber: Int
   name: String
+  posterURL: String
 }
 
 input UpdateTeamDto {
@@ -87,6 +89,7 @@ type Mission {
   missionDuration: Float!
   missionNumber: Float!
   name: String!
+  posterURL: String
   updatedAt: DateTime!
 }
 

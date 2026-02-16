@@ -34,6 +34,7 @@ export function CreateMissionDialog({
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
   const [missionDuration, setMissionDuration] = useState(0);
   const [missionNumber, setMissionNumber] = useState(0);
+  const [posterURL, setPosterURL] = useState('');
 
   const createMission = useCreateMission();
 
@@ -54,6 +55,7 @@ export function CreateMissionDialog({
           isFinalChallenge,
           missionDuration,
           missionNumber,
+          posterURL: posterURL.trim() || undefined,
         },
       },
       {
@@ -66,6 +68,7 @@ export function CreateMissionDialog({
           setIsFinalChallenge(false);
           setMissionDuration(0);
           setMissionNumber(0);
+          setPosterURL('');
           queryClient.invalidateQueries({ queryKey: ['missions'] });
           onSuccess();
         },
@@ -158,6 +161,15 @@ export function CreateMissionDialog({
                 value={missionNumber}
                 onChange={(e) => setMissionNumber(parseInt(e.target.value) || 0)}
                 placeholder="0"
+              />
+            </div>
+            <div>
+              <Label htmlFor="poster-url">Poster URL</Label>
+              <Input
+                id="poster-url"
+                value={posterURL}
+                onChange={(e) => setPosterURL(e.target.value)}
+                placeholder="https://example.com/poster.jpg"
               />
             </div>
             <div className="flex items-center space-x-2">

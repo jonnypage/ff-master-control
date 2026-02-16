@@ -56,6 +56,7 @@ export function MissionEditPage() {
   const [isFinalChallenge, setIsFinalChallenge] = useState(false);
   const [missionDuration, setMissionDuration] = useState(0);
   const [missionNumber, setMissionNumber] = useState(0);
+  const [posterURL, setPosterURL] = useState('');
 
   const { data, isLoading } = useMission(id);
 
@@ -107,6 +108,7 @@ export function MissionEditPage() {
     const nextFinal = missionData.isFinalChallenge;
     const nextDuration = missionData.missionDuration ?? 0;
     const nextNumber = missionData.missionNumber ?? 0;
+    const nextPosterURL = missionData.posterURL ?? '';
     queueMicrotask(() => {
       setName(nextName);
       setDescription(nextDescription);
@@ -115,6 +117,7 @@ export function MissionEditPage() {
       setIsFinalChallenge(nextFinal);
       setMissionDuration(nextDuration);
       setMissionNumber(nextNumber);
+      setPosterURL(nextPosterURL);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when mission id changes
   }, [missionData?._id]);
@@ -139,6 +142,7 @@ export function MissionEditPage() {
       isFinalChallenge?: boolean;
       missionDuration?: number;
       missionNumber?: number;
+      posterURL?: string;
     } = {};
 
     if (name !== data?.mission?.name) {
@@ -161,6 +165,9 @@ export function MissionEditPage() {
     }
     if (missionNumber !== (data?.mission?.missionNumber ?? 0)) {
       input.missionNumber = missionNumber;
+    }
+    if (posterURL !== (data?.mission?.posterURL || '')) {
+      input.posterURL = posterURL;
     }
 
     if (Object.keys(input).length === 0) {

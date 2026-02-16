@@ -176,6 +176,18 @@ export function MissionList() {
                       </Badge>
                     )}
                   </div>
+                  {mission.posterURL && (
+                    <div className="mt-3 aspect-video w-full overflow-hidden rounded-md border bg-muted">
+                      <img
+                        src={mission.posterURL}
+                        alt={`${mission.name} poster`}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {mission.description && (

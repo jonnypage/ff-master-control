@@ -32,5 +32,10 @@ export class CreateMissionDto {
   @Field(() => Int, { defaultValue: 0 })
   @IsNumber()
   missionNumber: number;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  posterURL?: string;
 }
 

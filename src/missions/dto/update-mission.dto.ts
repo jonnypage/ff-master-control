@@ -37,5 +37,10 @@ export class UpdateMissionDto {
   @IsOptional()
   @IsNumber()
   missionNumber?: number;
+
+  @Field({ nullable: true })
+  @IsOptional()
+  @IsString()
+  posterURL?: string;
 }
 

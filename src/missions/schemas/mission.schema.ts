@@ -38,6 +38,10 @@ export class Mission {
   @Field()
   missionNumber: number;
 
+  @Prop()
+  @Field({ nullable: true })
+  posterURL?: string;
+
   @Field()
   createdAt: Date;
 

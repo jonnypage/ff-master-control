@@ -289,6 +289,7 @@ export class MissionsService {
     isFinalChallenge: boolean;
     missionDuration?: number;
     missionNumber?: number;
+    posterURL?: string;
   }): Promise<MissionDocument> {
     const createdMission = new this.missionModel({
       ...createMissionDto,
@@ -307,6 +308,7 @@ export class MissionsService {
       isFinalChallenge?: boolean;
       missionDuration?: number;
       missionNumber?: number;
+      posterURL?: string;
     },
   ): Promise<MissionDocument> {
     const mission = await this.missionModel.findById(id);
@@ -334,6 +336,9 @@ export class MissionsService {
     }
     if (updateData.missionNumber !== undefined) {
       mission.missionNumber = updateData.missionNumber;
+    }
+    if (updateData.posterURL !== undefined) {
+      mission.posterURL = updateData.posterURL;
     }
 
     return mission.save();
