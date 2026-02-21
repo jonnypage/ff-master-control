@@ -77,4 +77,11 @@ export class TeamsResolver {
     await this.teamsService.deleteAll();
     return true;
   }
+
+  @Mutation(() => Boolean)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  async deleteTeam(@Args('id', { type: () => ID }) id: string): Promise<boolean> {
+    return this.teamsService.deleteOne(id);
+  }
 }

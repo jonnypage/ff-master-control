@@ -26,6 +26,7 @@ type Documents = {
     "\n          mutation UpdateUser($id: ID!, $input: UpdateUserDto!) {\n            updateUser(id: $id, input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": typeof types.UpdateUserDocument,
     "\n          mutation DeleteUser($id: ID!) {\n            deleteUser(id: $id)\n          }\n        ": typeof types.DeleteUserDocument,
     "\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        ": typeof types.DeleteAllTeamsDocument,
+    "\n          mutation DeleteTeam($id: ID!) {\n            deleteTeam(id: $id)\n          }\n        ": typeof types.DeleteTeamDocument,
     "\n          mutation ChangePassword($id: ID!, $input: ChangePasswordDto!) {\n            changePassword(id: $id, input: $input)\n          }\n        ": typeof types.ChangePasswordDocument,
     "\n          query GetTeams {\n            teams {\n              _id\n              name\n              teamCode\n              teamGuid\n              bannerColor\n              bannerIcon\n              image {\n                url\n              }\n              credits\n              crystals\n              missions {\n                missionId\n                status\n              }\n            }\n          }\n        ": typeof types.GetTeamsDocument,
     "\n          query GetTeamById($id: ID!) {\n            teamById(id: $id) {\n              _id\n              name\n              teamCode\n              teamGuid\n              bannerColor\n              bannerIcon\n              image {\n                url\n              }\n              credits\n              crystals\n              missions {\n                missionId\n                status\n              }\n            }\n          }\n        ": typeof types.GetTeamByIdDocument,
@@ -64,6 +65,7 @@ const documents: Documents = {
     "\n          mutation UpdateUser($id: ID!, $input: UpdateUserDto!) {\n            updateUser(id: $id, input: $input) {\n              _id\n              username\n              role\n            }\n          }\n        ": types.UpdateUserDocument,
     "\n          mutation DeleteUser($id: ID!) {\n            deleteUser(id: $id)\n          }\n        ": types.DeleteUserDocument,
     "\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        ": types.DeleteAllTeamsDocument,
+    "\n          mutation DeleteTeam($id: ID!) {\n            deleteTeam(id: $id)\n          }\n        ": types.DeleteTeamDocument,
     "\n          mutation ChangePassword($id: ID!, $input: ChangePasswordDto!) {\n            changePassword(id: $id, input: $input)\n          }\n        ": types.ChangePasswordDocument,
     "\n          query GetTeams {\n            teams {\n              _id\n              name\n              teamCode\n              teamGuid\n              bannerColor\n              bannerIcon\n              image {\n                url\n              }\n              credits\n              crystals\n              missions {\n                missionId\n                status\n              }\n            }\n          }\n        ": types.GetTeamsDocument,
     "\n          query GetTeamById($id: ID!) {\n            teamById(id: $id) {\n              _id\n              name\n              teamCode\n              teamGuid\n              bannerColor\n              bannerIcon\n              image {\n                url\n              }\n              credits\n              crystals\n              missions {\n                missionId\n                status\n              }\n            }\n          }\n        ": types.GetTeamByIdDocument,
@@ -152,6 +154,10 @@ export function graphql(source: "\n          mutation DeleteUser($id: ID!) {\n  
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        "): (typeof documents)["\n          mutation DeleteAllTeams {\n            deleteAllTeams\n          }\n        "];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "\n          mutation DeleteTeam($id: ID!) {\n            deleteTeam(id: $id)\n          }\n        "): (typeof documents)["\n          mutation DeleteTeam($id: ID!) {\n            deleteTeam(id: $id)\n          }\n        "];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

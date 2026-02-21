@@ -269,6 +269,26 @@ export function useDeleteAllTeams() {
   });
 }
 
+export function useDeleteTeam() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (variables: { id: string }) =>
+      graphqlClient.request(
+        graphql(`
+          mutation DeleteTeam($id: ID!) {
+            deleteTeam(id: $id)
+          }
+        `) as unknown as RequestDocument,
+        variables,
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['teams'] });
+      qc.invalidateQueries({ queryKey: ['teams-for-store'] });
+      qc.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+    },
+  });
+}
+
 export function useChangePassword() {
   return useMutation({
     mutationFn: (variables: {

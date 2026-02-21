@@ -6,6 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
   ArrowLeft,
   Save,
   Plus,
@@ -15,6 +23,7 @@ import {
   Coins,
   Gem,
   ScrollText,
+  Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -34,6 +43,7 @@ import {
   useRemoveCredits,
   useOverrideMissionCompletion,
   useRemoveMissionCompletion,
+  useDeleteTeam,
 } from '@/lib/api/useApi';
 
 export function TeamEditPage() {
@@ -88,6 +98,8 @@ export function TeamEditPage() {
   const updateTeam = useUpdateTeam();
   const addCredits = useAddCredits();
   const removeCredits = useRemoveCredits();
+  const deleteTeam = useDeleteTeam();
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -354,6 +366,38 @@ export function TeamEditPage() {
           </Button>
         )}
       </div>
+
+      {isAdmin && (
+        <details className="rounded-lg border border-border bg-card">
+          <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground">
+            Team Admin
+          </summary>
+          <div className="px-4 pb-4">
+            <Card className="border-destructive/50 bg-destructive/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl text-destructive flex items-center">
+                  <Trash2 className="w-5 h-5 mr-2" />
+                  Delete Team
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Permanently delete this team and all associated data. This action cannot be undone.
+                </p>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={deleteTeam.isPending}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {deleteTeam.isPending ? 'Deleting...' : 'Delete Team'}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </details>
+      )}
 
       <div className="w-full space-y-6">
         <Card className="shadow-sm">
@@ -637,6 +681,55 @@ export function TeamEditPage() {
           </div>
         )}
       </div>
+
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Team</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{team?.name}"? This will permanently remove the team
+              and all associated data. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (!id) return;
+                deleteTeam.mutate(
+                  { id },
+                  {
+                    onSuccess: (data) => {
+                      if (data?.deleteTeam) {
+                        toast.success('Team deleted');
+                        setShowDeleteConfirm(false);
+                        queryClient.invalidateQueries({ queryKey: ['teams'] });
+                        queryClient.invalidateQueries({ queryKey: ['teams-for-store'] });
+                        queryClient.invalidateQueries({ queryKey: ['leaderboard-teams'] });
+                        navigate('/teams');
+                      } else {
+                        toast.error('Team not found or already deleted');
+                      }
+                    },
+                    onError: (error: unknown) => {
+                      const msg =
+                        (error as { response?: { errors?: Array<{ message?: string }> } })
+                          ?.response?.errors?.[0]?.message || 'Failed to delete team';
+                      toast.error(msg);
+                    },
+                  },
+                );
+              }}
+              disabled={deleteTeam.isPending}
+            >
+              {deleteTeam.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

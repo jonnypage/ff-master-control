@@ -466,4 +466,9 @@ export class TeamsService implements OnModuleInit {
   async deleteAll(): Promise<void> {
     await this.teamModel.deleteMany({}).exec();
   }
+
+  async deleteOne(id: string): Promise<boolean> {
+    const result = await this.teamModel.deleteOne({ _id: id }).exec();
+    return (result.deletedCount ?? 0) > 0;
+  }
 }

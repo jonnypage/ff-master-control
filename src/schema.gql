@@ -111,6 +111,7 @@ type Mutation {
   createTeam(input: CreateTeamDto!): Team!
   createUser(input: CreateUserDto!): User!
   deleteAllTeams: Boolean!
+  deleteTeam(id: ID!): Boolean!
   deleteUser(id: ID!): Boolean!
   login(input: LoginInput!): AuthPayload!
   staffSignup(input: CreateUserDto!): User!
