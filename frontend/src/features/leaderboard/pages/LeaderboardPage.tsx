@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
@@ -38,6 +38,69 @@ export function LeaderboardPage() {
   } = useLeaderboardMissions();
 
   const isLoading = teamsLoading || missionsLoading;
+
+  // Fullscreen toggle on F key
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleFullscreen]);
+
+  // Prevent screen sleep only when in fullscreen mode
+  useEffect(() => {
+    if (!('wakeLock' in navigator)) return;
+    let wakeLock: WakeLockSentinel | null = null;
+
+    const requestWakeLock = async () => {
+      if (!document.fullscreenElement) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+      } catch {
+        // Wake lock may fail (e.g. low battery, not visible)
+      }
+    };
+
+    const releaseWakeLock = () => {
+      wakeLock?.release().catch(() => {});
+      wakeLock = null;
+    };
+
+    const handleFullscreenChange = () => {
+      if (document.fullscreenElement) {
+        requestWakeLock();
+      } else {
+        releaseWakeLock();
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && document.fullscreenElement) {
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, []);
   const hasError = teamsError || missionsError;
 
   const sortedTeams = useMemo((): RankedTeam[] => {
