@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Users, Check, X, Clock, Play, Plus } from 'lucide-react';
+import { Search, Users, Check, X, Clock, Play, Plus, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/features/auth/lib/auth-context';
 import type { GetTeamsForStoreQuery } from '@/lib/graphql/generated';
@@ -17,6 +17,7 @@ import {
   useFailMission,
   useAdjustMissionTime,
   useMission,
+  useMissions,
 } from '@/lib/api/useApi';
 
 import { MissionTimer } from './MissionTimer';
@@ -56,8 +57,15 @@ export function TeamSelectionForMission({
     bannerColor: string;
     bannerIcon: string;
     credits: number;
+    crystals?: number;
     missions: { missionId: string; status: string; startedAt?: string; tries: number }[];
   }
+
+  const { data: missionsData } = useMissions();
+  const mission8Id = useMemo(() => {
+    const missions = (missionsData?.missions ?? []) as Array<{ _id: string; missionNumber: number }>;
+    return missions.find((m) => m.missionNumber === 8)?._id ?? null;
+  }, [missionsData?.missions]);
 
   const filteredTeams = useMemo(() => {
     const allTeams = ((data as { teams?: Team[] })?.teams ?? []) as Team[];
@@ -115,6 +123,11 @@ export function TeamSelectionForMission({
               const isCompleted = (team?.missions || []).some(
                 (m) => m.missionId === missionId && m.status === 'COMPLETE',
               );
+              const hasCompletedMission8 = mission8Id
+                ? (team?.missions || []).some(
+                    (m) => m.missionId === mission8Id && m.status === 'COMPLETE',
+                  )
+                : false;
               const isSelected = selectedTeamId === team?._id;
               const handleRowClick = () => {
                 if (isCompleted && isAdmin) {
@@ -261,10 +274,25 @@ export function TeamSelectionForMission({
                             : 'Mark as incomplete'}
                         </Button>
                       ) : (
-                        <span className="flex items-center gap-1.5 text-white shrink-0">
-                          <Check className="w-4 h-4" />
-                          Completed
-                        </span>
+                        <div className="flex flex-col items-end gap-0.5 shrink-0">
+                          <span className="flex items-center gap-1.5 text-white">
+                            <Check className="w-4 h-4" />
+                            Completed
+                          </span>
+                          {isAdmin && missionData?.mission?.isFinalChallenge && mission8Id && (
+                            <>
+                              <span className="text-xs text-white/90">
+                                Mission 8 completed: <span className={hasCompletedMission8 ? 'text-green-200 font-semibold' : 'text-red-200 font-semibold'}>{hasCompletedMission8 ? 'Yes' : 'No'}</span>
+                              </span>
+                              <span className="text-xs text-white/90 flex items-center gap-1">
+                                <Gem className="w-3 h-3" />
+                                Crystals for end boss: {hasCompletedMission8
+                                  ? (team?.crystals ?? 0)
+                                  : 0}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       )
                     ) : isSelected ? (
                       (() => {

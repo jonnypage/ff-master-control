@@ -17,7 +17,7 @@ import {
   ScrollText,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Edit } from 'lucide-react';
 import { TeamBanner } from '../components/TeamBanner';
@@ -28,6 +28,7 @@ import {
 import {
   useTeamById,
   useMissionsForTeamEdit,
+  useMissions,
   useUpdateTeam,
   useAddCredits,
   useRemoveCredits,
@@ -39,7 +40,8 @@ export function TeamEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { canEditTeams, canAdjustCredits } = usePermissions();
+  const { canEditTeams, canAdjustCredits, userRole } = usePermissions();
+  const isAdmin = userRole === 'ADMIN';
   const queryClient = useQueryClient();
 
   // Check if we're in edit mode based on URL path
@@ -49,6 +51,11 @@ export function TeamEditPage() {
   const { data, isLoading } = useTeamById(id || '');
 
   const { data: missionsData } = useMissionsForTeamEdit();
+  const { data: allMissionsData } = useMissions();
+  const mission8Id = useMemo(() => {
+    const missions = (allMissionsData?.missions ?? []) as Array<{ _id: string; missionNumber: number }>;
+    return missions.find((m) => m.missionNumber === 8)?._id ?? null;
+  }, [allMissionsData?.missions]);
 
   // Initialize state from data - component resets when id changes (via key in App.tsx)
   const teamData = data?.teamById;
@@ -503,6 +510,36 @@ export function TeamEditPage() {
                 /{missionsData?.missions?.length ?? 0}
               </Badge>
             </div>
+            {isAdmin && mission8Id && (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Mission 8 completed:
+                  </span>
+                  <Badge
+                    variant="secondary"
+                    className={(team.missions ?? []).some((m: any) => m.missionId === mission8Id && m.status === 'COMPLETE')
+                      ? 'bg-green-600 text-white hover:bg-green-600'
+                      : 'bg-red-600 text-white hover:bg-red-600'}
+                  >
+                    {(team.missions ?? []).some((m: any) => m.missionId === mission8Id && m.status === 'COMPLETE')
+                      ? 'Yes'
+                      : 'No'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Gem className="w-4 h-4 shrink-0" />
+                    Crystals for end boss:
+                  </span>
+                  <Badge variant="secondary" className="text-lg font-semibold">
+                    {(team.missions ?? []).some((m: any) => m.missionId === mission8Id && m.status === 'COMPLETE')
+                      ? (typeof team.crystals === 'number' ? team.crystals : 0)
+                      : 0}
+                  </Badge>
+                </div>
+              </>
+            )}
             {canEdit && canAdjustCredits && (
               <div className="flex gap-2 pt-2 border-t">
                 <Button
