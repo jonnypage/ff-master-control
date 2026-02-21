@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useLeaderboardMissions, useLeaderboardTeams } from '@/lib/api/useApi';
 import { TeamBanner } from '@/features/teams/components/TeamBanner';
 import { getBannerIconById } from '@/features/teams/components/banner-icons';
+import { LeaderboardJoinScreen } from '@/features/leaderboard/components/LeaderboardJoinScreen';
 import { ScrollText } from 'lucide-react';
 import type { GetMissionsForLeaderboardQuery } from '@/lib/graphql/generated';
 
@@ -169,6 +170,7 @@ export function LeaderboardPage() {
       });
   }, [teamsData?.leaderboardTeams, missionsData?.leaderboardMissions]);
 
+  const hasAnyCompletedMissions = sortedTeams.some((t) => t.completedCount > 0);
   const top3 = sortedTeams.slice(0, 3);
   const rest = sortedTeams.slice(3);
 
@@ -201,6 +203,16 @@ export function LeaderboardPage() {
         </div>
       </div>
     );
+  }
+
+  if (!hasAnyCompletedMissions) {
+    const joinScreenTeams = sortedTeams.map((t) => ({
+      _id: t._id,
+      name: t.name,
+      bannerColor: t.bannerColor,
+      bannerIcon: t.bannerIcon,
+    }));
+    return <LeaderboardJoinScreen teams={joinScreenTeams} />;
   }
 
   const medalForRank = (index: number) =>
