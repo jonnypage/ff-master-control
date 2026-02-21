@@ -361,10 +361,10 @@ export function TeamSelectionForMission({
                           };
 
                           return (
-                            <div className="flex items-center gap-2 ml-auto">
+                            <div className="flex items-center gap-1 sm:gap-2 ml-auto shrink-0">
                                {missionEntry?.startedAt && missionData?.mission?.missionDuration ? (
-                                <div className="px-2 py-1 bg-background/50 rounded border flex items-center gap-1.5">
-                                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                <div className="px-2 py-1 bg-background/50 rounded border flex items-center gap-1.5 shrink-0 min-w-0">
+                                  <Clock className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                                   <MissionTimer
                                     startedAt={missionEntry.startedAt}
                                     duration={missionData.mission.missionDuration}
@@ -375,6 +375,7 @@ export function TeamSelectionForMission({
                               <Button
                                 size="sm"
                                 variant="outline"
+                                className="shrink-0"
                                 onClick={handleAddMinuteClick}
                                 disabled={adjustMissionTime.isPending}
                                 title="Add 1 Minute"
@@ -382,24 +383,30 @@ export function TeamSelectionForMission({
                                 <Plus className="w-4 h-4" /> 1 min
                               </Button>
                               <Button
-                                size="sm"
+                                size="icon"
                                 variant="destructive"
+                                className="h-8 w-8 shrink-0"
                                 onClick={handleFailClick}
                                 disabled={failMission.isPending}
-                              >Fail
+                                title="Fail"
+                              >
+                                <X className="w-4 h-4" />
                               </Button>
                               <Button
-                                size="sm"
+                                size="icon"
+                                className="h-8 w-8 shrink-0 bg-green-600 hover:bg-green-700 text-white"
                                 onClick={handleCompleteClick}
                                 disabled={
                                   completingTeamId === team?._id ||
                                   completeMission.isPending
                                 }
+                                title={completingTeamId === team?._id || completeMission.isPending ? 'Completing...' : 'Complete'}
                               >
-                                {completingTeamId === team?._id ||
-                                completeMission.isPending
-                                  ? 'Completing...'
-                                  : 'Complete'}
+                                {completingTeamId === team?._id || completeMission.isPending ? (
+                                  <span className="animate-pulse">...</span>
+                                ) : (
+                                  <Check className="w-4 h-4" />
+                                )}
                               </Button>
                             </div>
                           );
