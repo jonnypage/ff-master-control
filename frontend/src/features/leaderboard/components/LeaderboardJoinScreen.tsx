@@ -47,48 +47,53 @@ export function LeaderboardJoinScreen({ teams }: LeaderboardJoinScreenProps) {
   return (
     <div className="leaderboard-page flex flex-col bg-gradient-to-br from-background via-background to-muted/20 overflow-y-auto md:overflow-hidden">
       <div className="flex flex-col md:flex-1 container mx-auto px-6 py-4 md:min-h-0 w-full max-w-7xl">
-        <div className="text-center shrink-0 py-2">
+        <div className="text-center shrink-0 py-6">
           <h1 className="text-5xl font-bold text-foreground mb-6">
             Join the Freedom Fighters
           </h1>
         </div>
 
-        <div className="flex flex-col md:flex-row flex-1 min-h-0 gap-8 md:gap-12 items-center md:items-start">
-          {/* QR Code */}
-          <div className="shrink-0 flex flex-col items-center">
-            <div className="w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] rounded-lg border bg-background flex items-center justify-center overflow-hidden">
-              {qrDataUrl.data ? (
-                <img
-                  src={qrDataUrl.data}
-                  alt={`QR code to ${JOIN_URL}`}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="text-center px-4">
-                  {qrDataUrl.isError ? (
-                    <p className="text-sm text-destructive">
-                      Failed to generate QR
-                    </p>
-                  ) : (
-                    <>
-                      <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-3" />
-                      <p className="text-sm text-muted-foreground">
-                        Generating…
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            <p className="text-base sm:text-lg text-muted-foreground mt-3 text-center font-mono">
-              or go to {JOIN_URL}
+        <div className="flex flex-col md:flex-row flex-1 min-h-0 gap-8 md:gap-12 items-center md:items-stretch">
+          {/* Left column: header top-aligned, QR + URL centered */}
+          <div className="shrink-0 flex flex-col items-center w-full md:w-auto">
+            <p className="text-3xl font-bold text-foreground mb-6 shrink-0 text-center">
+              Create a team by scanning this code
             </p>
+            <div className="flex flex-col items-center justify-center flex-1 min-h-0">
+              <div className="w-72 h-72 sm:w-96 sm:h-96 md:w-[28rem] md:h-[28rem] rounded-lg border bg-background flex items-center justify-center overflow-hidden shrink-0">
+                {qrDataUrl.data ? (
+                  <img
+                    src={qrDataUrl.data}
+                    alt={`QR code to ${JOIN_URL}`}
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="text-center px-4">
+                    {qrDataUrl.isError ? (
+                      <p className="text-sm text-destructive">
+                        Failed to generate QR
+                      </p>
+                    ) : (
+                      <>
+                        <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-primary mb-3" />
+                        <p className="text-sm text-muted-foreground">
+                          Generating…
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="text-base sm:text-lg text-muted-foreground mt-3 text-center font-mono">
+                or go to {JOIN_URL}
+              </p>
+            </div>
           </div>
 
           {/* Teams that have joined */}
           <div className="flex-1 min-w-0 w-full flex flex-col">
             {teams.length === 0 ? (
-              <p className="text-muted-foreground py-4 text-center text-2xl">
+              <p className="text-muted-foreground text-center text-3xl">
                 It's quiet here...
               </p>
             ) : (
